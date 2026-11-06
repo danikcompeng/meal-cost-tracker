@@ -2,14 +2,19 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/* Dark mode follows the phone/computer setting automatically. */
+@custom-variant dark (@media (prefers-color-scheme: dark));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-sans: var(--font-figtree);
+  --font-heading: var(--font-fraunces);
+  --font-heading--font-variation-settings: "SOFT" 100;
+  /* Our own colors (not in shadcn): see Design section in CLAUDE.md. */
+  --color-matcha-soft: var(--matcha-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -48,73 +53,84 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Light mode. Values and reasons: Design section in CLAUDE.md. */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.52 0.13 155);
-  --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.52 0.13 155);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
+  color-scheme: light dark; /* native inputs and scrollbars match too */
+  --background: #FAF8F2;          /* light, clean cream (never white) */
+  --foreground: #23261B;          /* olive-black ink */
+  --card: #F2EEE3;                /* tile: one step deeper */
+  --card-foreground: #23261B;
+  --popover: #FDFCF8;             /* menus float above tiles */
+  --popover-foreground: #23261B;
+  --primary: #3F6E35;             /* fresh leafy matcha */
+  --primary-foreground: #FDFCF8;
+  --secondary: #F2EEE3;
+  --secondary-foreground: #23261B;
+  --muted: #F2EEE3;               /* chips, quiet backgrounds */
+  --muted-foreground: #646653;    /* warm grey labels */
+  --accent: #F2EEE3;              /* hover backgrounds */
+  --accent-foreground: #23261B;
+  --destructive: #A8432F;         /* over budget: muted tomato */
+  --border: #E5E0D3;
+  --input: #E5E0D3;
+  --ring: #3F6E35;
+  --matcha-soft: #78855A;         /* non-text fills: budget bar, chart bars */
+  --highlight: #F2C94C;           /* butter: active tab/pill only */
+  --highlight-foreground: #23261B;
+  --chart-1: #78855A;
+  --chart-2: #F2C94C;
+  --chart-3: #3F6E35;
+  --chart-4: #646653;
+  --chart-5: #A8432F;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #F2EEE3;
+  --sidebar-foreground: #23261B;
+  --sidebar-primary: #3F6E35;
+  --sidebar-primary-foreground: #FDFCF8;
+  --sidebar-accent: #E5E0D3;
+  --sidebar-accent-foreground: #23261B;
+  --sidebar-border: #E5E0D3;
+  --sidebar-ring: #3F6E35;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.72 0.15 155);
-  --primary-foreground: oklch(0.18 0.03 155);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.72 0.15 155);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+/* Dark mode: used automatically when the device is set to dark. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #171912;        /* deep olive-black */
+    --foreground: #EEE9DA;        /* cream text */
+    --card: #22251B;
+    --card-foreground: #EEE9DA;
+    --popover: #22251B;
+    --popover-foreground: #EEE9DA;
+    --primary: #93C07F;           /* lighter matcha so it shows on dark */
+    --primary-foreground: #171912;
+    --secondary: #22251B;
+    --secondary-foreground: #EEE9DA;
+    --muted: #22251B;
+    --muted-foreground: #A5A690;
+    --accent: #2C3023;
+    --accent-foreground: #EEE9DA;
+    --destructive: #E08470;
+    --border: #34382A;
+    --input: #34382A;
+    --ring: #93C07F;
+    --matcha-soft: #76855A;
+    --highlight: #E9C25A;
+    --highlight-foreground: #171912;
+    --chart-1: #76855A;
+    --chart-2: #E9C25A;
+    --chart-3: #93C07F;
+    --chart-4: #A5A690;
+    --chart-5: #E08470;
+    --sidebar: #22251B;
+    --sidebar-foreground: #EEE9DA;
+    --sidebar-primary: #93C07F;
+    --sidebar-primary-foreground: #171912;
+    --sidebar-accent: #2C3023;
+    --sidebar-accent-foreground: #EEE9DA;
+    --sidebar-border: #34382A;
+    --sidebar-ring: #93C07F;
+  }
 }
 
 @layer base {
@@ -126,5 +142,9 @@
   }
   html {
     @apply font-sans;
+  }
+  /* Page titles use the display serif. */
+  h1 {
+    @apply font-heading;
   }
 }
