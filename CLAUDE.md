@@ -43,9 +43,64 @@ Cost per serving = sum of (amount x price per unit) / servings.
 - Never commit secrets. Use .env.local for Supabase keys.
 
 ## Design
-- Clean, minimal, lots of whitespace, one accent color
-- Subtle motion only: smooth transitions, animated budget bar
-- Mobile-first, since I will use this in the kitchen and at the store
+Direction: calm, warm and food-like, like a well-kept kitchen notebook,
+not a finance dashboard. References are in design/references/.
+
+Color
+- Background: warm cream, never pure white. Tiles on a slightly deeper
+  cream. Dark mode: deep olive-black, not pure black.
+- Primary: matcha/olive green for actions and key numbers.
+- Highlight: warm butter yellow, used sparingly (active tab, over-budget
+  warnings use a muted red instead).
+- Greys are warm (tinted toward olive), never neutral grey.
+
+Type
+- Display: a characterful serif for page titles and the biggest numbers.
+- Body/UI: a clean sans-serif. Prices use tabular numbers so they line up.
+- Hierarchy: the most important number on each screen (cost per serving,
+  weekly total) is the largest thing on it, with a small grey label above.
+
+Layout
+- Mobile-first, generous spacing. Content in soft rounded tiles with no
+  heavy shadows. Use chips for tags and a segmented control for
+  Day / Week views.
+
+Motion (Framer Motion)
+- Signature moment: the "I'm tired of this" swap. Ingredient tiles rotate
+  like a carousel and the new meal slides in. This should feel delightful.
+- Everything else is subtle: the budget bar fills smoothly, lists fade in.
+- Respect prefers-reduced-motion.
+
+Rules
+- Design every state: empty, loading, error, first use, phone width.
+- No purple gradients, no emoji icons, no generic card-everything look.
+- Before building a screen, describe the layout in words and wait for my
+  approval.
+
+Fonts (final)
+- Display: Fraunces, semibold, "soft" axis turned up. Page titles and the
+  ONE big number per screen only. It has no tabular figures, so never use
+  it for columns or lists of prices.
+- Body/UI: Figtree. All other text, including every price in a list, with
+  `tabular-nums`. (DM Sans from Google Fonts has no tabular figures.)
+- Sizes: label 13px medium grey · key number 48px · page title 30px ·
+  body 16px (16px also stops iPhones zooming into inputs).
+
+Colors (final): light / dark
+- background      #FAF8F2 / #171912   light clean cream, easy on the eyes / olive-black
+- tile (card)     #F2EEE3 / #22251B   one step deeper than background
+- popover         #FDFCF8 / #22251B   menus, lighter than tiles
+- foreground      #23261B / #EEE9DA   olive-black ink / cream text
+- muted-fg (grey) #646653 / #A5A690   warm grey for labels
+- border          #E5E0D3 / #34382A   barely visible
+- primary         #3F6E35 / #93C07F   fresh leafy matcha: actions, key numbers, text
+- primary-fg      #FDFCF8 / #171912   text on matcha buttons
+- matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
+- highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it
+- destructive     #A8432F / #E08470   over budget: muted tomato red
+All text colors pass 4.5:1 contrast on background and tiles.
+matcha-soft is never used for text or as the only way to show information
+(the budget bar always has its amount written next to it).
 
 ## Commit style
 Small commits with clear messages, one per working feature.
