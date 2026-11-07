@@ -56,79 +56,79 @@
 /* Light mode. Values and reasons: Design section in CLAUDE.md. */
 :root {
   color-scheme: light dark; /* native inputs and scrollbars match too */
-  --background: #F6F2E7;          /* warm cream (never white) */
-  --foreground: #23261B;          /* olive-black ink */
-  --card: #EDE7D6;                /* tile: one step deeper */
-  --card-foreground: #23261B;
-  --popover: #FDFCF8;             /* menus float above tiles */
-  --popover-foreground: #23261B;
-  --primary: #4F6B2E;             /* olive matcha */
-  --primary-foreground: #FDFCF8;
-  --secondary: #EDE7D6;
-  --secondary-foreground: #23261B;
-  --muted: #EDE7D6;               /* chips, quiet backgrounds */
-  --muted-foreground: #646653;    /* warm grey labels */
-  --accent: #EDE7D6;              /* hover backgrounds */
-  --accent-foreground: #23261B;
+  --background: #FFFFFF;          /* white */
+  --foreground: #171717;          /* near-black ink */
+  --card: #F0F0F0;                /* tile: light grey, one step off white */
+  --card-foreground: #171717;
+  --popover: #FFFFFF;             /* menus (they have a border) */
+  --popover-foreground: #171717;
+  --primary: #4F6B2E;             /* matcha: the single accent */
+  --primary-foreground: #FFFFFF;
+  --secondary: #F0F0F0;
+  --secondary-foreground: #171717;
+  --muted: #F0F0F0;               /* chips, quiet backgrounds */
+  --muted-foreground: #616161;    /* neutral grey labels */
+  --accent: #E8E8E8;              /* hover backgrounds */
+  --accent-foreground: #171717;
   --destructive: #A8432F;         /* over budget: muted tomato */
-  --border: #E5E0D3;
-  --input: #E5E0D3;
+  --border: #E2E2E2;
+  --input: #E2E2E2;
   --ring: #4F6B2E;
   --matcha-soft: #78855A;         /* non-text fills: budget bar, chart bars */
   --highlight: #F2C94C;           /* butter: active tab/pill only */
-  --highlight-foreground: #23261B;
+  --highlight-foreground: #171717;
   --chart-1: #78855A;
   --chart-2: #F2C94C;
   --chart-3: #4F6B2E;
-  --chart-4: #646653;
+  --chart-4: #616161;
   --chart-5: #A8432F;
   --radius: 0.625rem;
-  --sidebar: #EDE7D6;
-  --sidebar-foreground: #23261B;
+  --sidebar: #F0F0F0;
+  --sidebar-foreground: #171717;
   --sidebar-primary: #4F6B2E;
-  --sidebar-primary-foreground: #FDFCF8;
-  --sidebar-accent: #E5E0D3;
-  --sidebar-accent-foreground: #23261B;
-  --sidebar-border: #E5E0D3;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #E8E8E8;
+  --sidebar-accent-foreground: #171717;
+  --sidebar-border: #E2E2E2;
   --sidebar-ring: #4F6B2E;
 }
 
 /* Dark mode: used automatically when the device is set to dark. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #171912;        /* deep olive-black */
-    --foreground: #EEE9DA;        /* cream text */
-    --card: #22251B;
-    --card-foreground: #EEE9DA;
-    --popover: #22251B;
-    --popover-foreground: #EEE9DA;
+    --background: #141414;        /* near-black, not pure black */
+    --foreground: #EDEDED;        /* off-white text */
+    --card: #1F1F1F;
+    --card-foreground: #EDEDED;
+    --popover: #1F1F1F;
+    --popover-foreground: #EDEDED;
     --primary: #93C07F;           /* lighter matcha so it shows on dark */
-    --primary-foreground: #171912;
-    --secondary: #22251B;
-    --secondary-foreground: #EEE9DA;
-    --muted: #22251B;
-    --muted-foreground: #A5A690;
-    --accent: #2C3023;
-    --accent-foreground: #EEE9DA;
+    --primary-foreground: #141414;
+    --secondary: #1F1F1F;
+    --secondary-foreground: #EDEDED;
+    --muted: #1F1F1F;
+    --muted-foreground: #A3A3A3;
+    --accent: #2A2A2A;
+    --accent-foreground: #EDEDED;
     --destructive: #E08470;
-    --border: #34382A;
-    --input: #34382A;
+    --border: #2E2E2E;
+    --input: #2E2E2E;
     --ring: #93C07F;
     --matcha-soft: #76855A;
     --highlight: #E9C25A;
-    --highlight-foreground: #171912;
+    --highlight-foreground: #141414;
     --chart-1: #76855A;
     --chart-2: #E9C25A;
     --chart-3: #93C07F;
-    --chart-4: #A5A690;
+    --chart-4: #A3A3A3;
     --chart-5: #E08470;
-    --sidebar: #22251B;
-    --sidebar-foreground: #EEE9DA;
+    --sidebar: #1F1F1F;
+    --sidebar-foreground: #EDEDED;
     --sidebar-primary: #93C07F;
-    --sidebar-primary-foreground: #171912;
-    --sidebar-accent: #2C3023;
-    --sidebar-accent-foreground: #EEE9DA;
-    --sidebar-border: #34382A;
+    --sidebar-primary-foreground: #141414;
+    --sidebar-accent: #2A2A2A;
+    --sidebar-accent-foreground: #EDEDED;
+    --sidebar-border: #2E2E2E;
     --sidebar-ring: #93C07F;
   }
 }

@@ -43,16 +43,18 @@ Cost per serving = sum of (amount x price per unit) / servings.
 - Never commit secrets. Use .env.local for Supabase keys.
 
 ## Design
-Direction: calm, warm and food-like, like a well-kept kitchen notebook,
-not a finance dashboard. References are in design/references/.
+Direction: clean and calm, black ink on white paper with one matcha-green
+accent, like a tidy recipe card, not a finance dashboard. References in
+design/references/ still guide layout and type, but their cream colors
+are replaced by the palette below.
 
 Color
-- Background: warm cream, never pure white. Tiles on a slightly deeper
-  cream. Dark mode: deep olive-black, not pure black.
-- Primary: matcha/olive green for actions and key numbers.
+- Background: white. Tiles on a light grey that still stands out from
+  it. Dark mode: near-black, never pure black.
+- Primary: matcha green is the single accent, for actions and key numbers.
 - Highlight: warm butter yellow, used sparingly (active tab, over-budget
   warnings use a muted red instead).
-- Greys are warm (tinted toward olive), never neutral grey.
+- Greys are neutral (no warm or cool tint), for labels and borders.
 
 Type
 - Display: a characterful serif for page titles and the biggest numbers.
@@ -87,18 +89,20 @@ Fonts (final)
   body 16px (16px also stops iPhones zooming into inputs).
 
 Colors (final): light / dark
-- background      #F6F2E7 / #171912   warm cream / olive-black
-- tile (card)     #EDE7D6 / #22251B   one step deeper than background
-- popover         #FDFCF8 / #22251B   menus, lighter than tiles
-- foreground      #23261B / #EEE9DA   olive-black ink / cream text
-- muted-fg (grey) #646653 / #A5A690   warm grey for labels
-- border          #E5E0D3 / #34382A   barely visible
-- primary         #4F6B2E / #93C07F   olive matcha: actions, key numbers, text
-- primary-fg      #FDFCF8 / #171912   text on matcha buttons
+- background      #FFFFFF / #141414   white / near-black
+- tile (card)     #F0F0F0 / #1F1F1F   light grey, one step off background
+- popover         #FFFFFF / #1F1F1F   menus (bordered, so they show on white)
+- hover (accent)  #E8E8E8 / #2A2A2A   hover backgrounds on tiles
+- foreground      #171717 / #EDEDED   near-black ink / off-white text
+- muted-fg (grey) #616161 / #A3A3A3   neutral grey for labels
+- border          #E2E2E2 / #2E2E2E   barely visible
+- primary         #4F6B2E / #93C07F   matcha: actions, key numbers, text
+- primary-fg      #FFFFFF / #141414   text on matcha buttons
 - matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
 - highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it
 - destructive     #A8432F / #E08470   over budget: muted tomato red
-All text colors pass 4.5:1 contrast on background and tiles.
+All text colors pass 4.5:1 contrast on background, tiles, popovers and
+hover backgrounds (lowest: destructive on light hover, 4.88:1).
 matcha-soft is never used for text or as the only way to show information
 (the budget bar always has its amount written next to it).
 
