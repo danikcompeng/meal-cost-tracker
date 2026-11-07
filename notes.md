@@ -60,3 +60,35 @@
   and sets a clear limit.
 
 Pattern: say **what** I want, **how** I want it, and **what must not happen**.
+
+## 2026-11-06: A code-reviewer subagent
+
+- **What a subagent is:** a separate Claude with its own instructions, its own tools and a fresh
+  context window. The main Claude Code session hands it a job ("review this feature") and gets
+  back only the conclusions, so my main conversation stays focused.
+- **What mine does:** `.claude/agents/code-reviewer.md` reviews code before I commit, against the
+  rules in CLAUDE.md. It checks, most important first:
+  - **Bugs:** cost math (unit conversion, divide-by-zero, Postgres numbers converted with
+    `Number()`), missing `await`, ignored Supabase `error`s, live data being cached.
+  - **Security:** no secret keys in `NEXT_PUBLIC_` variables, Row Level Security on every
+    table, server-side input validation, no open redirects.
+  - **Readability:** small components in `/components`, data logic in `/lib`, pure cost functions.
+  - It reports `file:line`, what's wrong, why it matters and a suggested fix, then ends with one
+    thing the code does well.
+- **Design decisions I made, and why:**
+  - **Read-only** (`tools: Read, Grep, Glob`): a reviewer that can edit files could "fix" things
+    I never approved. It finds problems; I decide what changes.
+  - **Project memory** (`memory: project`): it keeps notes in
+    `.claude/agent-memory/code-reviewer/MEMORY.md` across sessions, such as mistakes I repeat and
+    decisions already made (e.g. "ingredients use `connection()`, not caching, so prices stay
+    fresh"), so it doesn't re-raise findings I chose not to fix. It never stores secrets.
+  - **Explains in plain language**, because I'm learning, and the "why" is the part that teaches.
+- **How I use it:** "Use the code-reviewer subagent to review the recipes feature before I commit."
+- **First real review (2026-11-07), `lib/cost.ts`:** verdict "minor issues". It caught that a
+  package size of 0 would quietly show an ingredient as **free** (a wrong number that looks normal),
+  that nothing guards against `NaN` showing up as "$NaN", and that the file has no unit tests yet.
+  It also created its memory file and noted what to check when cost per serving is added.
+- **Gotcha:** project agents only load if Claude Code starts **inside the project folder**
+  (`cd ~\Documents\meal-cost-tracker`, then `claude`). Started elsewhere, it can't find the agent by name.
+- **Lesson:** CLAUDE.md is always-on rules for the whole project; a subagent is a specialist with
+  limited tools that I call for one job. Giving AI the *least* access it needs is a safety habit.
