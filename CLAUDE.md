@@ -87,13 +87,13 @@ Fonts (final)
   body 16px (16px also stops iPhones zooming into inputs).
 
 Colors (final): light / dark
-- background      #FAF8F2 / #171912   light clean cream, easy on the eyes / olive-black
-- tile (card)     #F2EEE3 / #22251B   one step deeper than background
+- background      #F6F2E7 / #171912   warm cream / olive-black
+- tile (card)     #EDE7D6 / #22251B   one step deeper than background
 - popover         #FDFCF8 / #22251B   menus, lighter than tiles
 - foreground      #23261B / #EEE9DA   olive-black ink / cream text
 - muted-fg (grey) #646653 / #A5A690   warm grey for labels
 - border          #E5E0D3 / #34382A   barely visible
-- primary         #3F6E35 / #93C07F   fresh leafy matcha: actions, key numbers, text
+- primary         #4F6B2E / #93C07F   olive matcha: actions, key numbers, text
 - primary-fg      #FDFCF8 / #171912   text on matcha buttons
 - matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
 - highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it

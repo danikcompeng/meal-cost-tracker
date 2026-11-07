@@ -56,41 +56,41 @@
 /* Light mode. Values and reasons: Design section in CLAUDE.md. */
 :root {
   color-scheme: light dark; /* native inputs and scrollbars match too */
-  --background: #FAF8F2;          /* light, clean cream (never white) */
+  --background: #F6F2E7;          /* warm cream (never white) */
   --foreground: #23261B;          /* olive-black ink */
-  --card: #F2EEE3;                /* tile: one step deeper */
+  --card: #EDE7D6;                /* tile: one step deeper */
   --card-foreground: #23261B;
   --popover: #FDFCF8;             /* menus float above tiles */
   --popover-foreground: #23261B;
-  --primary: #3F6E35;             /* fresh leafy matcha */
+  --primary: #4F6B2E;             /* olive matcha */
   --primary-foreground: #FDFCF8;
-  --secondary: #F2EEE3;
+  --secondary: #EDE7D6;
   --secondary-foreground: #23261B;
-  --muted: #F2EEE3;               /* chips, quiet backgrounds */
+  --muted: #EDE7D6;               /* chips, quiet backgrounds */
   --muted-foreground: #646653;    /* warm grey labels */
-  --accent: #F2EEE3;              /* hover backgrounds */
+  --accent: #EDE7D6;              /* hover backgrounds */
   --accent-foreground: #23261B;
   --destructive: #A8432F;         /* over budget: muted tomato */
   --border: #E5E0D3;
   --input: #E5E0D3;
-  --ring: #3F6E35;
+  --ring: #4F6B2E;
   --matcha-soft: #78855A;         /* non-text fills: budget bar, chart bars */
   --highlight: #F2C94C;           /* butter: active tab/pill only */
   --highlight-foreground: #23261B;
   --chart-1: #78855A;
   --chart-2: #F2C94C;
-  --chart-3: #3F6E35;
+  --chart-3: #4F6B2E;
   --chart-4: #646653;
   --chart-5: #A8432F;
   --radius: 0.625rem;
-  --sidebar: #F2EEE3;
+  --sidebar: #EDE7D6;
   --sidebar-foreground: #23261B;
-  --sidebar-primary: #3F6E35;
+  --sidebar-primary: #4F6B2E;
   --sidebar-primary-foreground: #FDFCF8;
   --sidebar-accent: #E5E0D3;
   --sidebar-accent-foreground: #23261B;
   --sidebar-border: #E5E0D3;
-  --sidebar-ring: #3F6E35;
+  --sidebar-ring: #4F6B2E;
 }
 
 /* Dark mode: used automatically when the device is set to dark. */
