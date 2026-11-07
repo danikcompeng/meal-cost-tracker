@@ -92,3 +92,15 @@ Pattern: say **what** I want, **how** I want it, and **what must not happen**.
   (`cd ~\Documents\meal-cost-tracker`, then `claude`). Started elsewhere, it can't find the agent by name.
 - **Lesson:** CLAUDE.md is always-on rules for the whole project; a subagent is a specialist with
   limited tools that I call for one job. Giving AI the *least* access it needs is a safety habit.
+  
+## 2026-11-07: Switched the palette from cream to white
+
+- **First direction:** warm cream background with olive text, from my Apple Health and matcha references.
+- **What went wrong:** on my screen the cream looked almost white. I measured it with dev tools:
+  the committed value was #FAF8F2, paler than the #F6F2E7 we'd agreed in chat. The spec file
+  (CLAUDE.md) had drifted from the conversation.
+- **Decision:** I wanted it crisper anyway, so I switched to black ink on white with matcha green
+  as the single accent. Kept Fraunces and Figtree so it still has personality.
+- **Lessons:** measure colors instead of eyeballing them, and treat CLAUDE.md as the source of
+  truth, not the chat. Separate Claude Code sessions don't share memory, only files and git history.
+- Before/after screenshots: design/ui/before/ and design/ui/after/.
