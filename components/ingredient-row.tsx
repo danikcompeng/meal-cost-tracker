@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { deleteIngredient } from "@/lib/ingredient-actions";
-import { formatMoney, unitPriceLabel } from "@/lib/cost";
+import { formatMoney, pricePerUnit, unitPriceLabel } from "@/lib/cost";
 import type { Ingredient } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -65,7 +65,16 @@ export function IngredientRow({
       ) : (
         <>
           <span className="text-sm whitespace-nowrap tabular-nums">
-            {unitPriceLabel(price, package_size, unit)}
+            {pricePerUnit(price, package_size) === null ? (
+              // A bare "—" may be read as nothing by screen readers,
+              // so give them words instead.
+              <>
+                <span aria-hidden="true">—</span>
+                <span className="sr-only">price unavailable</span>
+              </>
+            ) : (
+              unitPriceLabel(price, package_size, unit)
+            )}
           </span>
           <Button
             size="sm"
