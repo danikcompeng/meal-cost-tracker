@@ -2,6 +2,8 @@
 
 **Cheap meals that hit your macros, on repeat, with a swap when you're bored.**
 
+Live: [meal-cost-tracker.vercel.app](https://meal-cost-tracker.vercel.app)
+
 I'm living alone and cooking for myself, so I need a few cheap meals I can repeat that
 still hit my protein. Calorie trackers like MyFitnessPal don't know what food costs.
 Meal planners like Eat This Much generate recipes with ingredients I don't have and never
