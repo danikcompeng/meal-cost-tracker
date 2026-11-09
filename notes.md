@@ -104,3 +104,22 @@ Pattern: say **what** I want, **how** I want it, and **what must not happen**.
 - **Lessons:** measure colors instead of eyeballing them, and treat CLAUDE.md as the source of
   truth, not the chat. Separate Claude Code sessions don't share memory, only files and git history.
 - Before/after screenshots: design/ui/before/ and design/ui/after/.
+
+## 2026-11-09: Competitor research
+
+Tried the closest apps myself:
+- **Eat This Much:** generates recipes with random ingredients most people
+  don't have, and never reuses them. Has a daily price limit, but no real prices.
+- **MealMate:** high-protein plans and food scanning, but mostly paywalled
+  and no prices at all.
+- **equ:** swaps meals with similar macros, but ignores ingredients and cost.
+- **CostBite:** shows food cost with macros, but prices are estimates and
+  there's no swap.
+
+**The gap:** none of them let me repeat my own cheap staple meals, and when
+I'm bored, swap to a meal with the same protein using ingredients I already
+bought, priced at what I actually paid.
+
+**Pitch:** "Cheap meals that hit your macros, on repeat, with a swap when
+you're bored."
+

@@ -1,16 +1,51 @@
 # Meal Cost Tracker
 
 ## What this app is
-A budgeting-first recipe app for someone living alone. It answers:
-"What can I cook cheaply, on repeat, without getting bored?"
+"Cheap meals that hit your macros, on repeat, with a swap when you're bored."
+
+Not a generic calorie tracker. It's for someone living alone who repeats
+their own cheap staple meals. When they're bored, one tap swaps to a meal
+with the same protein, using ingredients they already bought, priced at
+what they actually paid. Every feature must serve that.
+(Competitor research and the gap we fill: notes.md, 2026-11-09.)
+
+Main screen: today's meals against daily targets (calories, protein,
+carbs, fat), plus what today costs.
 
 Core features:
-1. Ingredients with prices (name, price, package size, unit)
-2. Recipes with auto-calculated cost per serving
-3. Weekly meal plan with total cost and combined grocery list
-4. "I'm tired of this" swaps: suggest recipes that share the most
-   ingredients with the one being replaced
-5. Weekly budget bar
+1. Staple recipes: your own small set of meals you eat on repeat. Each
+   shows calories, macros, cost and protein per dollar per serving.
+   Inside a recipe the UI still calls its foods "ingredients".
+2. Day and week: plan meals onto days, mark them eaten with one tap.
+   Day totals go against targets. Week cost goes against the weekly
+   budget bar.
+3. "I'm tired of this" swap (the signature feature): one tap replaces a
+   planned or eaten meal with another of YOUR recipes that
+   - keeps protein per serving close (within about 15%),
+   - uses the most ingredients already in your kitchen,
+   - costs least at the prices you actually paid,
+   - and you haven't eaten recently.
+   All three of protein, kitchen and price count. Scoring is a pure
+   function in /lib so it can be unit tested.
+4. What's in my kitchen: each purchase records what you actually paid and
+   how much you got. It counts as "in the kitchen" until you mark it used
+   up with a manual tap (never subtracted automatically, so the list
+   can't drift from reality). Costs use your latest price paid. Prices
+   are never estimated: a food you haven't bought shows "no price yet",
+   never a guess and never $0.
+5. Adding foods fast:
+   - Barcode: scan with the phone camera, look it up in Open Food Facts,
+     then enter what you paid. Made for unpacking groceries.
+   - Fallback: photo of the nutrition label, read by Claude. You check
+     and correct the numbers before saving.
+   - Manual entry always works.
+6. Protein per dollar (our unique number): grams of protein per $1,
+   shown on recipes, swap suggestions and the day.
+
+Platform: web app only, installable on iPhone and Android as a PWA.
+Out of scope: Apple Health / Google Fit, calories burnt, exercise,
+generated or suggested recipes from outside your own, and searching a
+big public food database as the main way to log.
 
 ## Stack
 - Next.js (App Router) + TypeScript
@@ -21,14 +56,49 @@ Core features:
 - Deployed on Vercel
 
 ## Database tables
-- ingredients (id, name, price, package_size, unit)
-- recipes (id, name, servings, steps)
-- recipe_ingredients (recipe_id, ingredient_id, amount)
-- meal_plans (id, week_start)
-- meal_plan_items (plan_id, recipe_id)
-- settings (weekly_budget)
+Row Level Security on every table. Each row belongs to one user
+(user_id = auth.uid()); policies only allow reading, adding, changing
+and deleting your own rows. Tables without user_id check ownership
+through their parent row.
 
-Cost per serving = sum of (amount x price per unit) / servings.
+- foods (renamed from `ingredients`; existing rows kept)
+  id, user_id, name, brand, barcode,
+  source ('manual' | 'open_food_facts' | 'label_photo'),
+  unit ('g' | 'ml' | 'each'),
+  basis_amount (nutrition is per this much: 100 for g/ml, 1 for each),
+  kcal, protein_g, carbs_g, fat_g,
+  serving_size (optional), created_at
+  unique (user_id, barcode)
+
+- purchases (what you actually bought and paid)
+  id, user_id, food_id, purchased_on, price_paid, package_size,
+  used_up_at (empty = still in the kitchen), created_at
+  Existing ingredient prices become one purchase each.
+
+- recipes
+  id, user_id, name, servings, steps, created_at
+
+- recipe_ingredients
+  recipe_id, food_id, amount
+  RLS: you must own the recipe AND the food.
+
+- meal_entries (the plan and the log in one table)
+  id, user_id, day, meal ('breakfast'|'lunch'|'dinner'|'snack'),
+  recipe_id OR food_id (exactly one), amount (servings or food unit),
+  status ('planned' | 'eaten'),
+  kcal, protein_g, carbs_g, fat_g, cost  (copied when marked eaten),
+  created_at
+
+- user_settings (one row per user)
+  user_id, daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g,
+  weekly_budget, week_starts_on, timezone
+
+Formulas (pure functions in /lib):
+- Price per unit  = latest price_paid / package_size for that food
+- Cost of amount  = amount x price per unit
+- Nutrient amount = amount x (nutrient / basis_amount)
+- Per serving     = sum over recipe ingredients / servings
+- Protein per $   = protein_g / cost   (hidden if cost is 0 or unknown)
 
 ## Working rules
 - Build ONE feature at a time. Do not start the next feature until
