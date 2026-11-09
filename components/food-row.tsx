@@ -2,30 +2,30 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { deleteIngredient } from "@/lib/ingredient-actions";
+import { deleteFood } from "@/lib/food-actions";
 import { formatMoney, pricePerUnit, unitPriceLabel } from "@/lib/cost";
-import type { Ingredient } from "@/lib/types";
+import type { Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 const sizeFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 3 });
 
-export function IngredientRow({
-  ingredient,
+export function FoodRow({
+  food,
   isEditing,
   onEdit,
 }: {
-  ingredient: Ingredient;
+  food: Food;
   isEditing: boolean;
   onEdit: () => void;
 }) {
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string>();
   const [deleting, startDelete] = useTransition();
-  const { name, price, package_size, unit } = ingredient;
+  const { name, price, package_size, unit } = food;
 
   function handleDelete() {
     startDelete(async () => {
-      const result = await deleteIngredient(ingredient.id);
+      const result = await deleteFood(food.id);
       if (!result.ok) {
         setError(result.message);
         setConfirming(false);

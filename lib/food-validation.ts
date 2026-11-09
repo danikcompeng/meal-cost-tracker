@@ -1,9 +1,9 @@
-// Turns raw form text into a clean ingredient, or a list of problems.
+// Turns raw form text into a clean food, or a list of problems.
 // Pure function, so it can be unit tested without a database.
 
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
 
-export type IngredientInput = {
+export type FoodInput = {
   name: string;
   price: number;
   package_size: number;
@@ -11,10 +11,10 @@ export type IngredientInput = {
 };
 
 export type ValidationResult =
-  | { ok: true; value: IngredientInput }
+  | { ok: true; value: FoodInput }
   | { ok: false; fieldErrors: Record<string, string> };
 
-export function validateIngredient(raw: {
+export function validateFood(raw: {
   name: unknown;
   price: unknown;
   packageSize: unknown;

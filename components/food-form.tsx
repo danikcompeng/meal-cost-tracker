@@ -4,31 +4,31 @@ import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { saveIngredient } from "@/lib/ingredient-actions";
-import { validateIngredient } from "@/lib/ingredient-validation";
+import { saveFood } from "@/lib/food-actions";
+import { validateFood } from "@/lib/food-validation";
 import { unitPriceLabel } from "@/lib/cost";
 import { INPUT_UNITS, type InputUnit } from "@/lib/units";
-import type { FormState, Ingredient } from "@/lib/types";
+import type { FormState, Food } from "@/lib/types";
 
 type Fields = { name: string; price: string; packageSize: string; unit: InputUnit };
 
 const EMPTY: Fields = { name: "", price: "", packageSize: "", unit: "g" };
 
-function fieldsFrom(ingredient: Ingredient | null): Fields {
-  if (!ingredient) return EMPTY;
+function fieldsFrom(food: Food | null): Fields {
+  if (!food) return EMPTY;
   return {
-    name: ingredient.name,
-    price: String(ingredient.price),
-    packageSize: String(ingredient.package_size),
-    unit: ingredient.unit,
+    name: food.name,
+    price: String(food.price),
+    packageSize: String(food.package_size),
+    unit: food.unit,
   };
 }
 
-export function IngredientForm({
+export function FoodForm({
   editing,
   onDone,
 }: {
-  editing: Ingredient | null;
+  editing: Food | null;
   onDone: () => void;
 }) {
   // "Controlled" inputs: React holds the values, so we can show a live
@@ -37,7 +37,7 @@ export function IngredientForm({
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await saveIngredient(prev, formData);
+      const result = await saveFood(prev, formData);
       if (result.ok) {
         setFields(EMPTY);
         onDone();
@@ -50,7 +50,7 @@ export function IngredientForm({
   const set = (key: keyof Fields) => (e: { target: { value: string } }) =>
     setFields((f) => ({ ...f, [key]: e.target.value }));
 
-  const preview = validateIngredient(fields);
+  const preview = validateFood(fields);
   const errors = state.fieldErrors ?? {};
 
   return (
@@ -125,7 +125,7 @@ export function IngredientForm({
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending} className="h-11 flex-1">
-          {pending ? "Saving…" : editing ? "Save changes" : "Add ingredient"}
+          {pending ? "Saving…" : editing ? "Save changes" : "Add food"}
         </Button>
         {editing && (
           <Button type="button" variant="ghost" onClick={onDone} className="h-11">

@@ -2,29 +2,29 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
-import { IngredientManager } from "@/components/ingredient-manager";
-import { getIngredients } from "@/lib/ingredients";
+import { FoodManager } from "@/components/food-manager";
+import { getFoods } from "@/lib/foods";
 
-export const metadata: Metadata = { title: "Ingredients · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
 
-export default function IngredientsPage() {
+export default function FoodsPage() {
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-8">
-      <AppHeader title="Ingredients" />
-      {/* Loading your ingredients needs your login cookie, which is only
+      <AppHeader title="Foods" />
+      {/* Loading your foods needs your login cookie, which is only
           known per request, so that part streams in behind Suspense while
           the header shows instantly. */}
       <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
-        <Ingredients />
+        <Foods />
       </Suspense>
     </main>
   );
 }
 
-async function Ingredients() {
+async function Foods() {
   // Your list is live data. This tells Next.js not to build it ahead of
   // time (even with your login cookie available), only on a real visit.
   await connection();
-  const ingredients = await getIngredients();
-  return <IngredientManager ingredients={ingredients} />;
+  const foods = await getFoods();
+  return <FoodManager foods={foods} />;
 }

@@ -1,4 +1,4 @@
-// Units the database stores. Every ingredient is saved in one of these
+// Units the database stores. Every food is saved in one of these
 // "base" units so recipe math never has to convert between kg and g.
 export const BASE_UNITS = ["g", "ml", "each"] as const;
 export type BaseUnit = (typeof BASE_UNITS)[number];

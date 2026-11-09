@@ -1,6 +1,6 @@
 import type { BaseUnit } from "./units";
 
-export type Ingredient = {
+export type Food = {
   id: string;
   name: string;
   price: number;

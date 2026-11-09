@@ -24,6 +24,6 @@ export async function GET(request: NextRequest) {
     ok = !error;
   }
 
-  const to = ok ? "/ingredients" : "/login?error=link";
+  const to = ok ? "/foods" : "/login?error=link";
   return NextResponse.redirect(new URL(to, request.url));
 }

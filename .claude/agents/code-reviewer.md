@@ -27,7 +27,7 @@ After reviewing: update MEMORY.md with what's worth remembering next time,
 for example:
 - Mistakes the developer has made more than once (so you can flag them early
   and explain them in a new way if the old explanation didn't stick)
-- Project decisions and the reason for them (e.g. "ingredients list uses
+- Project decisions and the reason for them (e.g. "foods list uses
   connection(), not 'use cache', because prices must be fresh")
 - Where key code lives (cost math, Supabase client, auth flow, migrations)
 - Findings the developer chose not to fix, so you don't keep re-raising them

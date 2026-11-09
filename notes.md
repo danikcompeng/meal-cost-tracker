@@ -36,7 +36,7 @@
 1. I type my email. `sendMagicLink` asks Supabase to email me a one-time link
    pointing to `/auth/confirm`.
 2. Clicking it opens `app/auth/confirm/route.ts`, which swaps the link's token for a real
-   session (stored in a cookie), then sends me to `/ingredients`. If it fails: `/login?error=link`.
+   session (stored in a cookie), then sends me to `/foods` (was `/ingredients` before the 2026-11-09 rename). If it fails: `/login?error=link`.
 3. **PKCE (same browser):** Supabase's default link carries a `code`. When I asked for the link,
    my browser saved a secret "verifier" in a cookie. The `code` only works together with that
    verifier, so **I must open the link in the same browser I requested it from**

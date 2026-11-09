@@ -7,7 +7,7 @@ describe("pricePerUnit", () => {
     expect(pricePerUnit(3.5, 500)).toBeCloseTo(0.007, 10);
   });
 
-  it("keeps a free ingredient at 0 (free is real, not an error)", () => {
+  it("keeps a free food at 0 (free is real, not an error)", () => {
     expect(pricePerUnit(0, 500)).toBe(0);
   });
 
