@@ -123,3 +123,39 @@ bought, priced at what I actually paid.
 **Pitch:** "Cheap meals that hit your macros, on repeat, with a swap when
 you're bored."
 
+## 2026-11-09: My design rules (from Refactoring UI)
+
+How to use these: before approving any screen, check it against each rule.
+If one fails, tell Claude exactly which rule and what to change.
+
+### Rule 1: Not everything can be important
+- **In my words:** Each screen has one main number. Everything else is quieter.
+- **In my app:** On Today, calories is the big number. Protein is second (matcha-colored),
+  then carbs and fat, and cost is last in small grey.
+- **How I check it:** Squint at the screen. The first thing I notice should be
+  the main number.
+
+### Rule 2: Designing the empty state first
+- **In my words:** The app should look inviting for first time users, once foods, goals, and meals are added, a tighter UI won't be intimidating to those who are used to the app
+- **In my app:** More spacing between stats and input, arrows to input and get started, and helpful tips for first time users
+- **How I check it:** App should not look intimidating, not a bunch of numbers, inviting imagery and logos should span the screen
+
+### Rule 3: Fewer, less bold borders
+- **In my words:** Should look like the iPhone Health App UI, slight change in background shades indicate a border between metrics and data
+- **In my app:** Stats should have a very dark grey, but it must be distinguishable from the clean black backgroground
+- **How I check it:** Border should be slightly visible, and flows naturally throughout the app
+
+### Rule 4: Hierarchy uses weight and color, not just size
+- **In my words:** Different information is denoted by a difference in color, size, and positioning in relativity to each other
+- **In my app:** Stats of foods won't have different sizes, but the less important macros may have a lighter grey color, or a smaller font
+- **How I check it:** By looking at the size and color of information and ensuring that they show a clear, but clean distinction
+
+### Rule 5: Labels are a last resort
+- **In my words:** I don't want the app to look like it was made for a nutritionist. Protein:, Fiber:, looks intimidating and pretty ugly
+- **In my app:** The value does the work "20g protein", looks a lot nicer than: "Protein: 20g"
+- **How I check it:** Making sure that the app doesn't look like a nutritional values list, while providing useful information
+
+### Screen reviews
+| Date  | Screen             | Rule broken                                         | What I told Claude                                                               | Fixed? |
+| Nov 7 | Login, Ingredients | Color: the cream background looked like plain white | Measured it with dev tools: #FAF8F2, not the #F6F2E7 we'd agreed. Asked Claude to find where it came from and check every color against CLAUDE.md. | Yes, found CLAUDE.md had drifted from the chat |
+| Nov 7 | Login, Ingredients | Color: the whole palette felt faded                 | Switched to black ink on white with matcha as the one accent, keeping Fraunces for personality. Asked for contrast checks on every color. | Yes, before/after in design/ui/ |
