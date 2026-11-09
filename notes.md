@@ -157,5 +157,6 @@ If one fails, tell Claude exactly which rule and what to change.
 
 ### Screen reviews
 | Date  | Screen             | Rule broken                                         | What I told Claude                                                               | Fixed? |
+| ----- | ------------------ | --------------------------------------------------- | -------------------------------------------------------------------------------- | ------ |
 | Nov 7 | Login, Ingredients | Color: the cream background looked like plain white | Measured it with dev tools: #FAF8F2, not the #F6F2E7 we'd agreed. Asked Claude to find where it came from and check every color against CLAUDE.md. | Yes, found CLAUDE.md had drifted from the chat |
 | Nov 7 | Login, Ingredients | Color: the whole palette felt faded                 | Switched to black ink on white with matcha as the one accent, keeping Fraunces for personality. Asked for contrast checks on every color. | Yes, before/after in design/ui/ |
