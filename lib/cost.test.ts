@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMoney, pricePerUnit, unitPriceLabel } from "./cost";
+import { costOfAmount, formatMoney, pricePerUnit, unitPriceLabel } from "./cost";
 
 describe("pricePerUnit", () => {
   it("divides price by package size", () => {
@@ -75,5 +75,22 @@ describe("real example: rice, $4.50 for 2 lb, 150 g per serving", () => {
   it("costs $0.74 per 150 g serving", () => {
     // 150 x 0.00496 = $0.744 -> rounds to $0.74
     expect(formatMoney(perGram * 150)).toBe("$0.74");
+  });
+});
+
+describe("costOfAmount", () => {
+  it("multiplies the amount by the price per unit", () => {
+    // 150 g of a $3.50 / 500 g bag
+    expect(costOfAmount(3.5, 500, 150)).toBeCloseTo(1.05, 10);
+  });
+
+  it("keeps a free food at a real $0", () => {
+    expect(costOfAmount(0, 500, 150)).toBe(0);
+  });
+
+  it("returns null when the price can't be worked out, never $0", () => {
+    expect(costOfAmount(3.5, 0, 150)).toBeNull();
+    expect(costOfAmount(3.5, 500, Number.NaN)).toBeNull();
+    expect(costOfAmount(3.5, 500, -1)).toBeNull();
   });
 });

@@ -83,11 +83,18 @@ through their parent row.
   RLS: you must own the recipe AND the food.
 
 - meal_entries (the plan and the log in one table)
-  id, user_id, day, meal ('breakfast'|'lunch'|'dinner'|'snack'),
-  recipe_id OR food_id (exactly one), amount (servings or food unit),
+  id, user_id, day (date, in the user's timezone),
+  meal ('breakfast'|'lunch'|'dinner'|'snack'),
+  food_id (on delete set null), recipe_id (added with recipes),
+  at most one of recipe_id / food_id (the app requires exactly one when
+  logging; both are empty once the food or recipe is deleted),
+  name, unit  (copied when logged, so past days keep their labels),
+  amount (servings or food unit, > 0),
   status ('planned' | 'eaten'),
-  kcal, protein_g, carbs_g, fat_g, cost  (copied when marked eaten),
+  kcal, protein_g, carbs_g, fat_g, cost  (snapshot for this amount,
+  copied when logged/marked eaten; null = unknown, never 0),
   created_at
+  RLS: own rows, and food_id must be one of your foods.
 
 - user_settings (one row per user)
   user_id, daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g,

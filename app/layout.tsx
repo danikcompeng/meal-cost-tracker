@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Figtree, Fraunces } from "next/font/google";
+import { TimezoneSync } from "@/components/timezone-sync";
 import "./globals.css";
 
 // Body/UI font. Has tabular numbers, so prices in lists line up.
@@ -27,7 +28,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${figtree.variable} ${fraunces.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <TimezoneSync />
+        {children}
+      </body>
     </html>
   );
 }

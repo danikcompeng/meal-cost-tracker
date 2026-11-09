@@ -39,7 +39,7 @@ export async function proxy(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.some((p) => path === p || path.startsWith(`${p}/`));
 
   if (!loggedIn && !isPublic) return redirectKeepingCookies(request, response, "/login");
-  if (loggedIn && path === "/login") return redirectKeepingCookies(request, response, "/foods");
+  if (loggedIn && path === "/login") return redirectKeepingCookies(request, response, "/");
 
   return response;
 }

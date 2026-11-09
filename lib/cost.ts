@@ -17,6 +17,21 @@ export function pricePerUnit(price: number, packageSize: number): number | null 
 }
 
 /**
+ * Cost of amount = amount x price per unit, from CLAUDE.md.
+ * 150 g of a $3.50 / 500 g bag -> $1.05. Returns null when the price can't
+ * be worked out, so it shows as "no price" instead of a made-up $0.
+ */
+export function costOfAmount(
+  price: number,
+  packageSize: number,
+  amount: number,
+): number | null {
+  const perUnit = pricePerUnit(price, packageSize);
+  if (perUnit === null || !Number.isFinite(amount) || amount < 0) return null;
+  return amount * perUnit;
+}
+
+/**
  * A human-friendly price label. "$0.007 per g" is hard to read, so grams and
  * millilitres are shown per 100 instead: "$0.70 / 100 g".
  * Shows "—" when the price can't be calculated.

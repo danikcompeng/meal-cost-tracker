@@ -3,6 +3,10 @@
 
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
 import type { Macros } from "./macros";
+// parseDecimal tells "left blank" (null) apart from "typed something that
+// isn't a number" ("invalid"). For optional macros that difference matters:
+// blank is fine, "abc" is a mistake.
+import { AMBIGUOUS_COMMA, parseDecimal } from "./numbers";
 
 export type FoodInput = Macros & {
   name: string;
@@ -36,11 +40,15 @@ export function validateFood(
   if (!name) fieldErrors.name = "Give it a name.";
   else if (name.length > 100) fieldErrors.name = "Keep it under 100 characters.";
 
-  const price = toNumber(raw.price);
-  if (price === null || price < 0) fieldErrors.price = "Enter a price, like 3.49.";
+  const priceRaw = parseDecimal(raw.price);
+  const price = typeof priceRaw === "number" ? priceRaw : null;
+  if (priceRaw === "ambiguous") fieldErrors.price = AMBIGUOUS_COMMA;
+  else if (price === null || price < 0) fieldErrors.price = "Enter a price, like 3.49.";
 
-  const size = toNumber(raw.packageSize);
-  if (size === null || size <= 0) fieldErrors.packageSize = "Enter a size above 0.";
+  const sizeRaw = parseDecimal(raw.packageSize);
+  const size = typeof sizeRaw === "number" ? sizeRaw : null;
+  if (sizeRaw === "ambiguous") fieldErrors.packageSize = AMBIGUOUS_COMMA;
+  else if (size === null || size <= 0) fieldErrors.packageSize = "Enter a size above 0.";
 
   const unit = isInputUnit(raw.unit) ? raw.unit : null;
   if (!unit) fieldErrors.unit = "Pick a unit.";
@@ -88,7 +96,11 @@ export function validateMacros(
   const fieldErrors: Record<string, string> = {};
 
   const read = (key: keyof RawMacros, max: number): number | null => {
-    const parsed = toOptionalNumber(raw[key]);
+    const parsed = parseDecimal(raw[key]);
+    if (parsed === "ambiguous") {
+      fieldErrors[key] = AMBIGUOUS_COMMA;
+      return null;
+    }
     if (parsed === "invalid" || (parsed !== null && parsed < 0)) {
       fieldErrors[key] = "Enter a number, or leave it blank.";
       return null;
@@ -129,21 +141,4 @@ export function validateMacros(
   }
 
   return { value, fieldErrors };
-}
-
-// Number("") is 0 and Number("abc") is NaN, so handle both explicitly.
-// Also accepts "3,49" since some keyboards type a comma.
-function toNumber(value: unknown): number | null {
-  if (typeof value !== "string" || value.trim() === "") return null;
-  const n = Number(value.trim().replace(",", "."));
-  return Number.isFinite(n) ? n : null;
-}
-
-// Like toNumber, but tells "left blank" (null) apart from "typed something
-// that isn't a number" ("invalid"). For optional fields that difference
-// matters: blank is fine, "abc" is a mistake.
-function toOptionalNumber(value: unknown): number | null | "invalid" {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "string" && value.trim() === "") return null;
-  return toNumber(value) ?? "invalid";
 }

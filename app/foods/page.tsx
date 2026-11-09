@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
+import { TabBar } from "@/components/tab-bar";
 import { FoodManager } from "@/components/food-manager";
 import { getFoods } from "@/lib/foods";
 
@@ -9,15 +10,19 @@ export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
 
 export default function FoodsPage() {
   return (
-    <main className="mx-auto w-full max-w-lg px-4 py-8">
-      <AppHeader title="Foods" />
-      {/* Loading your foods needs your login cookie, which is only
-          known per request, so that part streams in behind Suspense while
-          the header shows instantly. */}
-      <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
-        <Foods />
-      </Suspense>
-    </main>
+    <>
+      {/* Bottom padding leaves room for the tab bar fixed at the bottom. */}
+      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-28">
+        <AppHeader title="Foods" />
+        {/* Loading your foods needs your login cookie, which is only
+            known per request, so that part streams in behind Suspense while
+            the header shows instantly. */}
+        <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+          <Foods />
+        </Suspense>
+      </main>
+      <TabBar active="foods" />
+    </>
   );
 }
 

@@ -29,6 +29,15 @@ export function inputUnitsFor(base: BaseUnit): InputUnit[] {
   return INPUT_UNITS.filter((u) => CONVERSIONS[u].unit === base);
 }
 
+const amountFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
+
+/** "150 g", "250 ml", "1 item", "2 items". */
+export function amountText(amount: number, unit: BaseUnit): string {
+  const n = amountFormat.format(amount);
+  if (unit !== "each") return `${n} ${unit}`;
+  return `${n} ${amount === 1 ? "item" : "items"}`;
+}
+
 export function isInputUnit(value: unknown): value is InputUnit {
   return typeof value === "string" && (INPUT_UNITS as readonly string[]).includes(value);
 }

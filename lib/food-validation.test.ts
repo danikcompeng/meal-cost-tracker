@@ -35,6 +35,14 @@ describe("validateFood", () => {
     expect(result.ok && result.value.price).toBe(3.49);
   });
 
+  it("asks for no comma when 1,000 could mean 1000 or 1", () => {
+    const result = validateFood({ ...valid, packageSize: "1,000", price: "1,234" });
+    expect(!result.ok && result.fieldErrors.packageSize).toMatch(/without a comma/);
+    expect(!result.ok && result.fieldErrors.price).toMatch(/without a comma/);
+    const macro = validateMacros({ kcal: "1,200" }, "each");
+    expect(macro.fieldErrors.kcal).toMatch(/without a comma/);
+  });
+
   it("rounds the price to cents", () => {
     const result = validateFood({ ...valid, price: "3.456" });
     expect(result.ok && result.value.price).toBe(3.46);

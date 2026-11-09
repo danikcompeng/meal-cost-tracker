@@ -16,14 +16,26 @@ export async function GET(request: NextRequest) {
   if (tokenHash && type) {
     // Works even if you open the email on a different browser or device.
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
+    if (error) logAuthError("verifyOtp", error);
     ok = !error;
   } else if (code) {
     // Fallback: Supabase's default email link. Only works in the same browser
     // where you asked for the link.
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) logAuthError("exchangeCodeForSession", error);
     ok = !error;
   }
 
-  const to = ok ? "/foods" : "/login?error=link";
+  const to = ok ? "/" : "/login?error=link";
   return NextResponse.redirect(new URL(to, request.url));
+}
+
+// You only see "that link didn't work", so log the real reason on the
+// server (e.g. "Email link is invalid or has expired").
+function logAuthError(step: string, error: { message: string; status?: number; code?: string }) {
+  console.error(`auth/confirm ${step} failed:`, {
+    message: error.message,
+    status: error.status,
+    code: error.code,
+  });
 }
