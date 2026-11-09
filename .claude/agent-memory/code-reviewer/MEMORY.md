@@ -18,6 +18,12 @@
 - Login redirect targets: proxy.ts (logged-in /login -> /foods), app/auth/confirm/route.ts,
   app/page.tsx. next.config.ts has temporary (non-permanent) redirect /ingredients -> /foods.
 - Migrations are run by hand in the Supabase SQL editor (no CLI), one file per change.
+- Macros (003_food_macros.sql): nullable kcal numeric(7,1) 0..10000, protein/carbs/fat numeric(6,1)
+  0..1000, basis_amount GENERATED from unit. lib/macros.ts (macroText, calorieHint, basisChangeNote),
+  validateMacros in lib/food-validation.ts, numberOrNull in lib/foods.ts, toField in food-form.
+- components/segmented-control.tsx: radio-based, butter highlight on selected (approved use).
+- Form posts unit via hidden input; the package-unit select has no name (on purpose).
+- FoodForm is remounted per food via key={editing?.id ?? "new"} in components/food-manager.tsx.
 
 ## Project decisions
 - Unit prices for g/ml shown "per 100" ($0.70 / 100 g); "each" shown per item.
@@ -27,6 +33,10 @@
   Migration 001 deliberately left untouched (history); 002 does the rename.
 - "Can't calculate" convention: pricePerUnit returns null (never 0, since 0 = free);
   unitPriceLabel and formatMoney show "—". Keep this for recipe cost-per-serving too.
+
+- Macros optional; missing = null = "—". Per-100 g rules (kcal<=900, macro<=100, sum<=100) only
+  for unit g, not ml/each. Calorie hint (4/4/9, >20% AND >10 kcal) never blocks saving.
+  Macros are the main row info; price is secondary (13px grey).
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07). Developer skipped it.
@@ -50,6 +60,12 @@
   pre-existing: food-actions.ts drops Supabase error without console.error.
   Fixed same day: notes.md route, all 4 test gaps, and food-actions.ts now logs message/code/
   details/hint via logDbError while still showing the friendly message. 3d deferred (above).
+- 2026-11-09 add macros to foods (uncommitted): Minor issues. No null->0 leaks, app limits match DB
+  CHECKs. Raised: editing one macro after a unit switch clears the unit note for all four;
+  run 003 before deploying (getFoods selects new columns); row shows "per 100 g" next to the
+  price (reads as price basis); segmented track bg-muted == bg-card (#F0F0F0, invisible);
+  segments 36px tall; calorieHint 20% uses max(kcal, estimate), test comment says 25%;
+  reminded about deferred 3d.
 
 ## Patterns to watch
 - Postgres numeric arrives as string: check Number() at every new Supabase read.

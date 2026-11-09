@@ -25,6 +25,10 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
     price: formData.get("price"),
     packageSize: formData.get("packageSize"),
     unit: formData.get("unit"),
+    kcal: formData.get("kcal"),
+    protein: formData.get("protein"),
+    carbs: formData.get("carbs"),
+    fat: formData.get("fat"),
   });
   if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 

@@ -1,6 +1,8 @@
+import type { Macros } from "./macros";
 import type { BaseUnit } from "./units";
 
-export type Food = {
+/** Calories and macros are per 100 g, per 100 ml, or per 1 item ("each"). */
+export type Food = Macros & {
   id: string;
   name: string;
   price: number;

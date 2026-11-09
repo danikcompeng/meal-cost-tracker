@@ -24,6 +24,11 @@ export function toBaseUnit(
   return { amount: amount * factor, unit: base };
 }
 
+/** Units you can type a package size in, for foods measured in `base`. */
+export function inputUnitsFor(base: BaseUnit): InputUnit[] {
+  return INPUT_UNITS.filter((u) => CONVERSIONS[u].unit === base);
+}
+
 export function isInputUnit(value: unknown): value is InputUnit {
   return typeof value === "string" && (INPUT_UNITS as readonly string[]).includes(value);
 }
