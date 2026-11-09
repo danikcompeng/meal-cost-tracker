@@ -141,7 +141,69 @@ describe("validateMacros", () => {
   });
 
   it("keeps a typed 0 as a real 0", () => {
-    expect(ok({ kcal: "0", fat: "0" })).toMatchObject({ kcal: 0, fat_g: 0, protein_g: null });
+    // kcal 5, not 0, so the 0 kcal rule below doesn't fill the blanks.
+    expect(ok({ kcal: "5", fat: "0" })).toMatchObject({ kcal: 5, fat_g: 0, protein_g: null });
+  });
+
+  describe("0 kcal means no protein, carbs or fat", () => {
+    const zeros = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+
+    it("saves blank macros as 0 when kcal is 0 (water)", () => {
+      const result = validateMacros({ kcal: "0" }, "ml");
+      expect(result.value).toEqual(zeros);
+      expect(result.filledBlanks).toBe(true);
+    });
+
+    it("also fills the rest when the macros you typed are 0", () => {
+      expect(ok({ kcal: "0", protein: "0" })).toEqual(zeros);
+    });
+
+    it("counts kcal that rounds to 0 as 0, but not kcal that rounds to 0.1", () => {
+      expect(ok({ kcal: "0.04" })).toEqual(zeros);
+      expect(ok({ kcal: "0.05" })).toEqual({ kcal: 0.1, protein_g: null, carbs_g: null, fat_g: null });
+    });
+
+    it("fills only the boxes that are blank", () => {
+      const result = validateMacros({ kcal: "0", protein: "0", carbs: "0" }, "g");
+      expect(result.value).toEqual(zeros);
+      expect(result.filledBlanks).toBe(true);
+    });
+
+    it("doesn't guess when a typed macro contradicts 0 kcal", () => {
+      const result = validateMacros({ kcal: "0", protein: "5" }, "g");
+      expect(result.value).toEqual({ kcal: 0, protein_g: 5, carbs_g: null, fat_g: null });
+      expect(result.filledBlanks).toBe(false);
+    });
+
+    it("keeps blanks null when kcal is above 0 or blank", () => {
+      expect(ok({ kcal: "5" })).toMatchObject({ protein_g: null, carbs_g: null, fat_g: null });
+      expect(ok({})).toEqual({ kcal: null, protein_g: null, carbs_g: null, fat_g: null });
+    });
+
+    it("has nothing to fill when all four are typed", () => {
+      const result = validateMacros({ kcal: "0", protein: "0", carbs: "0", fat: "0" }, "g");
+      expect(result.value).toEqual(zeros);
+      expect(result.filledBlanks).toBe(false);
+    });
+
+    it("doesn't fill while another box has a mistake in it", () => {
+      for (const raw of [{ kcal: "0", protein: "abc" }, { kcal: "0", fat: "2000" }]) {
+        const result = validateMacros(raw, "each");
+        expect(Object.keys(result.fieldErrors)).toHaveLength(1);
+        expect(result.filledBlanks).toBe(false);
+      }
+    });
+
+    it("saves the filled zeros through validateFood too", () => {
+      const result = validateFood({
+        name: "Water",
+        price: "0",
+        packageSize: "1",
+        unit: "l",
+        kcal: "0",
+      });
+      expect(result.ok && result.value).toMatchObject(zeros);
+    });
   });
 
   it("allows some macros filled and others missing", () => {

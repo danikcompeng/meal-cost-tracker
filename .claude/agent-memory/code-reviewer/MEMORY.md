@@ -36,6 +36,9 @@
 - Log entries snapshot name/unit/macros/cost at log time; editing amount scales the entry's own
   snapshot (never re-reads the food). Totals = known sum + "+ N foods without ...".
 - Next 16 error.tsx prop is `retry` (verified in node_modules d.ts), not `reset`. Don't flag.
+- 0 kcal rule (005_zero_kcal_macros.sql, fillZeroKcalMacros): kcal 0 + some blank + typed all 0
+  -> blanks saved 0. Contradiction (0 kcal, 5 g protein) left null. Entries fixed by own snapshot;
+  equivalent to food rule since snapshots never round and amount > 0. Approved, don't re-litigate.
 - Users can edit their own snapshot numbers via the raw Supabase API (column-level grants are
   open). Only their own data, accepted; don't raise as security.
 
@@ -60,7 +63,12 @@
   parseAmount "1,000" -> 1; getRecentFoodIds swallows error unlogged; sheet focus not returned
   on unmount (unsure); confirm route doesn't log auth errors.
 
+- 2026-11-09 0 kcal fills blank macros (uncommitted): Looks good / minor. SQL matches TS. Raised:
+  comment claims calorieHint flags 0 kcal + 5 g protein but hint needs all 4 filled (silent);
+  note says "0 kcal" when user typed 0.04; missing 0.05-doesn't-fill test.
+
 ## Patterns to watch
+- Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
 - Postgres numeric arrives as string: Number()/numberOrNull at every new Supabase read.
 - Cost-per-serving: servings = 0 guard; null price propagates (no `?? 0`).
 - Swallowed errors: every new action/read must logDbError before returning a friendly message.

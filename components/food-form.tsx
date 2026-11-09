@@ -126,7 +126,10 @@ export function FoodForm({
     ({ key }) => macroUnits[key] ?? measuredBy,
   );
   const unitNote = basisChangeNote(filledUnits, measuredBy);
-  const hint = calorieHint(validateMacros(fields, measuredBy).value);
+  const macros = validateMacros(fields, measuredBy);
+  const hint = macros.filledBlanks
+    ? "Blank macros will be saved as 0 g, since 0 kcal means none."
+    : calorieHint(macros.value);
   const preview = validateFood(fields);
   const errors = state.fieldErrors ?? {};
 

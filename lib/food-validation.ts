@@ -2,7 +2,7 @@
 // Pure function, so it can be unit tested without a database.
 
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
-import type { Macros } from "./macros";
+import { fillZeroKcalMacros, zeroKcalFillsBlanks, type Macros } from "./macros";
 // parseDecimal tells "left blank" (null) apart from "typed something that
 // isn't a number" ("invalid"). For optional macros that difference matters:
 // blank is fine, "abc" is a mistake.
@@ -82,7 +82,9 @@ const MAX_GRAMS = 1000;
 
 /**
  * Checks calories and macros. Every one is optional: blank means null
- * ("not entered"), and "0" means a real 0.
+ * ("not entered"), and "0" means a real 0. The one exception: with 0 kcal,
+ * blank protein / carbs / fat become 0 (see fillZeroKcalMacros), and
+ * `filledBlanks` says so, so the form can tell you before you save.
  *
  * Foods measured in grams get stricter rules, because 100 g of food can't
  * hold more than 100 g of protein, carbs and fat together, and even pure fat
@@ -92,7 +94,7 @@ const MAX_GRAMS = 1000;
 export function validateMacros(
   raw: RawMacros,
   unit: BaseUnit | null,
-): { value: Macros; fieldErrors: Record<string, string> } {
+): { value: Macros; fieldErrors: Record<string, string>; filledBlanks: boolean } {
   const fieldErrors: Record<string, string> = {};
 
   const read = (key: keyof RawMacros, max: number): number | null => {
@@ -111,12 +113,16 @@ export function validateMacros(
     return rounded;
   };
 
-  const value: Macros = {
+  const typed: Macros = {
     kcal: read("kcal", MAX_KCAL),
     protein_g: read("protein", MAX_GRAMS),
     carbs_g: read("carbs", MAX_GRAMS),
     fat_g: read("fat", MAX_GRAMS),
   };
+  // 0 kcal means no protein, carbs or fat, so blanks become 0 then.
+  // (Not when a box has a mistake in it: that box reads as blank here.)
+  const filledBlanks = Object.keys(fieldErrors).length === 0 && zeroKcalFillsBlanks(typed);
+  const value = filledBlanks ? fillZeroKcalMacros(typed) : typed;
 
   if (unit === "g") {
     if (value.kcal !== null && value.kcal > 900 && !fieldErrors.kcal) {
@@ -140,5 +146,5 @@ export function validateMacros(
     }
   }
 
-  return { value, fieldErrors };
+  return { value, fieldErrors, filledBlanks };
 }

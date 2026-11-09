@@ -4,8 +4,10 @@ import {
   basisChangeNote,
   basisLabel,
   calorieHint,
+  fillZeroKcalMacros,
   hasAnyMacro,
   macroText,
+  zeroKcalFillsBlanks,
 } from "./macros";
 
 const none = { kcal: null, protein_g: null, carbs_g: null, fat_g: null };
@@ -78,6 +80,14 @@ describe("calorieHint", () => {
     expect(calorieHint({ kcal: 101, ...protein })).toMatch(/high/);
   });
 
+  it("flags 0 kcal with a macro above 0, even with blanks left", () => {
+    // These blanks are NOT filled with 0, so the hint explains the clash.
+    expect(calorieHint({ kcal: 0, protein_g: 5, carbs_g: null, fat_g: null })).toMatch(
+      /0 kcal doesn't fit/,
+    );
+    expect(calorieHint({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })).toBeNull();
+  });
+
   it("says nothing until all four numbers are filled in", () => {
     expect(calorieHint({ kcal: 3790, protein_g: 13, carbs_g: 60, fat_g: null })).toBeNull();
     expect(calorieHint(none)).toBeNull();
@@ -111,5 +121,29 @@ describe("basisChangeNote", () => {
 
   it("goes away if you switch back to the original unit", () => {
     expect(basisChangeNote(["g", "g"], "g")).toBeNull();
+  });
+});
+
+describe("fillZeroKcalMacros", () => {
+  it("fills blank macros with 0 when kcal is 0", () => {
+    expect(fillZeroKcalMacros({ ...none, kcal: 0 })).toEqual({
+      kcal: 0,
+      protein_g: 0,
+      carbs_g: 0,
+      fat_g: 0,
+    });
+  });
+
+  it("leaves everything else exactly as it was", () => {
+    const contradicting = { kcal: 0, protein_g: 5, carbs_g: null, fat_g: null };
+    expect(fillZeroKcalMacros(contradicting)).toBe(contradicting);
+    expect(fillZeroKcalMacros(none)).toBe(none);
+    const someKcal = { ...none, kcal: 12 };
+    expect(fillZeroKcalMacros(someKcal)).toBe(someKcal);
+  });
+
+  it("zeroKcalFillsBlanks is false when there's nothing blank to fill", () => {
+    expect(zeroKcalFillsBlanks({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })).toBe(false);
+    expect(zeroKcalFillsBlanks({ ...none, kcal: 0 })).toBe(true);
   });
 });

@@ -40,6 +40,33 @@ export function hasAnyMacro(m: Macros): boolean {
 }
 
 /**
+ * True when 0 kcal should fill in blank macros: calories are exactly 0, at
+ * least one of protein / carbs / fat is blank, and every one you did type
+ * is 0. If one is above 0 (0 kcal but 5 g protein), the numbers contradict
+ * each other, so nothing is guessed: calorieHint flags it instead.
+ */
+export function zeroKcalFillsBlanks(m: Macros): boolean {
+  const grams = [m.protein_g, m.carbs_g, m.fat_g];
+  return m.kcal === 0 && grams.some((g) => g === null) && grams.every((g) => g === null || g === 0);
+}
+
+/**
+ * Calories come from protein, carbs and fat (4, 4 and 9 kcal per gram), so
+ * 0 kcal means all three are 0. Water saved as "0 kcal, macros blank"
+ * would otherwise count as unknown and add "+ 1 unknown" to every total.
+ * Blank stays blank (null) in every other case.
+ */
+export function fillZeroKcalMacros(m: Macros): Macros {
+  if (!zeroKcalFillsBlanks(m)) return m;
+  return {
+    kcal: 0,
+    protein_g: m.protein_g ?? 0,
+    carbs_g: m.carbs_g ?? 0,
+    fat_g: m.fat_g ?? 0,
+  };
+}
+
+/**
  * Compares the calories you typed with what protein, carbs and fat imply
  * (4, 4 and 9 kcal per gram). Labels are often a little off because of
  * fiber or rounding, so only a gap above 20% (and more than 10 kcal, so tiny
@@ -49,6 +76,11 @@ export function hasAnyMacro(m: Macros): boolean {
  */
 export function calorieHint(m: Macros): string | null {
   const { kcal, protein_g, carbs_g, fat_g } = m;
+  // 0 kcal with some protein, carbs or fat can't be right, even if a box is
+  // still blank: those blanks won't be filled with 0, so say why.
+  if (kcal === 0 && [protein_g, carbs_g, fat_g].some((g) => g !== null && g > 0)) {
+    return "0 kcal doesn't fit protein, carbs or fat above 0. Check the label.";
+  }
   if (kcal === null || protein_g === null || carbs_g === null || fat_g === null) return null;
 
   const estimate = 4 * protein_g + 4 * carbs_g + 9 * fat_g;
