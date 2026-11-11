@@ -90,6 +90,29 @@ Pattern: say **what** I want, **how** I want it, and **what must not happen**.
   It also created its memory file and noted what to check when cost per serving is added.
 - **Gotcha:** project agents only load if Claude Code starts **inside the project folder**
   (`cd ~\Documents\meal-cost-tracker`, then `claude`). Started elsewhere, it can't find the agent by name.
+- **How the loop works:** the reviewer only *finds* problems (it's read-only). The main Claude
+  session fixes them, re-runs the tests, and I decide what gets fixed before anything is committed.
+- **Review log** (every feature since gets reviewed before its commit):
+  - **Nov 7, cost function:** a package size of 0 showed a food as free; no NaN guard; no tests. Fixed in `599293a`.
+  - **Nov 9, macros on foods:** the "check your numbers" warning vanished after fixing just one
+    of four macros when the unit changed. Fixed by tracking the unit per macro (`9e1360b`).
+  - **Nov 9, daily food log:** six bugs (`8ca92ae`): rounding errors that grew with each edit
+    (1 g of rice edited to 500 g cost $2.50, not $2.48), "1,000" read as 1, an app left open
+    overnight logging to yesterday, a dropped connection replacing the whole screen, keyboard
+    focus not returning after closing the sheet, and a broken empty-search message.
+  - **Nov 9, 0 kcal fix:** the "0 kcal doesn't fit" hint stayed silent when a box was blank (`3643f0f`).
+  - **Nov 11, daily targets:** no bugs. It caught the low-calorie note flashing up while typing
+    "2000" (the box passes through 2, 20 and 200), so the note now waits until you leave the box.
+    Also a missing test at exactly 20% and a component name that clashed with a type.
+  - **Nov 11, debugging the add sheet:** on localhost, "+ Add to breakfast" seemed dead. The sheet
+    really opened, then shut itself within about 30 ms: in development React runs every effect
+    twice (open, practice close, open again), and the late "closed" message from the practice
+    close shut the re-opened sheet. Dev only, production was fine. Fixed by ignoring a close
+    message when the sheet is open again. The "unstable value `new Date()`" warning was a
+    separate problem, not the cause: partialPrefetching pre-builds a per-login page, so reading
+    the clock after the cookie wasn't enough. Fixed with `await io()` before reading the clock.
+    Lesson: I guessed the warning was breaking the buttons; watching what happened on a tap
+    proved it wasn't.
 - **Lesson:** CLAUDE.md is always-on rules for the whole project; a subagent is a specialist with
   limited tools that I call for one job. Giving AI the *least* access it needs is a safety habit.
   
