@@ -83,12 +83,26 @@ export function calorieHint(m: Macros): string | null {
   }
   if (kcal === null || protein_g === null || carbs_g === null || fat_g === null) return null;
 
-  const estimate = 4 * protein_g + 4 * carbs_g + 9 * fat_g;
-  const gap = kcal - estimate;
-  if (Math.abs(gap) <= 10 || Math.abs(gap) <= 0.2 * Math.max(kcal, estimate)) return null;
+  const estimate = kcalFromMacros(protein_g, carbs_g, fat_g);
+  if (!kcalGapTooBig(kcal, estimate)) return null;
 
-  const direction = gap > 0 ? "high" : "low";
+  const direction = kcal > estimate ? "high" : "low";
   return `Calories look ${direction} for these macros (about ${Math.round(estimate)} kcal expected). Check the label.`;
+}
+
+/** Calories implied by protein, carbs and fat: 4, 4 and 9 kcal per gram. */
+export function kcalFromMacros(protein_g: number, carbs_g: number, fat_g: number): number {
+  return 4 * protein_g + 4 * carbs_g + 9 * fat_g;
+}
+
+/**
+ * True when calories and the 4/4/9 estimate are too far apart to be label
+ * rounding: more than 10 kcal AND more than 20% of the larger number. Used
+ * by both the food form and the daily targets form, so they agree.
+ */
+export function kcalGapTooBig(kcal: number, estimate: number): boolean {
+  const gap = Math.abs(kcal - estimate);
+  return gap > 10 && gap > 0.2 * Math.max(kcal, estimate);
 }
 
 /**

@@ -10,6 +10,7 @@ import { dayTitle, isLoggableDay } from "@/lib/dates";
 import { getEntriesForDay, getRecentFoodIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
 import { orderByRecent } from "@/lib/recent";
+import { getTargets } from "@/lib/settings";
 import { userToday } from "@/lib/server-helpers";
 
 export const metadata: Metadata = { title: "Today · Meal Cost Tracker" };
@@ -41,10 +42,11 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
-  const [entries, foods, recentIds] = await Promise.all([
+  const [entries, foods, recentIds, targets] = await Promise.all([
     getEntriesForDay(day),
     getFoods(),
     getRecentFoodIds(),
+    getTargets(),
   ]);
 
   return (
@@ -61,6 +63,7 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
         isToday={day === today}
         entries={entries}
         foods={orderByRecent(foods, recentIds)}
+        targets={targets}
       />
     </>
   );

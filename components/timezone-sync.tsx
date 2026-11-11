@@ -8,7 +8,8 @@
 // out of date (first visit, or you travelled), the page reloads its data
 // once with the right day.
 //
-// Later this moves to user_settings.timezone with daily targets.
+// It stays in this cookie for now. It moves to user_settings.timezone
+// later, with the week features that need it (daily targets didn't).
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";

@@ -8,7 +8,8 @@ const TABS = [
 
 // Fixed to the bottom of the screen, where your thumb is. The active tab
 // gets the butter-yellow pill (the only place butter is used).
-export function TabBar({ active }: { active: (typeof TABS)[number]["id"] }) {
+// `active` is left out on screens that aren't tabs, like Settings.
+export function TabBar({ active }: { active?: (typeof TABS)[number]["id"] }) {
   return (
     <nav
       aria-label="Main"

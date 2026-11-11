@@ -9,6 +9,7 @@ import { MotionConfig } from "framer-motion";
 import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
+import type { Targets } from "@/lib/targets";
 import type { Food, MealEntry } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
@@ -28,11 +29,13 @@ export function TodayView({
   isToday,
   entries,
   foods,
+  targets,
 }: {
   day: string;
   isToday: boolean;
   entries: MealEntry[];
   foods: Food[];
+  targets: Targets;
 }) {
   const [sheet, setSheet] = useState<Sheet>(null);
   const close = () => setSheet(null);
@@ -57,7 +60,7 @@ export function TodayView({
     // reducedMotion="user": if your phone asks for less motion, Framer
     // Motion skips the slides and keeps only gentle fades.
     <MotionConfig reducedMotion="user">
-      <DaySummary totals={dayTotals(entries)} isToday={isToday} />
+      <DaySummary totals={dayTotals(entries)} isToday={isToday} targets={targets} />
 
       {entries.length === 0 && (
         <p className="mt-6 text-center text-muted-foreground">

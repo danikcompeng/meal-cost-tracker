@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "./form-field";
 import { SegmentedControl } from "./segmented-control";
 import { saveFood } from "@/lib/food-actions";
 import { validateFood, validateMacros } from "@/lib/food-validation";
@@ -290,29 +290,5 @@ export function FoodForm({
         )}
       </div>
     </form>
-  );
-}
-
-function Field({
-  label,
-  htmlFor,
-  error,
-  labelClassName,
-  children,
-}: {
-  label: string;
-  htmlFor: string;
-  error?: string;
-  labelClassName?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={htmlFor} className={labelClassName}>
-        {label}
-      </Label>
-      {children}
-      {error && <p className="text-sm text-destructive">{error}</p>}
-    </div>
   );
 }

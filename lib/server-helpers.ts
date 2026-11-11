@@ -18,6 +18,18 @@ export async function requireUser() {
   return supabase;
 }
 
+/**
+ * Like requireUser, plus your user id. Needed when a row is looked up by
+ * user_id itself, like your one user_settings row. The id comes from your
+ * verified login token ("sub" = subject = who this token is for).
+ */
+export async function requireUserId() {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  if (!data?.claims?.sub) throw new Error("Not logged in");
+  return { supabase, userId: data.claims.sub };
+}
+
 /** Today in your timezone. The browser sends it in the "tz" cookie. */
 export async function userToday(): Promise<string> {
   const tz = (await cookies()).get("tz")?.value;
