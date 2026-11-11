@@ -14,7 +14,7 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
 
   return (
     <main className="mx-auto w-full max-w-lg px-4 py-16 text-center">
-      <h1 className="text-[30px] leading-tight font-semibold">Couldn’t load this</h1>
+      <h1 className="text-[30px] leading-tight font-bold">Couldn’t load this</h1>
       <p className="mt-3 text-muted-foreground">
         Check your connection, then try again. Nothing you logged is lost.
       </p>

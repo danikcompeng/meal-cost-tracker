@@ -49,7 +49,7 @@ export function DaySummary({
         <KcalLeft total={totals.kcal} p={kcal} />
       ) : (
         <p className="mt-1 text-primary">
-          <span className="font-heading text-5xl font-semibold">{totalNumber(totals.kcal)}</span>
+          <span className="text-5xl font-bold tabular-nums">{totalNumber(totals.kcal)}</span>
           <span className="ml-1.5 text-base font-medium">kcal</span>
         </p>
       )}
@@ -92,7 +92,7 @@ function KcalLeft({ total, p }: { total: Total; p: Progress }) {
     <>
       <p className={p.over ? "mt-1 text-foreground" : "mt-1 text-primary"}>
         {prefix && <span className="mr-1.5 text-base font-medium">{prefix}</span>}
-        <span className="font-heading text-5xl font-semibold">{number}</span>
+        <span className="text-5xl font-bold tabular-nums">{number}</span>
         <span className="ml-1.5 text-base font-medium">{suffix}</span>
       </p>
       <Bar fraction={p.fraction} className="mt-3" />

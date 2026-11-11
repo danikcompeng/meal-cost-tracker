@@ -18,7 +18,7 @@ export function AppHeader({
   return (
     <header className="mb-8">
       <div className="flex items-baseline justify-between">
-        <h1 className="text-[30px] leading-tight font-semibold">{title}</h1>
+        <h1 className="text-[30px] leading-tight font-bold tabular-nums">{title}</h1>
         <div className="-mr-2 flex items-center">
           {showSettingsLink && (
             <Link href="/settings" className={quiet}>

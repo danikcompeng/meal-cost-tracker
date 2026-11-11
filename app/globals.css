@@ -9,8 +9,6 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-figtree);
-  --font-heading: var(--font-fraunces);
-  --font-heading--font-variation-settings: "SOFT" 100;
   /* Our own colors (not in shadcn): see Design section in CLAUDE.md. */
   --color-matcha-soft: var(--matcha-soft);
   --color-highlight: var(--highlight);
@@ -142,9 +140,5 @@
   }
   html {
     @apply font-sans;
-  }
-  /* Page titles use the display serif. */
-  h1 {
-    @apply font-heading;
   }
 }

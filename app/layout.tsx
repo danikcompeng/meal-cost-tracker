@@ -1,20 +1,13 @@
 import type { Metadata } from "next";
-import { Figtree, Fraunces } from "next/font/google";
+import { Figtree } from "next/font/google";
 import { TimezoneSync } from "@/components/timezone-sync";
 import "./globals.css";
 
-// Body/UI font. Has tabular numbers, so prices in lists line up.
+// The one font for the whole app: bold for page titles and the big number,
+// regular for everything else. Has tabular numbers, so prices line up.
 const figtree = Figtree({
   variable: "--font-figtree",
   subsets: ["latin"],
-});
-
-// Display font: page titles and the one big number per screen.
-// "SOFT" rounds the serifs (switched on in globals.css).
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["SOFT", "opsz"],
 });
 
 export const metadata: Metadata = {
@@ -26,7 +19,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${figtree.variable} ${fraunces.variable} h-full antialiased`}
+      className={`${figtree.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <TimezoneSync />

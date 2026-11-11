@@ -134,8 +134,8 @@ Color
 - Greys are neutral (no warm or cool tint), for labels and borders.
 
 Type
-- Display: a characterful serif for page titles and the biggest numbers.
-- Body/UI: a clean sans-serif. Prices use tabular numbers so they line up.
+- One clean sans-serif for everything: bold for page titles and the
+  biggest numbers, regular for the rest. Numbers are tabular so they line up.
 - Hierarchy: the most important number on each screen (cost per serving,
   weekly total) is the largest thing on it, with a small grey label above.
 
@@ -157,11 +157,12 @@ Rules
   approval.
 
 Fonts (final)
-- Display: Fraunces, semibold, "soft" axis turned up. Page titles and the
-  ONE big number per screen only. It has no tabular figures, so never use
-  it for columns or lists of prices.
-- Body/UI: Figtree. All other text, including every price in a list, with
-  `tabular-nums`. (DM Sans from Google Fonts has no tabular figures.)
+- Figtree, one font for the whole app (chose it over Fraunces, Geist and
+  Manrope on 2026-11-11: the serif felt old-fashioned for a fitness app).
+- Bold: page titles and the ONE big number per screen. Regular/medium:
+  everything else.
+- Every number uses `tabular-nums`, including the big number and every
+  price in a list. (DM Sans from Google Fonts has no tabular figures.)
 - Sizes: label 13px medium grey · key number 48px · page title 30px ·
   body 16px (16px also stops iPhones zooming into inputs).
 
