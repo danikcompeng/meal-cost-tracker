@@ -3,6 +3,7 @@ import "server-only";
 // file, on purpose: every function exported from a "use server" file becomes
 // something the browser can call, and these are helpers, not actions.
 
+import { io } from "next/cache";
 import { cookies } from "next/headers";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { createClient } from "./supabase/server";
@@ -20,6 +21,12 @@ export async function requireUser() {
 /** Today in your timezone. The browser sends it in the "tz" cookie. */
 export async function userToday(): Promise<string> {
   const tz = (await cookies()).get("tz")?.value;
+  // Reading the clock has to wait for a real request. Reading the cookie
+  // isn't enough: with partialPrefetching, Next.js prerenders a per-login
+  // "App Shell" that includes cookies, and it refuses to bake the current
+  // time into it ("encountered the unstable value new Date()"). io() pauses
+  // during that prerender and returns at once during a real request.
+  await io();
   return todayIn(tz ? decodeURIComponent(tz) : undefined);
 }
 

@@ -54,7 +54,16 @@ export function BottomSheet({
       }}
       // A backup for any other way the browser closes it (e.g. Android's
       // back gesture), so React's state never thinks it's still open.
-      onClose={onClose}
+      //
+      // The "is it still shut?" check matters: the browser announces a close
+      // a moment AFTER close() runs. In development, React runs every effect
+      // twice on purpose (open, close, open again), so the announcement from
+      // that practice close arrives after the sheet has re-opened, and
+      // without this check it would shut the sheet straight away. A real
+      // close leaves the dialog shut, so it still gets through.
+      onClose={(e) => {
+        if (!e.currentTarget.open) onClose();
+      }}
       // A click whose target is the <dialog> itself landed on the backdrop.
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
