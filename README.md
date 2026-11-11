@@ -73,8 +73,8 @@ My running notes, design rules and screen reviews are in [`notes.md`](notes.md).
 
 ## Design
 
-Black ink on white with one matcha-green accent, Fraunces for titles and the big numbers,
-Figtree for everything else (it has tabular numbers, so prices line up). Each screen has one
+Black ink on white with one matcha-green accent, Figtree for everything: bold for titles
+and the big number, regular for the rest (it has tabular numbers, so prices line up). Each screen has one
 main number. References and before/after screenshots are in [`design/`](design/).
 
 ## Running it locally
