@@ -54,6 +54,10 @@
   DETAILS_COOKIE "today_details"). components/progress-ring.tsx (pathLength, aria-hidden),
   summary-rings.tsx, summary-details.tsx, day-summary.tsx (toggle + cookie), hydration-switch.tsx.
   "<1" in totalNumber (day-totals.ts), "<0.1" in macroText.
+- Duplicate foods (plan: plans/duplicates-and-water-goal.md s.1, no migration): lib/food-duplicates.ts
+  (normalizeName, findDuplicate newest-first, duplicateChanges), saveFood in food-actions.ts
+  (barcode pre-check, then name+brand; duplicateChoice "update"/"keep"; updateExisting),
+  getFoodsNewestFirst, components/duplicate-dialog.tsx (inside the form, submit buttons).
 
 ## Project decisions
 - Unit prices for g/ml shown "per 100" ($0.70 / 100 g); "each" shown per item.
@@ -84,6 +88,9 @@
   for names with the word "water"; only ml counts; cost "at least" with a missing price;
   water_ml 0 never null (no "+ unknown"); details open/closed in a cookie read by app/page.tsx.
   Past days / blank target = number, no ring. Don't re-raise these.
+- Duplicates (approved 2026-11-11): native dialog, focus starts on Cancel, max 3 change lines
+  + "and N more", price compared per 100 g, newest match offered, editing never asks,
+  barcode duplicates keep their "Log that one" message. Don't re-raise.
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07).
@@ -104,7 +111,7 @@
 
 ## Review history
 - [Review history](review-history.md) — every past review: date, verdict, findings raised (check
-  before re-raising). Latest: 2026-11-11 rings + hydration, Minor issues.
+  before re-raising). Latest: 2026-11-11 duplicate foods, Minor issues.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
@@ -126,5 +133,8 @@
   condition clears; if it should stay, latch it into state. Watch hide/inert on focused inputs.
 - A saved value the old rules FORCED (false because the unit wasn't ml) isn't the user's choice;
   edit forms that "keep the saved setting" should treat it as untouched (food-form, 2026-11-11).
+- <dialog> + React: React removes the element BEFORE the effect cleanup's close(), so the
+  browser never restores focus. bottom-sheet.tsx handles it (opener.focus()); new dialogs must too.
+  Esc/backdrop handlers should respect `pending` like the buttons do.
 - Manual backfills run in the SQL editor bypass RLS (admin role): always scope them by id/user.
 - Developer responds well to concrete worked examples (rice test); keep using them.

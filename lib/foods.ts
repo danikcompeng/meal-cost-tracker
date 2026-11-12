@@ -10,12 +10,13 @@ const FOOD_COLUMNS =
 
 // Reads only. Row Level Security in the database guarantees this returns
 // just the logged-in user's rows, even though there's no "where user_id" here.
-export async function getFoods(): Promise<Food[]> {
+// A to Z by name, or newest first (for "you already have this" checks).
+export async function getFoods({ newestFirst = false } = {}): Promise<Food[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("foods")
     .select(FOOD_COLUMNS)
-    .order("name", { ascending: true });
+    .order(newestFirst ? "created_at" : "name", { ascending: !newestFirst });
 
   if (error) throw new Error(`Couldn't load foods: ${error.message}`);
   return (data ?? []).map(toFood);

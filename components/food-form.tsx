@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "./form-field";
+import { DuplicateDialog } from "./duplicate-dialog";
 import { HydrationSwitch } from "./hydration-switch";
 import { MoreNutrients } from "./more-nutrients";
 import { NutrientInput } from "./nutrient-input";
@@ -166,6 +167,14 @@ export function FoodForm({
     },
     { ok: false },
   );
+
+  // Cancel in the "You already have this" dialog hides it for THIS answer
+  // from the server. Saving again asks again, because the next answer is a
+  // new object.
+  const [dismissed, setDismissed] = useState<FormState | null>(null);
+  const duplicate = state.duplicate && dismissed !== state ? state.duplicate : null;
+  // Focus comes back here when the dialog closes.
+  const saveRef = useRef<HTMLButtonElement>(null);
 
   const measuredBy = toBaseUnit(1, fields.unit).unit;
 
@@ -408,7 +417,12 @@ export function FoodForm({
       )}
 
       <div className="flex gap-2">
-        <Button type="submit" disabled={pending} className="h-11 flex-1 text-base">
+        <Button
+          ref={saveRef}
+          type="submit"
+          disabled={pending}
+          className="h-11 flex-1 text-base"
+        >
           {pending ? "Saving…" : editing ? "Save changes" : (submitLabel ?? "Add food")}
         </Button>
         {editing && (
@@ -417,6 +431,19 @@ export function FoodForm({
           </Button>
         )}
       </div>
+
+      {/* Inside the form on purpose: its two answers are submit buttons of
+          this form (see duplicate-dialog.tsx). After Save on purpose too:
+          Enter in a box presses the form's FIRST submit button, which must
+          always be Save, never "Update existing". */}
+      {duplicate && (
+        <DuplicateDialog
+          duplicate={duplicate}
+          pending={pending}
+          onCancel={() => setDismissed(state)}
+          returnFocusTo={saveRef}
+        />
+      )}
     </form>
   );
 }

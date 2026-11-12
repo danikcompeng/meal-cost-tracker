@@ -42,4 +42,15 @@ export type FormState = {
   id?: string;
   /** Saving clashed with a food you already have (same barcode): its id. */
   existingId?: string;
+  /**
+   * A new food has the same name and brand as one you have. Nothing was
+   * saved; the form asks "Update existing, or keep both?".
+   */
+  duplicate?: {
+    id: string;
+    name: string;
+    brand: string | null;
+    /** What updating would change ("Protein 13 g → 11 g"); empty = same. */
+    changes: string[];
+  };
 };

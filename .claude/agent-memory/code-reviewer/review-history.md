@@ -30,3 +30,10 @@ metadata:
   the plan's Water g->ml step; plan's one-line Water-entries backfill SQL not written anywhere
   (SQL editor bypasses RLS, scope by food id); run 009 first; 4 x 56 px rings in 53 px columns
   at 320 px; amountText "0 g" for 0.001-0.004 amounts; summary.ts:82 duplicates totalNumber "<1".
+- 2026-11-11 duplicate foods (commit 30577b4, unpushed): Minor issues. Verified submitter
+  name/value reaches the action (react-dom uses new FormData(form, submitter); Base UI Button
+  passes type/name/value). Raised: Update replaces a DIFFERENT existing barcode silently (scan
+  ping-pong); Esc/backdrop still cancel while pending; update also overwrites name/brand
+  spelling (plan says numbers only); comment claims focus returns to Save (it doesn't, same
+  reason as bottom-sheet.tsx); optional: render dialog after Save so it's never the default
+  button; getFoodsNewestFirst duplicates getFoods.
