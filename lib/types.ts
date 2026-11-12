@@ -6,6 +6,9 @@ import type { BaseUnit } from "./units";
 export type Food = Macros & {
   id: string;
   name: string;
+  brand: string | null;
+  /** In the standard form from lib/barcode.ts, or null if it has none. */
+  barcode: string | null;
   price: number;
   package_size: number;
   unit: BaseUnit;
@@ -31,4 +34,8 @@ export type FormState = {
   ok: boolean;
   message?: string;
   fieldErrors?: Partial<Record<string, string>>;
+  /** The id of the row that was saved, for "save, then log it". */
+  id?: string;
+  /** Saving clashed with a food you already have (same barcode): its id. */
+  existingId?: string;
 };

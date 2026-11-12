@@ -11,7 +11,8 @@ import { getEntriesForDay, getRecentFoodIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
 import { orderByRecent } from "@/lib/recent";
 import { getTargets } from "@/lib/settings";
-import { userToday } from "@/lib/server-helpers";
+import { mealForHour } from "@/lib/meals";
+import { userHour, userToday } from "@/lib/server-helpers";
 
 export const metadata: Metadata = { title: "Today · Meal Cost Tracker" };
 
@@ -42,12 +43,18 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
-  const [entries, foods, recentIds, targets] = await Promise.all([
+  const [entries, foods, recentIds, targets, hour] = await Promise.all([
     getEntriesForDay(day),
     getFoods(),
     getRecentFoodIds(),
     getTargets(),
+    userHour(),
   ]);
+
+  // "?log=<food id>" comes from the scanner: open the "Log it" sheet for
+  // that food straight away. An id that isn't one of your foods is ignored.
+  const logId = (await searchParams).log;
+  const logFood = typeof logId === "string" ? (foods.find((f) => f.id === logId) ?? null) : null;
 
   return (
     <>
@@ -57,13 +64,18 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       </AppHeader>
       <TodayView
         // A fresh view per day, so an open sheet doesn't follow you to
-        // another day.
-        key={day}
+        // another day. The scanned food is part of the key too, so arriving
+        // from the scanner always opens its sheet.
+        key={`${day}:${logFood?.id ?? ""}`}
         day={day}
         isToday={day === today}
         entries={entries}
         foods={orderByRecent(foods, recentIds)}
         targets={targets}
+        logFood={logFood}
+        // Worked out on the server from your timezone, so the page and the
+        // browser agree on it (no flicker when the page comes alive).
+        suggestedMeal={mealForHour(hour)}
       />
     </>
   );

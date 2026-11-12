@@ -33,6 +33,14 @@
   0..1000, basis_amount GENERATED from unit. lib/macros.ts (macroText, basisAmount, calorieHint).
 - components/segmented-control.tsx: radio-based, butter highlight on selected (approved use).
 - FoodForm is remounted per food via key={editing?.id ?? "new"} in components/food-manager.tsx.
+- Barcode scanning (plan: plans/barcode-scanning.md; 007_food_barcodes.sql adds barcode 8-14
+  digits, brand, source, unique(user_id, barcode)). lib/barcode.ts (check digit, normalize to
+  13 / 8 digits), lib/open-food-facts.ts (parseOffResponse, amount() never null->0),
+  lib/scan-actions.ts lookupBarcode (own foods first, then OFF, 8 s timeout), lib/camera.ts,
+  lib/barcode-reader.ts (ponyfill, wasm at public/zxing/, test checks sha256),
+  components/use-barcode-camera.ts (cancelled/finished flags), scan-flow.tsx (requestId).
+  FoodForm: hidden barcode input keeps barcode on edit; source only on insert.
+  Today ?log=<foodId> opens Log sheet; TodayView key includes logFood id; close() strips URL.
 
 ## Project decisions
 - Unit prices for g/ml shown "per 100" ($0.70 / 100 g); "each" shown per item.
@@ -52,6 +60,9 @@
   macro allowed. Over target = plain ink, never red; "Goal reached" protein only. progress()
   uses the ROUNDED total on purpose. Missing kcal -> "up to N left" / "at least N over".
   "Calories today" label when kcal target set. Timezone stays in tz cookie for now.
+- Barcode (approved 2026-11-11): OFF called server-side with User-Agent
+  "MealCostTracker/0.1 (url)", no email. Scanning your own food -> straight to Log it.
+  kJ-only energy converted /4.184 with "Converted from kJ" note. Price always blank after scan.
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07).
@@ -62,6 +73,9 @@
 - (Remind when touching food validation) Tiny package sizes (e.g. 0.0001 g) round to 0.000 in numeric(12,3) and fail CHECK > 0 with
   only "Couldn't save." (finding 3d, 2026-11-09). Planned fix: reject Math.round(x*1000)===0.
   (Entry amounts already do this correctly in parseAmount.)
+- "Bought another?" (decided 2026-11-11): when Kitchen/purchases are built, scanning a food you
+  already have should offer to record a new purchase (price), not only go to Log it.
+  Remind when reviewing the Kitchen/purchases feature or touching lookupBarcode "mine".
 
 ## Review history
 - 2026-11-07 lib/cost.ts: 1a/1b/3a fixed, verified. Looks good.
@@ -83,6 +97,14 @@
   no null->0. Raised: run 006 BEFORE pushing (Today throws without the table); low-calorie note
   flashes while typing 2 -> 2000; 20% boundary test missing (test named "20%" checks 14%);
   page fn `Targets` shadows type name; header at 320 px unsure. Earlier 0-kcal comment now true.
+- 2026-11-11 barcode scanning (uncommitted, on main): Minor issues, matches plan. Security clean
+  (re-validated input, RLS-scoped lookup, digits-only OFF URL). Raised: run 007 before even local
+  testing (getFoods selects brand/barcode); test on a branch preview per plan, not main; X during
+  "Looking up" then "mine" result still router.replace()s to Today; no cancelled check after
+  await video.play() (stream null -> TypeError); typed 8-digit UPC-E passing EAN-8 check saved as
+  8 digits (dup food when later scanned); unknown camera / later detect / action errors unlogged;
+  ?log= close->remount can drop a sheet opened right after; found result is a full page, not
+  the plan's "panel grows into sheet" (asked developer to confirm).
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
@@ -97,4 +119,7 @@
 - Live hints computed on every keystroke flash for partial numbers (typing 2000 passes 2, 20, 200).
 - Rounding then re-scaling stored values compounds error; round only for display.
 - Form validation vs DB column precision (numeric(p,s) rounding vs CHECK > 0).
+- Async code that outlives its component: after every await, re-check a cancelled flag / request
+  id before touching state, the router or a shared variable (camera hook, scan-flow, 2026-11-11).
+  Closing a screen should also invalidate in-flight requests.
 - Developer responds well to concrete worked examples (rice test); keep using them.

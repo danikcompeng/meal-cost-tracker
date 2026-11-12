@@ -7,7 +7,7 @@ import { io } from "next/cache";
 import { cookies } from "next/headers";
 import type { PostgrestError } from "@supabase/supabase-js";
 import { createClient } from "./supabase/server";
-import { todayIn } from "./dates";
+import { hourIn, todayIn } from "./dates";
 
 // Server actions can be called by anyone who sends a POST request, not only
 // through our form, so every action checks the login first.
@@ -40,6 +40,14 @@ export async function userToday(): Promise<string> {
   // during that prerender and returns at once during a real request.
   await io();
   return todayIn(tz ? decodeURIComponent(tz) : undefined);
+}
+
+/** The hour (0-23) right now in your timezone, from the same "tz" cookie. */
+export async function userHour(): Promise<number> {
+  const tz = (await cookies()).get("tz")?.value;
+  // Same reason as userToday: wait for a real request before reading the clock.
+  await io();
+  return hourIn(tz ? decodeURIComponent(tz) : undefined);
 }
 
 /**

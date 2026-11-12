@@ -38,6 +38,17 @@ export function todayIn(timeZone: string | undefined, now: Date = new Date()): s
   return `${get("year")}-${get("month")}-${get("day")}`;
 }
 
+/** The hour (0-23) right now in `timeZone`, falling back to UTC. */
+export function hourIn(timeZone: string | undefined, now: Date = new Date()): number {
+  const zone = isValidTimeZone(timeZone) ? timeZone : "UTC";
+  const hour = new Intl.DateTimeFormat("en-US", {
+    timeZone: zone,
+    hour: "numeric",
+    hourCycle: "h23",
+  }).format(now);
+  return Number(hour);
+}
+
 /** addDays("2026-11-30", 1) -> "2026-12-01". */
 export function addDays(day: string, days: number): string {
   // Done in UTC so daylight-saving changes can't skip or repeat a day.

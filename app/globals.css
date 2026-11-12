@@ -13,6 +13,9 @@
   --color-matcha-soft: var(--matcha-soft);
   --color-highlight: var(--highlight);
   --color-highlight-foreground: var(--highlight-foreground);
+  --color-camera: var(--camera);
+  --color-camera-foreground: var(--camera-foreground);
+  --color-camera-accent: var(--camera-accent);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -75,6 +78,11 @@
   --matcha-soft: #78855A;         /* non-text fills: budget bar, chart bars */
   --highlight: #F2C94C;           /* butter: active tab/pill only */
   --highlight-foreground: #171717;
+  /* The camera screen is dark in both modes, like any viewfinder, so it
+     uses the dark-mode values even when the phone is set to light. */
+  --camera: #141414;              /* near-black, never pure black */
+  --camera-foreground: #EDEDED;
+  --camera-accent: #93C07F;       /* dark-mode matcha: visible on near-black */
   --chart-1: #78855A;
   --chart-2: #F2C94C;
   --chart-3: #4F6B2E;

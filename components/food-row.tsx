@@ -45,7 +45,10 @@ export function FoodRow({
         onClick={onEdit}
         className="flex min-w-0 flex-1 flex-col items-start gap-0.5 py-3 text-left"
       >
-        <span className="font-medium">{name}</span>
+        <span className="font-medium">
+          {name}
+          {food.brand && <span className="font-normal text-muted-foreground"> · {food.brand}</span>}
+        </span>
 
         {hasAnyMacro(food) ? (
           <MacroLine food={food} />

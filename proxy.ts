@@ -54,6 +54,8 @@ function redirectKeepingCookies(request: NextRequest, from: NextResponse, to: st
 export const config = {
   matcher: [
     // Skip static files and images so CSS/JS still load on the login page.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    // .wasm is the barcode reader (public/zxing): no login check needed to
+    // download a public file.
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|wasm)$).*)",
   ],
 };

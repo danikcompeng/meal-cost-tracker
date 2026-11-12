@@ -5,6 +5,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
@@ -30,15 +31,30 @@ export function TodayView({
   entries,
   foods,
   targets,
+  logFood,
+  suggestedMeal,
 }: {
   day: string;
   isToday: boolean;
   entries: MealEntry[];
   foods: Food[];
   targets: Targets;
+  /** A food you just scanned: its "Log it" sheet opens straight away. */
+  logFood: Food | null;
+  /** The meal for the time of day, picked for that sheet. */
+  suggestedMeal: Meal;
 }) {
-  const [sheet, setSheet] = useState<Sheet>(null);
-  const close = () => setSheet(null);
+  const router = useRouter();
+  const [sheet, setSheet] = useState<Sheet>(() =>
+    logFood ? { mode: "add", meal: suggestedMeal, food: logFood } : null,
+  );
+
+  function close() {
+    setSheet(null);
+    // Take "?log=" out of the address, so refreshing or going back to this
+    // page doesn't open the sheet again.
+    if (logFood) router.replace(isToday ? "/" : `/?day=${day}`, { scroll: false });
+  }
 
   // First use: there's nothing to log until you've added a food.
   if (foods.length === 0 && entries.length === 0) {
@@ -52,6 +68,12 @@ export function TodayView({
         <Link href="/foods" className={cn(buttonVariants(), "mt-6 h-11 px-6 text-base")}>
           Add your first food
         </Link>
+        <p className="mt-3 text-sm text-muted-foreground">
+          or{" "}
+          <Link href="/scan" className="font-medium text-primary">
+            scan a barcode
+          </Link>
+        </p>
       </section>
     );
   }

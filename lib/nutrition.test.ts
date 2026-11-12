@@ -5,6 +5,8 @@ import type { Food } from "./types";
 const oats: Food = {
   id: "oats",
   name: "Rolled oats",
+  brand: null,
+  barcode: null,
   price: 3.5,
   package_size: 500,
   unit: "g",
@@ -17,6 +19,8 @@ const oats: Food = {
 const egg: Food = {
   id: "egg",
   name: "Egg",
+  brand: null,
+  barcode: null,
   price: 4.8,
   package_size: 12,
   unit: "each",
@@ -29,6 +33,8 @@ const egg: Food = {
 const rice: Food = {
   id: "rice",
   name: "Rice",
+  brand: null,
+  barcode: null,
   price: 4.5,
   package_size: 907.18,
   unit: "g",

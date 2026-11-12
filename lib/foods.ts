@@ -3,7 +3,8 @@ import { numberOrNull } from "./numbers";
 import { createClient } from "./supabase/server";
 import type { Food } from "./types";
 
-const FOOD_COLUMNS = "id, name, price, package_size, unit, kcal, protein_g, carbs_g, fat_g";
+const FOOD_COLUMNS =
+  "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g";
 
 // Reads only. Row Level Security in the database guarantees this returns
 // just the logged-in user's rows, even though there's no "where user_id" here.

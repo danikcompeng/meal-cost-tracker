@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { validateFood, validateMacros } from "./food-validation";
+import { parseSource, validateFood, validateMacros } from "./food-validation";
+
+describe("parseSource", () => {
+  it("keeps a known source and treats anything else as manual", () => {
+    expect(parseSource("open_food_facts")).toBe("open_food_facts");
+    expect(parseSource("label_photo")).toBe("label_photo");
+    expect(parseSource(null)).toBe("manual");
+    expect(parseSource("hacker")).toBe("manual");
+  });
+});
 
 const valid = { name: "Rolled oats", price: "3.49", packageSize: "500", unit: "g" };
 
@@ -10,6 +19,9 @@ describe("validateFood", () => {
       ok: true,
       value: {
         name: "Rolled oats",
+        // No brand or barcode sent: both null, not "".
+        brand: null,
+        barcode: null,
         price: 3.49,
         package_size: 500,
         unit: "g",
@@ -20,6 +32,27 @@ describe("validateFood", () => {
         fat_g: null,
       },
     });
+  });
+
+  it("trims the brand and saves a blank brand as null", () => {
+    const quaker = validateFood({ ...valid, brand: "  Quaker " });
+    expect(quaker.ok && quaker.value.brand).toBe("Quaker");
+    const blank = validateFood({ ...valid, brand: "   " });
+    expect(blank.ok && blank.value.brand).toBeNull();
+    const long = validateFood({ ...valid, brand: "x".repeat(101) });
+    expect(!long.ok && long.fieldErrors.brand).toMatch(/under 100/);
+  });
+
+  it("saves a barcode in the standard 13-digit form", () => {
+    const upcA = validateFood({ ...valid, barcode: "036000291452" });
+    expect(upcA.ok && upcA.value.barcode).toBe("0036000291452");
+    const none = validateFood({ ...valid, barcode: "" });
+    expect(none.ok && none.value.barcode).toBeNull();
+  });
+
+  it("refuses a barcode with a wrong check digit", () => {
+    const result = validateFood({ ...valid, barcode: "5000112637923" });
+    expect(!result.ok && result.fieldErrors.barcode).toMatch(/doesn't look right/);
   });
 
   it("converts kg to g and l to ml", () => {

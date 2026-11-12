@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "./form-field";
@@ -8,7 +9,9 @@ import { SegmentedControl } from "./segmented-control";
 import { saveFood } from "@/lib/food-actions";
 import { validateFood, validateMacros } from "@/lib/food-validation";
 import { unitPriceLabel } from "@/lib/cost";
-import { basisChangeNote, basisLabel, calorieHint } from "@/lib/macros";
+import { basisChangeNote, basisLabel, calorieHint, type Macros } from "@/lib/macros";
+import type { FoodDraft } from "@/lib/food-draft";
+import { missingMacros, missingNote } from "@/lib/open-food-facts";
 import { inputUnitsFor, toBaseUnit, type BaseUnit, type InputUnit } from "@/lib/units";
 import type { FormState, Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,6 +20,7 @@ type MacroKey = "kcal" | "protein" | "carbs" | "fat";
 
 type Fields = Record<MacroKey, string> & {
   name: string;
+  brand: string;
   price: string;
   packageSize: string;
   unit: InputUnit;
@@ -24,6 +28,7 @@ type Fields = Record<MacroKey, string> & {
 
 const EMPTY: Fields = {
   name: "",
+  brand: "",
   kcal: "",
   protein: "",
   carbs: "",
@@ -50,8 +55,8 @@ const MACRO_FIELDS: { key: MacroKey; label: string; suffix: string }[] = [
 // or the edit form would show the word "null" in the box.
 const toField = (value: number | null) => (value === null ? "" : String(value));
 
-// A saved food's macros were all entered for its saved unit.
-function macroUnitsFrom(food: Food): Partial<Record<MacroKey, BaseUnit>> {
+// A saved food's (or a scan's) macros were all entered for its unit.
+function macroUnitsFrom(food: Macros & { unit: BaseUnit }): Partial<Record<MacroKey, BaseUnit>> {
   const saved = { kcal: food.kcal, protein: food.protein_g, carbs: food.carbs_g, fat: food.fat_g };
   return Object.fromEntries(
     Object.entries(saved)
@@ -60,10 +65,27 @@ function macroUnitsFrom(food: Food): Partial<Record<MacroKey, BaseUnit>> {
   );
 }
 
+// Numbers from a scan, as text for the boxes. The price is always blank:
+// only you know what you paid.
+function fieldsFromDraft(draft: FoodDraft): Fields {
+  return {
+    name: draft.name ?? "",
+    brand: draft.brand ?? "",
+    kcal: toField(draft.kcal),
+    protein: toField(draft.protein_g),
+    carbs: toField(draft.carbs_g),
+    fat: toField(draft.fat_g),
+    price: "",
+    packageSize: toField(draft.packageSize),
+    unit: draft.unit,
+  };
+}
+
 function fieldsFrom(food: Food | null): Fields {
   if (!food) return EMPTY;
   return {
     name: food.name,
+    brand: food.brand ?? "",
     kcal: toField(food.kcal),
     protein: toField(food.protein_g),
     carbs: toField(food.carbs_g),
@@ -76,20 +98,38 @@ function fieldsFrom(food: Food | null): Fields {
 
 export function FoodForm({
   editing,
+  draft,
+  submitLabel,
   onDone,
 }: {
   editing: Food | null;
-  onDone: () => void;
+  /** A scanned food to start from (only when adding, not editing). */
+  draft?: FoodDraft;
+  /** Overrides "Add food", e.g. "Save and log" after a scan. */
+  submitLabel?: string;
+  /** Called after saving, with the saved food's id. */
+  onDone: (id?: string) => void;
 }) {
   // "Controlled" inputs: React holds the values, so we can show live
   // previews and keep what you typed if saving fails.
-  const [fields, setFields] = useState<Fields>(() => fieldsFrom(editing));
+  const [fields, setFields] = useState<Fields>(() =>
+    draft ? fieldsFromDraft(draft) : fieldsFrom(editing),
+  );
 
   // Which unit each macro on screen was typed for. If you then switch the
-  // unit, we can warn that those numbers now mean something else.
-  const [macroUnits, setMacroUnits] = useState<Partial<Record<MacroKey, BaseUnit>>>(() =>
-    editing ? macroUnitsFrom(editing) : {},
-  );
+  // unit, we can warn that those numbers now mean something else. A scan's
+  // numbers belong to the scan's unit (per 100 g or per 100 ml).
+  const [macroUnits, setMacroUnits] = useState<Partial<Record<MacroKey, BaseUnit>>>(() => {
+    if (editing) return macroUnitsFrom(editing);
+    if (draft) return macroUnitsFrom(draft);
+    return {};
+  });
+
+  const fromOpenFoodFacts = draft?.source === "open_food_facts";
+  // Shown while Calories still holds the converted number. If you type
+  // your own, the note no longer applies.
+  const convertedKcal = draft?.kcalFromKj ? toField(draft.kcal) : null;
+  const barcode = editing?.barcode ?? draft?.barcode ?? null;
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
@@ -97,7 +137,7 @@ export function FoodForm({
       if (result.ok) {
         setFields(EMPTY);
         setMacroUnits({});
-        onDone();
+        onDone(result.id);
       }
       return result;
     },
@@ -131,13 +171,22 @@ export function FoodForm({
     ? "Blank macros will be saved as 0 g, since 0 kcal means none."
     : calorieHint(macros.value);
   const preview = validateFood(fields);
-  const errors = state.fieldErrors ?? {};
+  // Numbers from Open Food Facts can be wrong (say, 120 g protein per
+  // 100 g), so their mistakes show straight away, not only after Save.
+  const errors = {
+    ...(fromOpenFoodFacts ? macros.fieldErrors : {}),
+    ...(state.fieldErrors ?? {}),
+  };
+  const missing = draft && fromOpenFoodFacts ? missingNote(missingMacros(draft)) : null;
 
   return (
     <form action={formAction} className="space-y-6 rounded-2xl bg-card p-4" noValidate>
       {editing && <input type="hidden" name="id" value={editing.id} />}
       {/* The package unit select below is the one the server reads. */}
       <input type="hidden" name="unit" value={fields.unit} />
+      {/* Kept as they are: the barcode you scanned, and how it was added. */}
+      <input type="hidden" name="barcode" value={barcode ?? ""} />
+      {draft && <input type="hidden" name="source" value={draft.source} />}
 
       <Field label="Name" htmlFor="name" error={errors.name}>
         <Input
@@ -151,6 +200,24 @@ export function FoodForm({
           aria-invalid={Boolean(errors.name)}
         />
       </Field>
+
+      <Field label="Brand" htmlFor="brand" error={errors.brand}>
+        <Input
+          id="brand"
+          name="brand"
+          value={fields.brand}
+          onChange={set("brand")}
+          placeholder="optional"
+          autoComplete="off"
+          className="h-11 bg-background md:text-base"
+          aria-invalid={Boolean(errors.brand)}
+        />
+      </Field>
+
+      {barcode && (
+        <p className="-mt-3 text-[13px] text-muted-foreground tabular-nums">Barcode {barcode}</p>
+      )}
+      {errors.barcode && <p className="-mt-3 text-sm text-destructive">{errors.barcode}</p>}
 
       <SegmentedControl
         name="measuredBy"
@@ -174,6 +241,12 @@ export function FoodForm({
           </p>
         )}
 
+        {missing && (
+          <p className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+            {missing}
+          </p>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           {MACRO_FIELDS.map(({ key, label, suffix }) => (
             <Field
@@ -190,7 +263,9 @@ export function FoodForm({
                   value={fields[key]}
                   onChange={(e) => setMacro(key, e.target.value)}
                   inputMode="decimal"
-                  placeholder="optional"
+                  // After a scan, a blank box means "they didn't have it",
+                  // not "you can skip this".
+                  placeholder={fromOpenFoodFacts ? "not listed" : "optional"}
                   className="h-11 bg-background pr-12 tabular-nums md:text-base"
                   aria-invalid={Boolean(errors[key] ?? errors.macros)}
                 />
@@ -201,6 +276,9 @@ export function FoodForm({
                   {suffix}
                 </span>
               </div>
+              {key === "kcal" && convertedKcal !== null && fields.kcal === convertedKcal && (
+                <p className="text-[13px] text-muted-foreground">Converted from kJ</p>
+              )}
             </Field>
           ))}
         </div>
@@ -231,6 +309,8 @@ export function FoodForm({
                 placeholder="3.49"
                 className="h-11 bg-background pl-7 tabular-nums md:text-base"
                 aria-invalid={Boolean(errors.price)}
+                // After a scan the rest is filled in; the price is what's left.
+                autoFocus={fromOpenFoodFacts}
               />
             </div>
           </Field>
@@ -277,14 +357,23 @@ export function FoodForm({
         </p>
       </fieldset>
 
-      {state.message && <p className="text-sm text-destructive">{state.message}</p>}
+      {state.message && (
+        <p className="text-sm text-destructive">
+          {state.message}{" "}
+          {state.existingId && (
+            <Link href={`/?log=${state.existingId}`} className="font-medium text-primary">
+              Log that one
+            </Link>
+          )}
+        </p>
+      )}
 
       <div className="flex gap-2">
         <Button type="submit" disabled={pending} className="h-11 flex-1 text-base">
-          {pending ? "Saving…" : editing ? "Save changes" : "Add food"}
+          {pending ? "Saving…" : editing ? "Save changes" : (submitLabel ?? "Add food")}
         </Button>
         {editing && (
-          <Button type="button" variant="ghost" onClick={onDone} className="h-11 text-base">
+          <Button type="button" variant="ghost" onClick={() => onDone()} className="h-11 text-base">
             Cancel
           </Button>
         )}

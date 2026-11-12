@@ -1,5 +1,27 @@
 import { describe, expect, it } from "vitest";
-import { addDays, dayLabel, dayTitle, isLoggableDay, isValidDay, isValidTimeZone, todayIn } from "./dates";
+import {
+  addDays,
+  dayLabel,
+  dayTitle,
+  hourIn,
+  isLoggableDay,
+  isValidDay,
+  isValidTimeZone,
+  todayIn,
+} from "./dates";
+
+describe("hourIn", () => {
+  it("uses your timezone, on a 0-23 clock", () => {
+    // 03:00 UTC is 7 pm the evening before in Los Angeles.
+    expect(hourIn("America/Los_Angeles", new Date("2026-11-10T03:00:00Z"))).toBe(19);
+    expect(hourIn("UTC", new Date("2026-11-10T00:30:00Z"))).toBe(0);
+  });
+
+  it("falls back to UTC for an unknown timezone", () => {
+    expect(hourIn("Not/AZone", new Date("2026-11-10T08:00:00Z"))).toBe(8);
+    expect(hourIn(undefined, new Date("2026-11-10T08:00:00Z"))).toBe(8);
+  });
+});
 
 describe("todayIn", () => {
   // 03:00 UTC on Nov 10 is still 7 pm on Nov 9 in California.

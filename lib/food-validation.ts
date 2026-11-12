@@ -1,6 +1,7 @@
 // Turns raw form text into a clean food, or a list of problems.
 // Pure function, so it can be unit tested without a database.
 
+import { normalizeBarcode } from "./barcode";
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
 import { fillZeroKcalMacros, zeroKcalFillsBlanks, type Macros } from "./macros";
 // parseDecimal tells "left blank" (null) apart from "typed something that
@@ -10,10 +11,23 @@ import { AMBIGUOUS_COMMA, parseDecimal } from "./numbers";
 
 export type FoodInput = Macros & {
   name: string;
+  brand: string | null;
+  barcode: string | null;
   price: number;
   package_size: number;
   unit: BaseUnit;
 };
+
+/** How a food was added (the `source` column). */
+export const FOOD_SOURCES = ["manual", "open_food_facts", "label_photo"] as const;
+export type FoodSource = (typeof FOOD_SOURCES)[number];
+
+/** Anything we don't recognise counts as typed in by hand. */
+export function parseSource(value: unknown): FoodSource {
+  return typeof value === "string" && (FOOD_SOURCES as readonly string[]).includes(value)
+    ? (value as FoodSource)
+    : "manual";
+}
 
 export type ValidationResult =
   | { ok: true; value: FoodInput }
@@ -29,6 +43,8 @@ export type RawMacros = {
 export function validateFood(
   raw: {
     name: unknown;
+    brand?: unknown;
+    barcode?: unknown;
     price: unknown;
     packageSize: unknown;
     unit: unknown;
@@ -39,6 +55,19 @@ export function validateFood(
   const name = typeof raw.name === "string" ? raw.name.trim() : "";
   if (!name) fieldErrors.name = "Give it a name.";
   else if (name.length > 100) fieldErrors.name = "Keep it under 100 characters.";
+
+  // Brand is optional: blank means "no brand" (null), not an empty string.
+  const brandText = typeof raw.brand === "string" ? raw.brand.trim() : "";
+  const brand = brandText === "" ? null : brandText;
+  if (brand !== null && brand.length > 100) fieldErrors.brand = "Keep it under 100 characters.";
+
+  // Barcode is optional too, but if there is one it must be a real one,
+  // saved in the standard form so the same product can't be saved twice.
+  const barcodeText = typeof raw.barcode === "string" ? raw.barcode.trim() : "";
+  const barcode = barcodeText === "" ? null : normalizeBarcode(barcodeText);
+  if (barcodeText !== "" && barcode === null) {
+    fieldErrors.barcode = "That barcode doesn't look right. Check the numbers under the lines.";
+  }
 
   const priceRaw = parseDecimal(raw.price);
   const price = typeof priceRaw === "number" ? priceRaw : null;
@@ -67,6 +96,8 @@ export function validateFood(
     ok: true,
     value: {
       name,
+      brand,
+      barcode,
       price: Math.round(price * 100) / 100,
       package_size: base.amount,
       unit: base.unit,

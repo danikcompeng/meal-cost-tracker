@@ -4,9 +4,13 @@
 // guarded() turns unexpected failures into a message for the form.
 
 import { revalidatePath } from "next/cache";
-import { validateFood } from "./food-validation";
+import { parseSource, validateFood } from "./food-validation";
 import { guarded, logDbError, requireUser } from "./server-helpers";
 import type { FormState } from "./types";
+
+// Postgres error code for "this would break a unique rule": here, saving a
+// second food with a barcode you already have.
+const UNIQUE_VIOLATION = "23505";
 
 export async function saveFood(_prev: FormState, formData: FormData): Promise<FormState> {
   return guarded("saveFood", "Couldn't save. Please try again.", async () => {
@@ -14,6 +18,8 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
 
     const result = validateFood({
       name: formData.get("name"),
+      brand: formData.get("brand"),
+      barcode: formData.get("barcode"),
       price: formData.get("price"),
       packageSize: formData.get("packageSize"),
       unit: formData.get("unit"),
@@ -25,13 +31,34 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 
     const id = formData.get("id");
-    const query =
-      typeof id === "string" && id
-        ? supabase.from("foods").update(result.value).eq("id", id)
-        : supabase.from("foods").insert(result.value);
+    const isEdit = typeof id === "string" && id !== "";
+    // "Where it came from" is set once, when the food is added. Editing a
+    // scanned food by hand doesn't change how it was added.
+    const query = isEdit
+      ? supabase.from("foods").update(result.value).eq("id", id).select("id").single()
+      : supabase
+          .from("foods")
+          .insert({ ...result.value, source: parseSource(formData.get("source")) })
+          .select("id")
+          .single();
 
-    const { error } = await query;
+    const { data, error } = await query;
     if (error) {
+      if (error.code === UNIQUE_VIOLATION && result.value.barcode) {
+        // Not a failure worth a scary message: you already have it. Find
+        // it, so the form can offer to log that one instead.
+        const { data: existing, error: findError } = await supabase
+          .from("foods")
+          .select("id")
+          .eq("barcode", result.value.barcode)
+          .maybeSingle();
+        if (findError) logDbError("saveFood (find existing)", findError);
+        return {
+          ok: false,
+          message: "You already have a food with this barcode.",
+          existingId: existing?.id,
+        };
+      }
       logDbError("saveFood", error);
       return { ok: false, message: "Couldn't save. Please try again." };
     }
@@ -39,7 +66,7 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
     // The Today screen's food picker shows foods too.
     revalidatePath("/foods");
     revalidatePath("/");
-    return { ok: true };
+    return { ok: true, id: data.id };
   });
 }
 
