@@ -13,16 +13,28 @@ export type Targets = {
   daily_protein_g: number | null;
   daily_carbs_g: number | null;
   daily_fat_g: number | null;
-  /** Water goal in ml. Blank = no goal: no ring, just the total. */
-  daily_water_ml: number | null;
+  /** Water goal in ml. Never blank: everyone starts at 2,000 ml. */
+  daily_water_ml: number;
+  /** "Show water on Today". Off hides water there; the goal is kept. */
+  show_water: boolean;
 };
 
-export const NO_TARGETS: Targets = {
+export const DEFAULT_WATER_ML = 2000;
+
+const WATER_GOAL_ERROR = "Enter a goal in ml, like 2000.";
+
+/**
+ * What you have before saving Settings for the first time: no calorie or
+ * macro targets, and a 2,000 ml water goal with the water ring on, so the
+ * ring shows from day one.
+ */
+export const DEFAULT_TARGETS: Targets = {
   daily_kcal: null,
   daily_protein_g: null,
   daily_carbs_g: null,
   daily_fat_g: null,
-  daily_water_ml: null,
+  daily_water_ml: DEFAULT_WATER_ML,
+  show_water: true,
 };
 
 export type RawTargets = {
@@ -31,6 +43,8 @@ export type RawTargets = {
   carbs?: unknown;
   fat?: unknown;
   water?: unknown;
+  /** The "Show water on Today" switch: "true" when on. */
+  showWater?: unknown;
 };
 
 export type TargetsResult =
@@ -58,7 +72,9 @@ export function validateTargets(raw: RawTargets): TargetsResult {
       return null;
     }
     if (parsed === "invalid" || parsed < 0) {
-      fieldErrors[key] = "Enter a number, or leave it blank.";
+      // The water goal can't be left blank, so don't suggest it.
+      fieldErrors[key] =
+        key === "water" ? WATER_GOAL_ERROR : "Enter a number, or leave it blank.";
       return null;
     }
     const rounded = Math.round(parsed);
@@ -69,34 +85,44 @@ export function validateTargets(raw: RawTargets): TargetsResult {
     return rounded;
   };
 
+  const water = read("water", MAX_WATER_ML, "ml");
   const value: Targets = {
     daily_kcal: read("kcal", MAX_KCAL, "kcal"),
     daily_protein_g: read("protein", MAX_GRAMS, "g"),
     daily_carbs_g: read("carbs", MAX_GRAMS, "g"),
     daily_fat_g: read("fat", MAX_GRAMS, "g"),
-    daily_water_ml: read("water", MAX_WATER_ML, "ml"),
+    daily_water_ml: water ?? DEFAULT_WATER_ML,
+    // Only an explicit "false" turns water off. A missing value (a page
+    // loaded before this switch existed) keeps the default: on.
+    show_water: raw.showWater !== "false",
   };
 
   // 0.4 rounds to 0 too, so check after rounding.
   if (value.daily_kcal === 0) {
     fieldErrors.kcal = "Calories can't be 0. Leave it blank for no target.";
   }
-  // A 0 ml goal is met before you drink anything, so it can't be a goal.
-  if (value.daily_water_ml === 0) {
-    fieldErrors.water = "Water can't be 0. Leave it blank for no goal.";
+  // The water goal can't be blank (turning water off is the switch), and a
+  // 0 ml goal would be met before you drink anything. Only checked when
+  // the box had no other mistake in it.
+  if (!fieldErrors.water && (water === null || water === 0)) {
+    fieldErrors.water = WATER_GOAL_ERROR;
   }
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
   return { ok: true, value };
 }
 
+/**
+ * True once you've set a calorie or macro target. The water goal doesn't
+ * count: everyone has one by default, so it would hide "Set daily targets"
+ * from new users.
+ */
 export function hasAnyTarget(t: Targets): boolean {
   return (
     t.daily_kcal !== null ||
     t.daily_protein_g !== null ||
     t.daily_carbs_g !== null ||
-    t.daily_fat_g !== null ||
-    t.daily_water_ml !== null
+    t.daily_fat_g !== null
   );
 }
 

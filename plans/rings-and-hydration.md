@@ -1,5 +1,9 @@
 # Rings and hydration on Today (approved 2026-11-11)
 
+Update: the water goal is no longer optional. Everyone starts at 2,000 ml
+and Settings has a "Show water on Today" switch instead of a blank goal
+(plans/duplicates-and-water-goal.md, migration 010).
+
 Goal: fewer numbers at a glance.
 
 ## Decisions

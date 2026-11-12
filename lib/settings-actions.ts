@@ -22,6 +22,7 @@ export async function saveTargets(
       carbs: formData.get("carbs"),
       fat: formData.get("fat"),
       water: formData.get("water"),
+      showWater: formData.get("showWater"),
     });
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 

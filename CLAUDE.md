@@ -112,7 +112,9 @@ through their parent row.
 
 - user_settings (one row per user)
   user_id, daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g,
-  daily_water_ml (optional; blank = no water ring, just the total),
+  daily_water_ml (2,000 by default, never blank), show_water ("Show
+  water on Today", on by default; off hides water there and keeps the
+  goal). No row yet = these defaults and no calorie or macro targets.
   weekly_budget, week_starts_on, timezone
 
 Formulas (pure functions in /lib):

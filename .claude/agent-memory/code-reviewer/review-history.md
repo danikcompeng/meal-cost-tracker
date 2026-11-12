@@ -37,3 +37,12 @@ metadata:
   spelling (plan says numbers only); comment claims focus returns to Save (it doesn't, same
   reason as bottom-sheet.tsx); optional: render dialog after Save so it's never the default
   button; getFoodsNewestFirst duplicates getFoods.
+- 2026-11-11 water goal 2,000 ml + show_water switch (commit e9757d6, unpushed): Minor issues.
+  010 order/transaction/CHECK/RLS fine; getTargets no-row/old-row fine; hidden goal box still
+  submitted (hidden != disabled); no leftover null-water code. Raised: deploy right after 010
+  (old live code upserts water null -> NOT NULL fails for first-time savers); water "-5"/"abc"
+  error says "or leave it blank" (blank is refused); calorie hints vanish while water box is
+  blank (preview.ok false); stale server water error reappears after off -> reset -> on;
+  010 re-run errors on add column (use if not exists; safe anyway); fieldset/legend so screen
+  readers hear "water" with "Daily goal"; missing showWater field = off (maybe !== "false");
+  showsWater() is now a one-line wrapper.

@@ -58,6 +58,10 @@
   (normalizeName, findDuplicate newest-first, duplicateChanges), saveFood in food-actions.ts
   (barcode pre-check, then name+brand; duplicateChoice "update"/"keep"; updateExisting),
   getFoodsNewestFirst, components/duplicate-dialog.tsx (inside the form, submit buttons).
+- Water goal (plan s.2; 010_default_water_goal.sql): daily_water_ml NOT NULL default 2000,
+  show_water bool default true. DEFAULT_TARGETS (replaced NO_TARGETS) = no row. Targets.
+  daily_water_ml is number (never null). components/switch-row.tsx shared switch (hidden input
+  "true"/"false"); targets-form Water section, toggleWater resets invalid box to savedWater.
 
 ## Project decisions
 - Unit prices for g/ml shown "per 100" ($0.70 / 100 g); "each" shown per item.
@@ -91,6 +95,9 @@
 - Duplicates (approved 2026-11-11): native dialog, focus starts on Cancel, max 3 change lines
   + "and N more", price compared per 100 g, newest match offered, editing never asks,
   barcode duplicates keep their "Log that one" message. Don't re-raise.
+- Water goal (approved 2026-11-11): 2,000 ml for new + existing users; "Show water on Today"
+  switch; off hides water everywhere on Today but keeps the goal; goal never blank/0; no row =
+  defaults; "Set daily targets" ignores water. Don't re-raise.
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07).
@@ -111,7 +118,7 @@
 
 ## Review history
 - [Review history](review-history.md) — every past review: date, verdict, findings raised (check
-  before re-raising). Latest: 2026-11-11 duplicate foods, Minor issues.
+  before re-raising). Latest: 2026-11-11 water goal + show_water switch, Minor issues.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
@@ -136,5 +143,8 @@
 - <dialog> + React: React removes the element BEFORE the effect cleanup's close(), so the
   browser never restores focus. bottom-sheet.tsx handles it (opener.focus()); new dialogs must too.
   Esc/backdrop handlers should respect `pending` like the buttons do.
+- Migrations that make a column NOT NULL: the OLD live code may still write null in the gap
+  between running SQL and deploying. Check what old code sends, say "deploy straight after".
+- Shared error wording ("or leave it blank") reused for a field that is now required.
 - Manual backfills run in the SQL editor bypass RLS (admin role): always scope them by id/user.
 - Developer responds well to concrete worked examples (rice test); keep using them.

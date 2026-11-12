@@ -94,7 +94,7 @@ export function TodayView({
         water={water}
         isToday={isToday}
         targets={targets}
-        showWater={showsWater(targets, foods.some((f) => f.counts_toward_hydration), water)}
+        showWater={showsWater(targets)}
         initialOpen={detailsOpen}
       />
 

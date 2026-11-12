@@ -1,54 +1,69 @@
 import { describe, expect, it } from "vitest";
 import {
+  DEFAULT_TARGETS,
   hasAnyTarget,
   kcalHeadline,
   lowCalorieNote,
-  NO_TARGETS,
   ofTarget,
   progress,
   targetsHint,
   validateTargets,
+  type RawTargets,
 } from "./targets";
+
+/** What the Settings form sends: the water goal and switch are always there. */
+const check = (raw: RawTargets) => validateTargets({ water: "2000", showWater: "true", ...raw });
 
 describe("validateTargets", () => {
   it("treats blank boxes as no target, never 0", () => {
-    expect(validateTargets({ kcal: "", protein: "  ", carbs: undefined, fat: null })).toEqual({
+    expect(check({ kcal: "", protein: "  ", carbs: undefined, fat: null })).toEqual({
       ok: true,
-      value: NO_TARGETS,
+      value: DEFAULT_TARGETS,
     });
   });
 
   it("accepts whole numbers", () => {
-    expect(validateTargets({ kcal: "2000", protein: "140", carbs: "200", fat: "60" })).toEqual({
+    expect(check({ kcal: "2000", protein: "140", carbs: "200", fat: "60" })).toEqual({
       ok: true,
       value: {
         daily_kcal: 2000,
         daily_protein_g: 140,
         daily_carbs_g: 200,
         daily_fat_g: 60,
-        daily_water_ml: null,
+        daily_water_ml: 2000,
+        show_water: true,
       },
     });
   });
 
   it("reads a water goal in ml, rounded, up to 10,000", () => {
-    expect(validateTargets({ water: "2000.4" })).toEqual({
+    expect(check({ water: "2400.4" })).toEqual({
       ok: true,
-      value: { ...NO_TARGETS, daily_water_ml: 2000 },
+      value: { ...DEFAULT_TARGETS, daily_water_ml: 2400 },
     });
-    const tooMuch = validateTargets({ water: "10001" });
+    const tooMuch = check({ water: "10001" });
     expect(!tooMuch.ok && tooMuch.fieldErrors.water).toBe("That looks too high. The most is 10,000 ml.");
   });
 
-  it("refuses a 0 ml water goal (it'd be met before you drink anything)", () => {
-    for (const water of ["0", "0.4"]) {
-      const result = validateTargets({ water });
-      expect(!result.ok && result.fieldErrors.water).toMatch(/can't be 0/);
+  it("needs a water goal: blank, 0, words or negatives get one clear message", () => {
+    for (const water of ["", "0", "0.4", undefined, "-5", "lots"]) {
+      const result = check({ water });
+      expect(!result.ok && result.fieldErrors.water).toBe("Enter a goal in ml, like 2000.");
     }
   });
 
+  it("reads the Show water switch, and keeps the goal while it's off", () => {
+    const off = check({ water: "2400", showWater: "false" });
+    expect(off.ok && off.value).toMatchObject({ show_water: false, daily_water_ml: 2400 });
+  });
+
+  it("keeps water on when the switch's value is missing (only 'false' turns it off)", () => {
+    const missing = validateTargets({ water: "2000" });
+    expect(missing.ok && missing.value.show_water).toBe(true);
+  });
+
   it("rounds decimals to whole numbers", () => {
-    const result = validateTargets({ kcal: "1999.5", protein: "140.4", carbs: "0,6" });
+    const result = check({ kcal: "1999.5", protein: "140.4", carbs: "0,6" });
     expect(result.ok && result.value).toMatchObject({
       daily_kcal: 2000,
       daily_protein_g: 140,
@@ -57,24 +72,24 @@ describe("validateTargets", () => {
   });
 
   it("refuses 1,000 because it could mean 1000 or 1", () => {
-    const result = validateTargets({ kcal: "2,000" });
+    const result = check({ kcal: "2,000" });
     expect(!result.ok && result.fieldErrors.kcal).toMatch(/without a comma/);
   });
 
   it("refuses 0 kcal, including decimals that round to 0", () => {
     for (const kcal of ["0", "0.4"]) {
-      const result = validateTargets({ kcal });
+      const result = check({ kcal });
       expect(!result.ok && result.fieldErrors.kcal).toMatch(/can't be 0/);
     }
   });
 
   it("allows a 0 g macro target", () => {
-    const result = validateTargets({ carbs: "0" });
+    const result = check({ carbs: "0" });
     expect(result.ok && result.value.daily_carbs_g).toBe(0);
   });
 
   it("refuses words, negatives and numbers above the limits", () => {
-    const result = validateTargets({ kcal: "10001", protein: "-5", carbs: "lots", fat: "1000.6" });
+    const result = check({ kcal: "10001", protein: "-5", carbs: "lots", fat: "1000.6" });
     expect(!result.ok && result.fieldErrors).toEqual({
       kcal: "That looks too high. The most is 10,000 kcal.",
       protein: "Enter a number, or leave it blank.",
@@ -84,16 +99,19 @@ describe("validateTargets", () => {
   });
 
   it("accepts the limits themselves", () => {
-    const result = validateTargets({ kcal: "10000", protein: "1000" });
+    const result = check({ kcal: "10000", protein: "1000" });
     expect(result.ok).toBe(true);
   });
 });
 
 describe("hasAnyTarget", () => {
   it("is false with nothing set and true with one target", () => {
-    expect(hasAnyTarget(NO_TARGETS)).toBe(false);
-    expect(hasAnyTarget({ ...NO_TARGETS, daily_fat_g: 0 })).toBe(true);
-    expect(hasAnyTarget({ ...NO_TARGETS, daily_water_ml: 2000 })).toBe(true);
+    expect(hasAnyTarget(DEFAULT_TARGETS)).toBe(false);
+    expect(hasAnyTarget({ ...DEFAULT_TARGETS, daily_fat_g: 0 })).toBe(true);
+  });
+
+  it("ignores the water goal: everyone has one, so 'Set daily targets' still shows", () => {
+    expect(hasAnyTarget({ ...DEFAULT_TARGETS, daily_water_ml: 3000 })).toBe(false);
   });
 });
 
@@ -103,7 +121,8 @@ describe("targetsHint", () => {
     daily_protein_g: 140,
     daily_carbs_g: 200,
     daily_fat_g: 70,
-    daily_water_ml: null,
+    daily_water_ml: 2000,
+    show_water: true,
   };
 
   it("stays quiet when macros roughly match (560 + 800 + 630 = 1,990)", () => {

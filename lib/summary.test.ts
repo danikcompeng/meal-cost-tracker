@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest";
 import { dayTotals } from "./day-totals";
 import { NO_EXTRAS } from "./macros";
 import { costLine, showsWater, summarySlots } from "./summary";
-import { NO_TARGETS } from "./targets";
+import { DEFAULT_TARGETS } from "./targets";
+
+/** No calorie or macro targets (water's goal doesn't matter for these). */
+const NO_TARGETS = DEFAULT_TARGETS;
 
 const entry = {
   kcal: 500,
@@ -18,6 +21,7 @@ const targets = {
   daily_carbs_g: 200,
   daily_fat_g: 30,
   daily_water_ml: 2000,
+  show_water: true,
 };
 
 describe("summarySlots", () => {
@@ -62,14 +66,13 @@ describe("summarySlots", () => {
 });
 
 describe("showsWater", () => {
-  it("shows water with a goal, a hydrating food, or water logged", () => {
-    expect(showsWater({ ...NO_TARGETS, daily_water_ml: 2000 }, false, 0)).toBe(true);
-    expect(showsWater(NO_TARGETS, true, 0)).toBe(true);
-    expect(showsWater(NO_TARGETS, false, 250)).toBe(true);
+  it("shows water from day one: on by default with a 2,000 ml goal", () => {
+    expect(showsWater(DEFAULT_TARGETS)).toBe(true);
+    expect(DEFAULT_TARGETS.daily_water_ml).toBe(2000);
   });
 
-  it("hides it until you start using hydration", () => {
-    expect(showsWater(NO_TARGETS, false, 0)).toBe(false);
+  it("hides it when you switch it off", () => {
+    expect(showsWater({ ...DEFAULT_TARGETS, show_water: false })).toBe(false);
   });
 });
 

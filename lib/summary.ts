@@ -87,12 +87,12 @@ export function summarySlots(
 }
 
 /**
- * Whether the water slot shows at all: when you have a water goal, a food
- * that counts toward hydration, or water logged that day. Otherwise you
- * haven't started using hydration, and it would be a "0 ml" for nothing.
+ * Whether the water slot shows at all: whenever "Show water on Today" is
+ * on (it is by default, with a 2,000 ml goal). Off hides it everywhere on
+ * Today, folded and in the details.
  */
-export function showsWater(targets: Targets, hasHydratingFood: boolean, water: number): boolean {
-  return targets.daily_water_ml !== null || hasHydratingFood || water > 0;
+export function showsWater(targets: Targets): boolean {
+  return targets.show_water;
 }
 
 /**
