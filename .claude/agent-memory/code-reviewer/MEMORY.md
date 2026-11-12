@@ -76,6 +76,10 @@
 - "Bought another?" (decided 2026-11-11): when Kitchen/purchases are built, scanning a food you
   already have should offer to record a new purchase (price), not only go to Log it.
   Remind when reviewing the Kitchen/purchases feature or touching lookupBarcode "mine".
+- Today ?log= race (finding 6, 2026-11-11, accepted by the developer): closing the scanned food's
+  sheet starts router.replace("/"); when it lands, logFood -> null changes TodayView's key and
+  remounts it, so a sheet opened in that ~1 s window disappears. Rare; the fix (logFood out of
+  the key) risks the sheet not opening after a scan. Don't re-raise unless it's seen in use.
 
 ## Review history
 - 2026-11-07 lib/cost.ts: 1a/1b/3a fixed, verified. Looks good.
