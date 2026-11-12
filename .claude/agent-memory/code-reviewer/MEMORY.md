@@ -80,9 +80,6 @@
 ## Deferred (fix later)
 - Targets per day: targets aren't stored per day, so past days show no bars; revisit when
   per-day targets are built (2026-11-11).
-- (Remind when touching food validation) Tiny package sizes (e.g. 0.0001 g) round to 0.000 in numeric(12,3) and fail CHECK > 0 with
-  only "Couldn't save." (finding 3d, 2026-11-09). Planned fix: reject Math.round(x*1000)===0.
-  (Entry amounts already do this correctly in parseAmount.)
 - "Bought another?" (decided 2026-11-11): when Kitchen/purchases are built, scanning a food you
   already have should offer to record a new purchase (price), not only go to Log it.
   Remind when reviewing the Kitchen/purchases feature or touching lookupBarcode "mine".

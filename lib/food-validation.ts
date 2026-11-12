@@ -99,6 +99,14 @@ export function validateFood(
   const unit = isInputUnit(raw.unit) ? raw.unit : null;
   if (!unit) fieldErrors.unit = "Pick a unit.";
 
+  // The database keeps package sizes to 3 decimals (in g, ml or items), so
+  // 0.0001 g would be saved as 0.000 and refused by its "above 0" rule,
+  // showing only "Couldn't save." Catch it here with a clear message.
+  // Checked after kg / l become g / ml, because that's what gets saved.
+  if (size !== null && size > 0 && unit && Math.round(toBaseUnit(size, unit).amount * 1000) === 0) {
+    fieldErrors.packageSize = "That's too small to save. Check the size.";
+  }
+
   // kg and l become g and ml, so macros are always per 100 g or 100 ml.
   const baseUnit = unit ? toBaseUnit(1, unit).unit : null;
   const macros = validateMacros(raw, baseUnit);

@@ -115,6 +115,16 @@ describe("validateFood", () => {
     }
   });
 
+  it("rejects a size that would be saved as 0.000, with a clear message", () => {
+    // The database keeps 3 decimals: 0.0001 g would become 0.000.
+    const tiny = validateFood({ ...valid, packageSize: "0.0001" });
+    expect(!tiny.ok && tiny.fieldErrors.packageSize).toMatch(/too small/);
+    // 0.001 g is the smallest size that survives.
+    expect(validateFood({ ...valid, packageSize: "0.001" }).ok).toBe(true);
+    // Checked after converting: 0.0001 kg is 0.1 g, which is fine.
+    expect(validateFood({ ...valid, unit: "kg", packageSize: "0.0001" }).ok).toBe(true);
+  });
+
   it("rejects a unit it doesn't know", () => {
     const result = validateFood({ ...valid, unit: "cups" });
     expect(!result.ok && result.fieldErrors.unit).toBeTruthy();
