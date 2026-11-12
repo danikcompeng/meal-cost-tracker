@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { nutrientsForAmount, scaleSnapshot, snapshotFor } from "./nutrition";
+import { NO_EXTRAS } from "./macros";
+import { nutrientsForAmount, nutrientsFromRow, scaleSnapshot, snapshotFor } from "./nutrition";
 import type { Food } from "./types";
 
 const oats: Food = {
@@ -14,6 +15,10 @@ const oats: Food = {
   protein_g: 13,
   carbs_g: 60,
   fat_g: 7,
+  sugar_g: 1,
+  fiber_g: 10,
+  saturated_fat_g: 1.2,
+  sodium_mg: 6,
 };
 
 const egg: Food = {
@@ -28,6 +33,7 @@ const egg: Food = {
   protein_g: 6.3,
   carbs_g: 0.4,
   fat_g: 4.8,
+  ...NO_EXTRAS,
 };
 
 const rice: Food = {
@@ -42,6 +48,7 @@ const rice: Food = {
   protein_g: 7,
   carbs_g: 79,
   fat_g: 0.6,
+  ...NO_EXTRAS,
 };
 
 // Decimal maths in JavaScript is a hair off (0.1 + 0.2 = 0.30000000000000004),
@@ -60,6 +67,10 @@ describe("nutrientsForAmount", () => {
       protein_g: 19.5,
       carbs_g: 90,
       fat_g: 10.5,
+      sugar_g: 1.5,
+      fiber_g: 15,
+      saturated_fat_g: 1.8,
+      sodium_mg: 9,
     });
   });
 
@@ -69,6 +80,8 @@ describe("nutrientsForAmount", () => {
       protein_g: 12.6,
       carbs_g: 0.8,
       fat_g: 9.6,
+      // The egg has none of the extras: they stay missing, never 0.
+      ...NO_EXTRAS,
     });
   });
 
@@ -96,8 +109,34 @@ describe("snapshotFor", () => {
   });
 });
 
+describe("nutrientsFromRow", () => {
+  it("turns database text into numbers and keeps blanks blank, never 0", () => {
+    const row = { kcal: "379.0", protein_g: 13, carbs_g: null, fat_g: "0", sodium_mg: "6.0" };
+    expect(nutrientsFromRow(row)).toEqual({
+      kcal: 379,
+      protein_g: 13,
+      carbs_g: null,
+      fat_g: 0,
+      sugar_g: null,
+      fiber_g: null,
+      saturated_fat_g: null,
+      sodium_mg: 6,
+    });
+  });
+});
+
 describe("scaleSnapshot", () => {
-  const logged = { kcal: 568.5, protein_g: 19.5, carbs_g: 90, fat_g: null, cost: 1.05 };
+  const logged = {
+    kcal: 568.5,
+    protein_g: 19.5,
+    carbs_g: 90,
+    fat_g: null,
+    sugar_g: 1.5,
+    fiber_g: null,
+    saturated_fat_g: 1.8,
+    sodium_mg: 9,
+    cost: 1.05,
+  };
 
   it("scales everything by the new amount", () => {
     expectClose(scaleSnapshot(logged, 150, 300), {
@@ -105,6 +144,10 @@ describe("scaleSnapshot", () => {
       protein_g: 39,
       carbs_g: 180,
       fat_g: null,
+      sugar_g: 3,
+      fiber_g: null,
+      saturated_fat_g: 3.6,
+      sodium_mg: 18,
       cost: 2.1,
     });
   });

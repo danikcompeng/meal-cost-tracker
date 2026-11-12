@@ -1,13 +1,16 @@
 import "server-only";
 import { numberOrNull } from "./numbers";
+import { nutrientsFromRow } from "./nutrition";
 import { logDbError } from "./server-helpers";
 import { createClient } from "./supabase/server";
 import type { MealEntry } from "./types";
 
 // Reads only. Row Level Security limits these to the logged-in user's rows.
 
+// One string, not "a" + "b": Supabase reads this text to know the row's
+// shape, and a joined string is just "some string" to TypeScript.
 const ENTRY_COLUMNS =
-  "id, day, meal, food_id, name, unit, amount, kcal, protein_g, carbs_g, fat_g, cost";
+  "id, day, meal, food_id, name, unit, amount, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost";
 
 export async function getEntriesForDay(day: string): Promise<MealEntry[]> {
   const supabase = await createClient();
@@ -56,10 +59,7 @@ function toEntry(row: Record<string, unknown>): MealEntry {
   return {
     ...(row as unknown as MealEntry),
     amount: Number(row.amount),
-    kcal: numberOrNull(row.kcal),
-    protein_g: numberOrNull(row.protein_g),
-    carbs_g: numberOrNull(row.carbs_g),
-    fat_g: numberOrNull(row.fat_g),
+    ...nutrientsFromRow(row),
     cost: numberOrNull(row.cost),
   };
 }

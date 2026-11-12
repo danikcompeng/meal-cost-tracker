@@ -5,11 +5,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "./form-field";
+import { MoreNutrients } from "./more-nutrients";
+import { NutrientInput } from "./nutrient-input";
 import { SegmentedControl } from "./segmented-control";
 import { saveFood } from "@/lib/food-actions";
-import { validateFood, validateMacros } from "@/lib/food-validation";
+import { FIELD_COLUMNS, validateFood, validateMacros } from "@/lib/food-validation";
 import { unitPriceLabel } from "@/lib/cost";
-import { basisChangeNote, basisLabel, calorieHint, type Macros } from "@/lib/macros";
+import { basisChangeNote, basisLabel, calorieHint, type Nutrients } from "@/lib/macros";
 import type { FoodDraft } from "@/lib/food-draft";
 import { missingMacros, missingNote } from "@/lib/open-food-facts";
 import { inputUnitsFor, toBaseUnit, type BaseUnit, type InputUnit } from "@/lib/units";
@@ -17,8 +19,11 @@ import type { FormState, Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 type MacroKey = "kcal" | "protein" | "carbs" | "fat";
+/** Every nutrient box: the main four and the four under "More nutrients". */
+type NutrientField = keyof typeof FIELD_COLUMNS;
+const NUTRIENT_FIELDS = Object.keys(FIELD_COLUMNS) as NutrientField[];
 
-type Fields = Record<MacroKey, string> & {
+type Fields = Record<NutrientField, string> & {
   name: string;
   brand: string;
   price: string;
@@ -33,6 +38,10 @@ const EMPTY: Fields = {
   protein: "",
   carbs: "",
   fat: "",
+  sugar: "",
+  fiber: "",
+  saturatedFat: "",
+  sodium: "",
   price: "",
   packageSize: "",
   unit: "g",
@@ -55,14 +64,20 @@ const MACRO_FIELDS: { key: MacroKey; label: string; suffix: string }[] = [
 // or the edit form would show the word "null" in the box.
 const toField = (value: number | null) => (value === null ? "" : String(value));
 
-// A saved food's (or a scan's) macros were all entered for its unit.
-function macroUnitsFrom(food: Macros & { unit: BaseUnit }): Partial<Record<MacroKey, BaseUnit>> {
-  const saved = { kcal: food.kcal, protein: food.protein_g, carbs: food.carbs_g, fat: food.fat_g };
+// A saved food's (or a scan's) nutrients were all entered for its unit.
+function macroUnitsFrom(
+  food: Nutrients & { unit: BaseUnit },
+): Partial<Record<NutrientField, BaseUnit>> {
   return Object.fromEntries(
-    Object.entries(saved)
-      .filter(([, value]) => value !== null)
-      .map(([key]) => [key, food.unit]),
+    NUTRIENT_FIELDS.filter((key) => food[FIELD_COLUMNS[key]] !== null).map((key) => [key, food.unit]),
   );
+}
+
+// Every nutrient box's text, from saved numbers.
+function nutrientFields(n: Nutrients): Record<NutrientField, string> {
+  return Object.fromEntries(
+    NUTRIENT_FIELDS.map((key) => [key, toField(n[FIELD_COLUMNS[key]])]),
+  ) as Record<NutrientField, string>;
 }
 
 // Numbers from a scan, as text for the boxes. The price is always blank:
@@ -71,10 +86,7 @@ function fieldsFromDraft(draft: FoodDraft): Fields {
   return {
     name: draft.name ?? "",
     brand: draft.brand ?? "",
-    kcal: toField(draft.kcal),
-    protein: toField(draft.protein_g),
-    carbs: toField(draft.carbs_g),
-    fat: toField(draft.fat_g),
+    ...nutrientFields(draft),
     price: "",
     packageSize: toField(draft.packageSize),
     unit: draft.unit,
@@ -86,10 +98,7 @@ function fieldsFrom(food: Food | null): Fields {
   return {
     name: food.name,
     brand: food.brand ?? "",
-    kcal: toField(food.kcal),
-    protein: toField(food.protein_g),
-    carbs: toField(food.carbs_g),
-    fat: toField(food.fat_g),
+    ...nutrientFields(food),
     price: String(food.price),
     packageSize: String(food.package_size),
     unit: food.unit,
@@ -119,7 +128,7 @@ export function FoodForm({
   // Which unit each macro on screen was typed for. If you then switch the
   // unit, we can warn that those numbers now mean something else. A scan's
   // numbers belong to the scan's unit (per 100 g or per 100 ml).
-  const [macroUnits, setMacroUnits] = useState<Partial<Record<MacroKey, BaseUnit>>>(() => {
+  const [macroUnits, setMacroUnits] = useState<Partial<Record<NutrientField, BaseUnit>>>(() => {
     if (editing) return macroUnitsFrom(editing);
     if (draft) return macroUnitsFrom(draft);
     return {};
@@ -129,6 +138,7 @@ export function FoodForm({
   // Shown while Calories still holds the converted number. If you type
   // your own, the note no longer applies.
   const convertedKcal = draft?.kcalFromKj ? toField(draft.kcal) : null;
+  const sodiumFromSalt = draft?.sodiumFromSalt ? toField(draft.sodium_mg) : null;
   const barcode = editing?.barcode ?? draft?.barcode ?? null;
 
   const [state, formAction, pending] = useActionState(
@@ -149,7 +159,7 @@ export function FoodForm({
   const set = (key: keyof Fields) => (e: { target: { value: string } }) =>
     setFields((f) => ({ ...f, [key]: e.target.value }));
 
-  function setMacro(key: MacroKey, value: string) {
+  function setMacro(key: NutrientField, value: string) {
     setFields((f) => ({ ...f, [key]: value }));
     // Typing in a box means you've looked at that number for the current unit.
     setMacroUnits((units) => ({ ...units, [key]: measuredBy }));
@@ -162,13 +172,22 @@ export function FoodForm({
   }
 
   // Only boxes with a number in them count; an empty box can't be wrong.
-  const filledUnits = MACRO_FIELDS.filter(({ key }) => fields[key].trim() !== "").map(
-    ({ key }) => macroUnits[key] ?? measuredBy,
+  const filledUnits = NUTRIENT_FIELDS.filter((key) => fields[key].trim() !== "").map(
+    (key) => macroUnits[key] ?? measuredBy,
   );
   const unitNote = basisChangeNote(filledUnits, measuredBy);
   const macros = validateMacros(fields, measuredBy);
+  // Sodium isn't filled in by 0 kcal (salt has no calories), so say why
+  // it stays blank.
+  // If the main boxes are all typed, the blanks are the folded-away ones,
+  // so name them instead of "blank macros".
+  const onlyExtrasBlank = ["protein", "carbs", "fat"].every(
+    (key) => fields[key as NutrientField].trim() !== "",
+  );
   const hint = macros.filledBlanks
-    ? "Blank macros will be saved as 0 g, since 0 kcal means none."
+    ? `${onlyExtrasBlank ? "Sugar, fiber and sat fat" : "Blank macros"} will be saved as 0 g, since 0 kcal means none.${
+        macros.value.sodium_mg === null ? " Sodium stays blank: salt has no calories." : ""
+      }`
     : calorieHint(macros.value);
   const preview = validateFood(fields);
   // Numbers from Open Food Facts can be wrong (say, 120 g protein per
@@ -178,6 +197,9 @@ export function FoodForm({
     ...(state.fieldErrors ?? {}),
   };
   const missing = draft && fromOpenFoodFacts ? missingNote(missingMacros(draft)) : null;
+  // After a scan, a blank box means "they didn't have it", not "you can
+  // skip this".
+  const placeholder = fromOpenFoodFacts ? "not listed" : "optional";
 
   return (
     <form action={formAction} className="space-y-6 rounded-2xl bg-card p-4" noValidate>
@@ -249,41 +271,37 @@ export function FoodForm({
 
         <div className="grid grid-cols-2 gap-3">
           {MACRO_FIELDS.map(({ key, label, suffix }) => (
-            <Field
+            <NutrientInput
               key={key}
+              name={key}
               label={label}
-              htmlFor={key}
+              suffix={suffix}
+              value={fields[key]}
+              onChange={(value) => setMacro(key, value)}
+              placeholder={placeholder}
               error={errors[key]}
+              invalid={Boolean(errors.macros)}
               labelClassName={key === "protein" ? "text-primary" : undefined}
-            >
-              <div className="relative">
-                <Input
-                  id={key}
-                  name={key}
-                  value={fields[key]}
-                  onChange={(e) => setMacro(key, e.target.value)}
-                  inputMode="decimal"
-                  // After a scan, a blank box means "they didn't have it",
-                  // not "you can skip this".
-                  placeholder={fromOpenFoodFacts ? "not listed" : "optional"}
-                  className="h-11 bg-background pr-12 tabular-nums md:text-base"
-                  aria-invalid={Boolean(errors[key] ?? errors.macros)}
-                />
-                <span
-                  aria-hidden="true"
-                  className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground"
-                >
-                  {suffix}
-                </span>
-              </div>
-              {key === "kcal" && convertedKcal !== null && fields.kcal === convertedKcal && (
-                <p className="text-[13px] text-muted-foreground">Converted from kJ</p>
-              )}
-            </Field>
+              note={
+                key === "kcal" && convertedKcal !== null && fields.kcal === convertedKcal
+                  ? "Converted from kJ"
+                  : null
+              }
+            />
           ))}
         </div>
 
         {errors.macros && <p className="text-sm text-destructive">{errors.macros}</p>}
+
+        <MoreNutrients
+          values={fields}
+          onChange={setMacro}
+          errors={errors}
+          placeholder={placeholder}
+          sodiumNote={
+            sodiumFromSalt !== null && fields.sodium === sodiumFromSalt ? "Worked out from salt" : null
+          }
+        />
         {/* A soft hint only: it never stops you saving. */}
         <p className="min-h-5 text-sm text-muted-foreground" aria-live="polite">
           {hint}

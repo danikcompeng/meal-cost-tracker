@@ -1,10 +1,12 @@
 import "server-only";
-import { numberOrNull } from "./numbers";
+import { nutrientsFromRow } from "./nutrition";
 import { createClient } from "./supabase/server";
 import type { Food } from "./types";
 
+// One string, not "a" + "b": Supabase reads this text to know the row's
+// shape, and a joined string is just "some string" to TypeScript.
 const FOOD_COLUMNS =
-  "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g";
+  "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg";
 
 // Reads only. Row Level Security in the database guarantees this returns
 // just the logged-in user's rows, even though there's no "where user_id" here.
@@ -32,15 +34,12 @@ export async function getFood(id: string): Promise<Food | null> {
 }
 
 // Postgres "numeric" can arrive as a string; make sure we have numbers.
-// Macros use numberOrNull, because Number(null) is 0.
+// Nutrients go through nutrientsFromRow, because Number(null) is 0.
 function toFood(row: Record<string, unknown>): Food {
   return {
     ...(row as unknown as Food),
     price: Number(row.price),
     package_size: Number(row.package_size),
-    kcal: numberOrNull(row.kcal),
-    protein_g: numberOrNull(row.protein_g),
-    carbs_g: numberOrNull(row.carbs_g),
-    fat_g: numberOrNull(row.fat_g),
+    ...nutrientsFromRow(row),
   };
 }

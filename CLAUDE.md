@@ -67,8 +67,15 @@ through their parent row.
   unit ('g' | 'ml' | 'each'),
   basis_amount (nutrition is per this much: 100 for g/ml, 1 for each),
   kcal, protein_g, carbs_g, fat_g,
+  sugar_g, fiber_g, saturated_fat_g, sodium_mg  ("More nutrients",
+  shown small and quiet; sodium in mg, the rest in g),
   serving_size (optional), created_at
   unique (user_id, barcode)
+  All nutrients are optional: blank = unknown (null), never 0.
+  0 kcal rule: with kcal 0, blank protein, carbs, fat, sugar, fiber and
+  saturated fat are saved as 0. Sodium is never filled (salt has no
+  calories). Open Food Facts stores sodium in grams; if they only have
+  salt, sodium mg = salt g x 400 (salt = sodium x 2.5).
 
 - purchases (what you actually bought and paid)
   id, user_id, food_id, purchased_on, price_paid, package_size,
@@ -91,8 +98,9 @@ through their parent row.
   name, unit  (copied when logged, so past days keep their labels),
   amount (servings or food unit, > 0),
   status ('planned' | 'eaten'),
-  kcal, protein_g, carbs_g, fat_g, cost  (snapshot for this amount,
-  copied when logged/marked eaten; null = unknown, never 0),
+  kcal, protein_g, carbs_g, fat_g,
+  sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost  (snapshot for this
+  amount, copied when logged/marked eaten; null = unknown, never 0),
   created_at
   RLS: own rows, and food_id must be one of your foods.
 
@@ -103,8 +111,10 @@ through their parent row.
 Formulas (pure functions in /lib):
 - Price per unit  = latest price_paid / package_size for that food
 - Cost of amount  = amount x price per unit
-- Nutrient amount = amount x (nutrient / basis_amount)
-- Per serving     = sum over recipe ingredients / servings
+- Nutrient amount = amount x (nutrient / basis_amount), for all eight
+  nutrients (the list is NUTRIENT_KEYS in lib/macros.ts)
+- Per serving     = sum over recipe ingredients / servings, all eight
+  nutrients, with unknowns counted the same "+ N unknown" way
 - Protein per $   = protein_g / cost   (hidden if cost is 0 or unknown)
 
 ## Working rules

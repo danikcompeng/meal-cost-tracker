@@ -33,6 +33,12 @@
   0..1000, basis_amount GENERATED from unit. lib/macros.ts (macroText, basisAmount, calorieHint).
 - components/segmented-control.tsx: radio-based, butter highlight on selected (approved use).
 - FoodForm is remounted per food via key={editing?.id ?? "new"} in components/food-manager.tsx.
+- More nutrients (plan: plans/more-nutrients.md; 008_more_nutrients.sql): sugar/fiber/sat fat
+  numeric(6,1) 0..1000, sodium_mg numeric(7,1) 0..100000 on foods; plain numeric >= 0 on entries.
+  lib/macros.ts NUTRIENT_KEYS / EXTRA_KEYS / NO_EXTRAS / CALORIE_KEYS; nutrientsFromRow in
+  nutrition.ts (all reads); FIELD_COLUMNS in food-validation.ts maps box names -> columns.
+  components/more-nutrients.tsx (collapsed motion.div height 0 + inert, inputs stay in form),
+  nutrient-input.tsx; day-summary ExtraNutrients grid gated by hasAnyExtra (day-totals.ts).
 - Barcode scanning (plan: plans/barcode-scanning.md; 007_food_barcodes.sql adds barcode 8-14
   digits, brand, source, unique(user_id, barcode)). lib/barcode.ts (check digit, normalize to
   13 / 8 digits), lib/open-food-facts.ts (parseOffResponse, amount() never null->0),
@@ -63,6 +69,10 @@
 - Barcode (approved 2026-11-11): OFF called server-side with User-Agent
   "MealCostTracker/0.1 (url)", no email. Scanning your own food -> straight to Log it.
   kJ-only energy converted /4.184 with "Converted from kJ" note. Price always blank after scan.
+- More nutrients (approved 2026-11-11): 0 kcal rule fills sugar/fiber/sat fat but NEVER sodium
+  (salt is 0 kcal), and sodium > 0 doesn't block the fill. Don't flag. Fiber not compared with
+  carbs (US vs EU labels). Sodium per-100 g limit 39,400 (39,300 + slack). Food rows unchanged.
+  OFF sodium_100g is grams (x1000); salt-only x400.
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07).
@@ -86,17 +96,9 @@
 - 2026-11-09 rename ingredients -> foods: Minor issues, fixed same day except 3d.
 - 2026-11-09 macros on foods: Minor issues (unit-note clearing, segmented track invisible,
   36px segments, calorieHint comment 20% vs 25%).
-- 2026-11-09 daily food log (uncommitted): Minor issues. RLS correct, no Number(null) leaks,
-  updateEntry can't change day/food. Raised: scaleSnapshot multiplies already-rounded snapshot
-  (drift on edit, rice 1 g -> 500 g = $2.50 vs $2.48); thrown errors in actions (getFood/getEntry/
-  requireUser) hit error.tsx instead of form message; PWA left open past midnight logs to
-  yesterday (stale hidden day); foods empty + entries exist -> picker says 'No food called ""';
-  parseAmount "1,000" -> 1; getRecentFoodIds swallows error unlogged; sheet focus not returned
-  on unmount (unsure); confirm route doesn't log auth errors.
-
-- 2026-11-09 0 kcal fills blank macros (uncommitted): Looks good / minor. SQL matches TS. Raised:
-  comment claims calorieHint flags 0 kcal + 5 g protein but hint needs all 4 filled (silent);
-  note says "0 kcal" when user typed 0.04; missing 0.05-doesn't-fill test.
+- 2026-11-09 daily food log: Minor issues (rounded-snapshot drift, throws -> error.tsx, stale
+  day past midnight, "1,000" -> 1, unlogged getRecentFoodIds error). Since fixed.
+- 2026-11-09 0 kcal fills blank macros: Looks good / minor (comment vs calorieHint, tests).
 - 2026-11-11 daily targets (uncommitted): Minor issues, matches plan. RLS/upsert/CHECKs correct,
   no null->0. Raised: run 006 BEFORE pushing (Today throws without the table); low-calorie note
   flashes while typing 2 -> 2000; 20% boundary test missing (test named "20%" checks 14%);
@@ -109,6 +111,13 @@
   8 digits (dup food when later scanned); unknown camera / later detect / action errors unlogged;
   ?log= close->remount can drop a sheet opened right after; found result is a full page, not
   the plan's "panel grows into sheet" (asked developer to confirm).
+- 2026-11-11 more nutrients (uncommitted): Minor issues. validateMacros, fill rule, 008 backfill
+  (matches app rule), RLS, null handling all correct. Raised: run 008 first; "More nutrients"
+  auto-open is derived (open || hasError), so a live OFF error collapses the section mid-typing
+  when fixed (inert blurs focus) and the chevron is dead while an error shows -> latch open;
+  water (backfilled 0s) alone makes Today's extras grid appear (asked to confirm); fill hint says
+  "Blank macros" about boxes hidden under the fold; sodium "1,170" refused as ambiguous comma;
+  today-skeleton listed in plan but untouched (fine). Tiny-package fix reminded (next commit).
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
@@ -126,4 +135,6 @@
 - Async code that outlives its component: after every await, re-check a cancelled flag / request
   id before touching state, the router or a shared variable (camera hook, scan-flow, 2026-11-11).
   Closing a screen should also invalidate in-flight requests.
+- UI state derived from a live condition (isOpen = open || hasError) flips back the moment the
+  condition clears; if it should stay, latch it into state. Watch hide/inert on focused inputs.
 - Developer responds well to concrete worked examples (rice test); keep using them.

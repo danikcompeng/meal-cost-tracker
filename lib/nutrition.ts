@@ -7,9 +7,27 @@
 // 500 g gives $2.50 instead of the real $2.48.
 
 import { costOfAmount } from "./cost";
-import { basisAmount, type Macros } from "./macros";
+import { basisAmount, NUTRIENT_KEYS, type Nutrients } from "./macros";
+import { numberOrNull } from "./numbers";
 import type { Food } from "./types";
 import type { BaseUnit } from "./units";
+
+/** Applies `fn` to every nutrient, keeping each one's own key. */
+function mapNutrients(n: Nutrients, fn: (value: number | null) => number | null): Nutrients {
+  const out = {} as Nutrients;
+  for (const key of NUTRIENT_KEYS) out[key] = fn(n[key]);
+  return out;
+}
+
+/**
+ * Reads every nutrient from a database row. Postgres "numeric" can arrive
+ * as a string, and Number(null) is 0, so numberOrNull keeps blanks blank.
+ */
+export function nutrientsFromRow(row: Record<string, unknown>): Nutrients {
+  const out = {} as Nutrients;
+  for (const key of NUTRIENT_KEYS) out[key] = numberOrNull(row[key]);
+  return out;
+}
 
 /**
  * Nutrient amount = amount x (nutrient / basis_amount), from CLAUDE.md.
@@ -17,21 +35,15 @@ import type { BaseUnit } from "./units";
  * A missing nutrient stays missing (null), and a real 0 stays 0.
  */
 export function nutrientsForAmount(
-  food: Macros & { unit: BaseUnit },
+  food: Nutrients & { unit: BaseUnit },
   amount: number,
-): Macros {
+): Nutrients {
   const basis = basisAmount(food.unit);
-  const scale = (value: number | null) => (value === null ? null : (amount * value) / basis);
-  return {
-    kcal: scale(food.kcal),
-    protein_g: scale(food.protein_g),
-    carbs_g: scale(food.carbs_g),
-    fat_g: scale(food.fat_g),
-  };
+  return mapNutrients(food, (value) => (value === null ? null : (amount * value) / basis));
 }
 
 /** What gets copied into a log entry: it never changes after this. */
-export type Snapshot = Macros & {
+export type Snapshot = Nutrients & {
   name: string;
   unit: BaseUnit;
   amount: number;
@@ -54,18 +66,12 @@ export function snapshotFor(food: Food, amount: number): Snapshot {
  * later can never change a past day.
  */
 export function scaleSnapshot(
-  entry: Macros & { cost: number | null },
+  entry: Nutrients & { cost: number | null },
   oldAmount: number,
   newAmount: number,
-): Macros & { cost: number | null } {
+): Nutrients & { cost: number | null } {
   const factor = newAmount / oldAmount;
   const scale = (value: number | null) =>
     value === null || !Number.isFinite(factor) ? null : value * factor;
-  return {
-    kcal: scale(entry.kcal),
-    protein_g: scale(entry.protein_g),
-    carbs_g: scale(entry.carbs_g),
-    fat_g: scale(entry.fat_g),
-    cost: scale(entry.cost),
-  };
+  return { ...mapNutrients(entry, scale), cost: scale(entry.cost) };
 }

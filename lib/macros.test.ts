@@ -7,10 +7,11 @@ import {
   fillZeroKcalMacros,
   hasAnyMacro,
   macroText,
+  NO_EXTRAS,
   zeroKcalFillsBlanks,
 } from "./macros";
 
-const none = { kcal: null, protein_g: null, carbs_g: null, fat_g: null };
+const none = { kcal: null, protein_g: null, carbs_g: null, fat_g: null, ...NO_EXTRAS };
 
 describe("basisAmount and basisLabel", () => {
   it("is 100 for g and ml, 1 for each", () => {
@@ -88,6 +89,12 @@ describe("calorieHint", () => {
     expect(calorieHint({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })).toBeNull();
   });
 
+  it("flags 0 kcal with sugar, fiber or sat fat above 0, but not sodium", () => {
+    expect(calorieHint({ ...none, kcal: 0, fiber_g: 3 })).toMatch(/sugar, fiber or sat fat/);
+    // Salt: 0 kcal and lots of sodium is right.
+    expect(calorieHint({ ...none, kcal: 0, sodium_mg: 38758 })).toBeNull();
+  });
+
   it("says nothing until all four numbers are filled in", () => {
     expect(calorieHint({ kcal: 3790, protein_g: 13, carbs_g: 60, fat_g: null })).toBeNull();
     expect(calorieHint(none)).toBeNull();
@@ -125,25 +132,40 @@ describe("basisChangeNote", () => {
 });
 
 describe("fillZeroKcalMacros", () => {
-  it("fills blank macros with 0 when kcal is 0", () => {
-    expect(fillZeroKcalMacros({ ...none, kcal: 0 })).toEqual({
-      kcal: 0,
-      protein_g: 0,
-      carbs_g: 0,
-      fat_g: 0,
+  const allZero = {
+    kcal: 0,
+    protein_g: 0,
+    carbs_g: 0,
+    fat_g: 0,
+    sugar_g: 0,
+    fiber_g: 0,
+    saturated_fat_g: 0,
+  };
+
+  it("fills blank macros, sugar, fiber and sat fat with 0 when kcal is 0", () => {
+    expect(fillZeroKcalMacros({ ...none, kcal: 0 })).toEqual({ ...allZero, sodium_mg: null });
+  });
+
+  it("never fills sodium, and keeps a typed sodium as it is (salt)", () => {
+    expect(fillZeroKcalMacros({ ...none, kcal: 0, sodium_mg: 38758 })).toEqual({
+      ...allZero,
+      sodium_mg: 38758,
     });
   });
 
   it("leaves everything else exactly as it was", () => {
-    const contradicting = { kcal: 0, protein_g: 5, carbs_g: null, fat_g: null };
+    const contradicting = { ...none, kcal: 0, protein_g: 5 };
     expect(fillZeroKcalMacros(contradicting)).toBe(contradicting);
+    const sugary = { ...none, kcal: 0, sugar_g: 4 };
+    expect(fillZeroKcalMacros(sugary)).toBe(sugary);
     expect(fillZeroKcalMacros(none)).toBe(none);
     const someKcal = { ...none, kcal: 12 };
     expect(fillZeroKcalMacros(someKcal)).toBe(someKcal);
   });
 
   it("zeroKcalFillsBlanks is false when there's nothing blank to fill", () => {
-    expect(zeroKcalFillsBlanks({ kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 })).toBe(false);
+    // A blank sodium doesn't count: it's never filled.
+    expect(zeroKcalFillsBlanks({ ...allZero, sodium_mg: null })).toBe(false);
     expect(zeroKcalFillsBlanks({ ...none, kcal: 0 })).toBe(true);
   });
 });

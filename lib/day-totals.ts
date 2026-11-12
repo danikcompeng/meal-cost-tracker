@@ -4,7 +4,7 @@
 // values we DO know, plus how many entries are missing that value, so the
 // screen can say "1,240 kcal + 1 food without calories".
 
-import type { Macros } from "./macros";
+import { EXTRA_KEYS, NUTRIENT_KEYS, type Nutrients } from "./macros";
 
 export type Total = {
   /** Sum of the known values. null only when entries exist but none are known. */
@@ -13,11 +13,11 @@ export type Total = {
   missing: number;
 };
 
-export type DayTotals = Record<keyof Macros | "cost", Total> & { count: number };
+export type DayTotals = Record<keyof Nutrients | "cost", Total> & { count: number };
 
-type Totalable = Macros & { cost: number | null };
+type Totalable = Nutrients & { cost: number | null };
 
-const KEYS = ["kcal", "protein_g", "carbs_g", "fat_g", "cost"] as const;
+const KEYS = [...NUTRIENT_KEYS, "cost"] as const;
 
 export function dayTotals(entries: Totalable[]): DayTotals {
   const totals = { count: entries.length } as DayTotals;
@@ -31,6 +31,24 @@ export function dayTotals(entries: Totalable[]): DayTotals {
     };
   }
   return totals;
+}
+
+/**
+ * True when the day has something worth showing for sugar, fiber, sat fat
+ * or sodium. If not (nothing logged, or only foods saved before these
+ * existed), Today hides them instead of showing four dashes.
+ *
+ * Water alone doesn't count: its 0s next to older foods would only show
+ * "0 g sugar + 3 unknown". So one of the four has to be above 0, or known
+ * for every entry.
+ */
+export function hasAnyExtra(totals: DayTotals): boolean {
+  return EXTRA_KEYS.some((key) => {
+    const { sum, missing } = totals[key];
+    if (sum === null) return false;
+    // An empty day has 0 known of 0, so it's hidden too.
+    return sum > 0 || (missing === 0 && totals.count > 0);
+  });
 }
 
 const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });

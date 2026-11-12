@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseSource, validateFood, validateMacros } from "./food-validation";
+import { NO_EXTRAS } from "./macros";
 
 describe("parseSource", () => {
   it("keeps a known source and treats anything else as manual", () => {
@@ -30,6 +31,7 @@ describe("validateFood", () => {
         protein_g: null,
         carbs_g: null,
         fat_g: null,
+        ...NO_EXTRAS,
       },
     });
   });
@@ -170,6 +172,7 @@ describe("validateMacros", () => {
       protein_g: null,
       carbs_g: null,
       fat_g: null,
+      ...NO_EXTRAS,
     });
   });
 
@@ -179,7 +182,18 @@ describe("validateMacros", () => {
   });
 
   describe("0 kcal means no protein, carbs or fat", () => {
-    const zeros = { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 };
+    // Sugar, fiber and sat fat are parts of carbs and fat, so they're 0 too.
+    // Sodium isn't: salt has no calories, so it stays blank.
+    const zeros = {
+      kcal: 0,
+      protein_g: 0,
+      carbs_g: 0,
+      fat_g: 0,
+      sugar_g: 0,
+      fiber_g: 0,
+      saturated_fat_g: 0,
+      sodium_mg: null,
+    };
 
     it("saves blank macros as 0 when kcal is 0 (water)", () => {
       const result = validateMacros({ kcal: "0" }, "ml");
@@ -193,7 +207,13 @@ describe("validateMacros", () => {
 
     it("counts kcal that rounds to 0 as 0, but not kcal that rounds to 0.1", () => {
       expect(ok({ kcal: "0.04" })).toEqual(zeros);
-      expect(ok({ kcal: "0.05" })).toEqual({ kcal: 0.1, protein_g: null, carbs_g: null, fat_g: null });
+      expect(ok({ kcal: "0.05" })).toEqual({
+        kcal: 0.1,
+        protein_g: null,
+        carbs_g: null,
+        fat_g: null,
+        ...NO_EXTRAS,
+      });
     });
 
     it("fills only the boxes that are blank", () => {
@@ -204,17 +224,42 @@ describe("validateMacros", () => {
 
     it("doesn't guess when a typed macro contradicts 0 kcal", () => {
       const result = validateMacros({ kcal: "0", protein: "5" }, "g");
-      expect(result.value).toEqual({ kcal: 0, protein_g: 5, carbs_g: null, fat_g: null });
+      expect(result.value).toEqual({ kcal: 0, protein_g: 5, carbs_g: null, fat_g: null, ...NO_EXTRAS });
       expect(result.filledBlanks).toBe(false);
     });
 
-    it("keeps blanks null when kcal is above 0 or blank", () => {
-      expect(ok({ kcal: "5" })).toMatchObject({ protein_g: null, carbs_g: null, fat_g: null });
-      expect(ok({})).toEqual({ kcal: null, protein_g: null, carbs_g: null, fat_g: null });
+    it("doesn't guess when typed sugar, fiber or sat fat contradicts 0 kcal", () => {
+      for (const raw of [{ kcal: "0", sugar: "3" }, { kcal: "0", fiber: "1" }, { kcal: "0", saturatedFat: "2" }]) {
+        const result = validateMacros(raw, "g");
+        expect(result.filledBlanks).toBe(false);
+        expect(result.value.protein_g).toBeNull();
+      }
     });
 
-    it("has nothing to fill when all four are typed", () => {
+    it("leaves sodium out of the rule both ways: salt is 0 kcal with lots of sodium", () => {
+      const salt = validateMacros({ kcal: "0", sodium: "38758" }, "g");
+      expect(salt.filledBlanks).toBe(true);
+      expect(salt.value).toEqual({ ...zeros, sodium_mg: 38758 });
+      // And 0 kcal never makes up a sodium value.
+      expect(validateMacros({ kcal: "0" }, "ml").value.sodium_mg).toBeNull();
+    });
+
+    it("keeps blanks null when kcal is above 0 or blank", () => {
+      expect(ok({ kcal: "5" })).toMatchObject({ protein_g: null, carbs_g: null, fat_g: null, ...NO_EXTRAS });
+      expect(ok({})).toEqual({ kcal: null, protein_g: null, carbs_g: null, fat_g: null, ...NO_EXTRAS });
+    });
+
+    it("still fills the extras when only the main four are typed", () => {
       const result = validateMacros({ kcal: "0", protein: "0", carbs: "0", fat: "0" }, "g");
+      expect(result.value).toEqual(zeros);
+      expect(result.filledBlanks).toBe(true);
+    });
+
+    it("has nothing to fill when every gram box is typed", () => {
+      const result = validateMacros(
+        { kcal: "0", protein: "0", carbs: "0", fat: "0", sugar: "0", fiber: "0", saturatedFat: "0" },
+        "g",
+      );
       expect(result.value).toEqual(zeros);
       expect(result.filledBlanks).toBe(false);
     });
@@ -245,6 +290,72 @@ describe("validateMacros", () => {
       protein_g: 25,
       carbs_g: null,
       fat_g: null,
+      ...NO_EXTRAS,
+    });
+  });
+
+  describe("more nutrients", () => {
+    it("saves sugar, fiber and sat fat to 0.1 g and sodium to whole mg", () => {
+      expect(ok({ carbs: "60", fat: "8", sugar: "1,25", fiber: "10.04", saturatedFat: "1.5", sodium: "6.6" })).toMatchObject({
+        sugar_g: 1.3,
+        fiber_g: 10,
+        saturated_fat_g: 1.5,
+        sodium_mg: 7,
+      });
+    });
+
+    it("treats blank as null and 0 as a real 0", () => {
+      expect(ok({ sugar: "", fiber: "0", sodium: " " })).toMatchObject({
+        sugar_g: null,
+        fiber_g: 0,
+        sodium_mg: null,
+      });
+    });
+
+    it("refuses sugar above carbs and sat fat above fat, for any unit", () => {
+      for (const unit of ["g", "ml", "each"] as const) {
+        const result = validateMacros({ carbs: "10", sugar: "10.1", fat: "5", saturatedFat: "6" }, unit);
+        expect(Object.keys(result.fieldErrors).sort()).toEqual(["saturatedFat", "sugar"]);
+      }
+      expect(validateMacros({ carbs: "10", sugar: "10", fat: "5", saturatedFat: "5" }, "g").fieldErrors).toEqual({});
+      // Nothing to compare with when carbs or fat is blank.
+      expect(validateMacros({ sugar: "10", saturatedFat: "6" }, "g").fieldErrors).toEqual({});
+    });
+
+    it("doesn't compare fiber with carbs (US labels count it inside, EU don't)", () => {
+      expect(validateMacros({ carbs: "5", fiber: "8" }, "g").fieldErrors).toEqual({});
+    });
+
+    it("keeps sugar, fiber and sat fat out of the 100 g sum (they're inside carbs and fat)", () => {
+      const result = validateMacros({ protein: "10", carbs: "60", fat: "30", sugar: "50", saturatedFat: "20" }, "g");
+      expect(result.fieldErrors).toEqual({});
+    });
+
+    it("per 100 g: at most 100 g each, and sodium at most pure salt", () => {
+      expect(validateMacros({ fiber: "100.1" }, "g").fieldErrors.fiber).toBeTruthy();
+      expect(validateMacros({ sodium: "39400" }, "g").fieldErrors).toEqual({});
+      expect(validateMacros({ sodium: "39401" }, "g").fieldErrors.sodium).toBeTruthy();
+      // An "each" food can be big (a whole pizza): only the loose limit.
+      expect(validateMacros({ sodium: "50000" }, "each").fieldErrors).toEqual({});
+      expect(validateMacros({ sodium: "100001" }, "each").fieldErrors.sodium).toBeTruthy();
+    });
+
+    it("rejects words, negatives and an ambiguous comma in grams", () => {
+      expect(validateMacros({ sugar: "lots" }, "g").fieldErrors.sugar).toBeTruthy();
+      expect(validateMacros({ sodium: "-5" }, "g").fieldErrors.sodium).toBeTruthy();
+      expect(validateMacros({ fiber: "1,200" }, "each").fieldErrors.fiber).toMatch(/comma/);
+    });
+
+    it("reads a thousands comma in sodium as thousands (whole mg, like '1,170 mg')", () => {
+      expect(ok({ sodium: "1,170" }, "each").sodium_mg).toBe(1170);
+      expect(ok({ sodium: "12,500" }, "each").sodium_mg).toBe(12500);
+      // Not a thousands pattern: the usual decimal-comma rule.
+      expect(ok({ sodium: "1,5" }, "each").sodium_mg).toBe(2);
+    });
+
+    it("saves them through validateFood", () => {
+      const result = validateFood({ ...valid, carbs: "60", sugar: "1", sodium: "6" });
+      expect(result.ok && result.value).toMatchObject({ sugar_g: 1, fiber_g: null, sodium_mg: 6 });
     });
   });
 

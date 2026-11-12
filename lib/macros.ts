@@ -12,6 +12,33 @@ export type Macros = {
   fat_g: number | null;
 };
 
+/**
+ * The quieter four, under "More nutrients". Same rules as the macros: per
+ * basis amount, optional, null = not entered. Sodium is in mg, as on
+ * labels; the rest in g.
+ */
+export type ExtraNutrients = {
+  sugar_g: number | null;
+  fiber_g: number | null;
+  saturated_fat_g: number | null;
+  sodium_mg: number | null;
+};
+
+export type Nutrients = Macros & ExtraNutrients;
+
+export const MACRO_KEYS = ["kcal", "protein_g", "carbs_g", "fat_g"] as const;
+export const EXTRA_KEYS = ["sugar_g", "fiber_g", "saturated_fat_g", "sodium_mg"] as const;
+/** Every nutrient column, so scaling and adding up can loop over one list. */
+export const NUTRIENT_KEYS = [...MACRO_KEYS, ...EXTRA_KEYS] as const;
+
+/** A food with none of the extras entered (old foods, and tests). */
+export const NO_EXTRAS: ExtraNutrients = {
+  sugar_g: null,
+  fiber_g: null,
+  saturated_fat_g: null,
+  sodium_mg: null,
+};
+
 /** Nutrition is stored per this much of the food: 100 g, 100 ml or 1 item. */
 export function basisAmount(unit: BaseUnit): number {
   return unit === "each" ? 1 : 100;
@@ -40,30 +67,37 @@ export function hasAnyMacro(m: Macros): boolean {
 }
 
 /**
- * True when 0 kcal should fill in blank macros: calories are exactly 0, at
- * least one of protein / carbs / fat is blank, and every one you did type
- * is 0. If one is above 0 (0 kcal but 5 g protein), the numbers contradict
- * each other, so nothing is guessed: calorieHint flags it instead.
+ * The nutrients 0 kcal says something about: protein, carbs and fat, and
+ * the parts of them (sugar and fiber are carbs, saturated fat is fat).
+ * NOT sodium: salt has no calories (0 kcal, about 39,000 mg sodium per
+ * 100 g), so 0 kcal tells us nothing about sodium.
  */
-export function zeroKcalFillsBlanks(m: Macros): boolean {
-  const grams = [m.protein_g, m.carbs_g, m.fat_g];
+const CALORIE_KEYS = ["protein_g", "carbs_g", "fat_g", "sugar_g", "fiber_g", "saturated_fat_g"] as const;
+
+/**
+ * True when 0 kcal should fill in blanks: calories are exactly 0, at least
+ * one of the CALORIE_KEYS is blank, and every one you did type is 0. If one
+ * is above 0 (0 kcal but 5 g protein), the numbers contradict each other,
+ * so nothing is guessed: calorieHint flags it instead. Sodium doesn't
+ * count either way, so salt (0 kcal, lots of sodium) still gets its 0s.
+ */
+export function zeroKcalFillsBlanks(m: Nutrients): boolean {
+  const grams = CALORIE_KEYS.map((key) => m[key]);
   return m.kcal === 0 && grams.some((g) => g === null) && grams.every((g) => g === null || g === 0);
 }
 
 /**
  * Calories come from protein, carbs and fat (4, 4 and 9 kcal per gram), so
- * 0 kcal means all three are 0. Water saved as "0 kcal, macros blank"
- * would otherwise count as unknown and add "+ 1 unknown" to every total.
- * Blank stays blank (null) in every other case.
+ * 0 kcal means all of them, and their parts, are 0. Water saved as "0 kcal,
+ * macros blank" would otherwise count as unknown and add "+ 1 unknown" to
+ * every total. Sodium stays as it is. Blank stays blank (null) in every
+ * other case.
  */
-export function fillZeroKcalMacros(m: Macros): Macros {
+export function fillZeroKcalMacros(m: Nutrients): Nutrients {
   if (!zeroKcalFillsBlanks(m)) return m;
-  return {
-    kcal: 0,
-    protein_g: m.protein_g ?? 0,
-    carbs_g: m.carbs_g ?? 0,
-    fat_g: m.fat_g ?? 0,
-  };
+  const filled = { ...m, kcal: 0 };
+  for (const key of CALORIE_KEYS) filled[key] = m[key] ?? 0;
+  return filled;
 }
 
 /**
@@ -74,12 +108,16 @@ export function fillZeroKcalMacros(m: Macros): Macros {
  * larger of the two numbers, so it works the same whichever one is off.
  * It's advice and never blocks saving.
  */
-export function calorieHint(m: Macros): string | null {
+export function calorieHint(m: Macros & Partial<ExtraNutrients>): string | null {
   const { kcal, protein_g, carbs_g, fat_g } = m;
   // 0 kcal with some protein, carbs or fat can't be right, even if a box is
   // still blank: those blanks won't be filled with 0, so say why.
-  if (kcal === 0 && [protein_g, carbs_g, fat_g].some((g) => g !== null && g > 0)) {
+  const above0 = (g: number | null | undefined) => g != null && g > 0;
+  if (kcal === 0 && [protein_g, carbs_g, fat_g].some(above0)) {
     return "0 kcal doesn't fit protein, carbs or fat above 0. Check the label.";
+  }
+  if (kcal === 0 && [m.sugar_g, m.fiber_g, m.saturated_fat_g].some(above0)) {
+    return "0 kcal doesn't fit sugar, fiber or sat fat above 0. Check the label.";
   }
   if (kcal === null || protein_g === null || carbs_g === null || fat_g === null) return null;
 

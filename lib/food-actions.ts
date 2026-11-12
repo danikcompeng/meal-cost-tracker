@@ -27,6 +27,10 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
       protein: formData.get("protein"),
       carbs: formData.get("carbs"),
       fat: formData.get("fat"),
+      sugar: formData.get("sugar"),
+      fiber: formData.get("fiber"),
+      saturatedFat: formData.get("saturatedFat"),
+      sodium: formData.get("sodium"),
     });
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 

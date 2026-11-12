@@ -3,13 +3,13 @@
 
 import { normalizeBarcode } from "./barcode";
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
-import { fillZeroKcalMacros, zeroKcalFillsBlanks, type Macros } from "./macros";
+import { fillZeroKcalMacros, zeroKcalFillsBlanks, type Nutrients } from "./macros";
 // parseDecimal tells "left blank" (null) apart from "typed something that
 // isn't a number" ("invalid"). For optional macros that difference matters:
 // blank is fine, "abc" is a mistake.
 import { AMBIGUOUS_COMMA, parseDecimal } from "./numbers";
 
-export type FoodInput = Macros & {
+export type FoodInput = Nutrients & {
   name: string;
   brand: string | null;
   barcode: string | null;
@@ -29,15 +29,32 @@ export function parseSource(value: unknown): FoodSource {
     : "manual";
 }
 
+/** Which database column each form box fills. */
+export const FIELD_COLUMNS = {
+  kcal: "kcal",
+  protein: "protein_g",
+  carbs: "carbs_g",
+  fat: "fat_g",
+  sugar: "sugar_g",
+  fiber: "fiber_g",
+  saturatedFat: "saturated_fat_g",
+  sodium: "sodium_mg",
+} as const satisfies Record<keyof RawMacros, keyof Nutrients>;
+
 export type ValidationResult =
   | { ok: true; value: FoodInput }
   | { ok: false; fieldErrors: Record<string, string> };
 
+/** What the form boxes send, keyed by each box's name. */
 export type RawMacros = {
   kcal?: unknown;
   protein?: unknown;
   carbs?: unknown;
   fat?: unknown;
+  sugar?: unknown;
+  fiber?: unknown;
+  saturatedFat?: unknown;
+  sodium?: unknown;
 };
 
 export function validateFood(
@@ -110,12 +127,32 @@ export function validateFood(
 // be a whole pizza). Going over them is almost certainly a typo.
 const MAX_KCAL = 10000;
 const MAX_GRAMS = 1000;
+const MAX_SODIUM_MG = 100000;
+// Salt is about 39.3% sodium, so even pure salt has about 39,300 mg of
+// sodium per 100 g. A little room on top for label rounding.
+const MAX_SODIUM_MG_PER_100G = 39400;
 
 /**
- * Checks calories and macros. Every one is optional: blank means null
+ * Sodium is the one box where labels print thousands with a comma
+ * ("1,170 mg" in ramen), and it's in whole mg, so "1,170" can't mean
+ * 1.17 mg. So for sodium only, a thousands comma is read as thousands.
+ * Anything else ("1,5") goes through the usual rules.
+ */
+function sodiumThousands(value: unknown): unknown {
+  if (typeof value !== "string" || !/^\s*\d{1,3}(,\d{3})+\s*$/.test(value)) return value;
+  return value.replaceAll(",", "");
+}
+
+/**
+ * Checks calories and nutrients. Every one is optional: blank means null
  * ("not entered"), and "0" means a real 0. The one exception: with 0 kcal,
- * blank protein / carbs / fat become 0 (see fillZeroKcalMacros), and
- * `filledBlanks` says so, so the form can tell you before you save.
+ * blank protein / carbs / fat / sugar / fiber / sat fat become 0 (see
+ * fillZeroKcalMacros), and `filledBlanks` says so, so the form can tell
+ * you before you save. Sodium is never filled in.
+ *
+ * Sugar is part of carbs and saturated fat is part of fat, so neither can
+ * be more than its whole. Fiber isn't compared with carbs: US labels count
+ * fiber inside carbs, EU labels don't, so either way can be right.
  *
  * Foods measured in grams get stricter rules, because 100 g of food can't
  * hold more than 100 g of protein, carbs and fat together, and even pure fat
@@ -125,11 +162,13 @@ const MAX_GRAMS = 1000;
 export function validateMacros(
   raw: RawMacros,
   unit: BaseUnit | null,
-): { value: Macros; fieldErrors: Record<string, string>; filledBlanks: boolean } {
+): { value: Nutrients; fieldErrors: Record<string, string>; filledBlanks: boolean } {
   const fieldErrors: Record<string, string> = {};
 
-  const read = (key: keyof RawMacros, max: number): number | null => {
-    const parsed = parseDecimal(raw[key]);
+  // Rounds to 1 / `steps`: grams to 0.1 g (steps 10), sodium to whole mg
+  // (steps 1), as on labels.
+  const read = (key: keyof RawMacros, max: number, steps = 10): number | null => {
+    const parsed = parseDecimal(key === "sodium" ? sodiumThousands(raw.sodium) : raw[key]);
     if (parsed === "ambiguous") {
       fieldErrors[key] = AMBIGUOUS_COMMA;
       return null;
@@ -139,21 +178,31 @@ export function validateMacros(
       return null;
     }
     if (parsed === null) return null;
-    const rounded = Math.round(parsed * 10) / 10;
+    const rounded = Math.round(parsed * steps) / steps;
     if (rounded > max) fieldErrors[key] = "That looks too high. Check the label.";
     return rounded;
   };
 
-  const typed: Macros = {
+  const typed: Nutrients = {
     kcal: read("kcal", MAX_KCAL),
     protein_g: read("protein", MAX_GRAMS),
     carbs_g: read("carbs", MAX_GRAMS),
     fat_g: read("fat", MAX_GRAMS),
+    sugar_g: read("sugar", MAX_GRAMS),
+    fiber_g: read("fiber", MAX_GRAMS),
+    saturated_fat_g: read("saturatedFat", MAX_GRAMS),
+    sodium_mg: read("sodium", MAX_SODIUM_MG, 1),
   };
   // 0 kcal means no protein, carbs or fat, so blanks become 0 then.
   // (Not when a box has a mistake in it: that box reads as blank here.)
   const filledBlanks = Object.keys(fieldErrors).length === 0 && zeroKcalFillsBlanks(typed);
   const value = filledBlanks ? fillZeroKcalMacros(typed) : typed;
+
+  const partOf = (key: keyof RawMacros, part: number | null, whole: number | null, message: string) => {
+    if (part !== null && whole !== null && part > whole && !fieldErrors[key]) fieldErrors[key] = message;
+  };
+  partOf("sugar", value.sugar_g, value.carbs_g, "Sugar is part of carbs, so it can't be more.");
+  partOf("saturatedFat", value.saturated_fat_g, value.fat_g, "Saturated fat is part of fat, so it can't be more.");
 
   if (unit === "g") {
     if (value.kcal !== null && value.kcal > 900 && !fieldErrors.kcal) {
@@ -163,15 +212,22 @@ export function validateMacros(
       ["protein", value.protein_g],
       ["carbs", value.carbs_g],
       ["fat", value.fat_g],
+      ["sugar", value.sugar_g],
+      ["fiber", value.fiber_g],
+      ["saturatedFat", value.saturated_fat_g],
     ] as const;
     for (const [key, amount] of grams) {
       if (amount !== null && amount > 100 && !fieldErrors[key]) {
         fieldErrors[key] = "Can't be more than 100 g per 100 g.";
       }
     }
-    // Round the sum too: 33.3 + 33.3 + 33.4 is 100.00000000000001 in
-    // JavaScript, and that shouldn't count as "more than 100".
-    const sum = grams.reduce((total, [, amount]) => total + (amount ?? 0), 0);
+    if (value.sodium_mg !== null && value.sodium_mg > MAX_SODIUM_MG_PER_100G && !fieldErrors.sodium) {
+      fieldErrors.sodium = "Even pure salt is about 39,300 mg per 100 g.";
+    }
+    // Only the main three add up: sugar and sat fat are already inside
+    // carbs and fat, and fiber may be too. Round the sum: 33.3 + 33.3 +
+    // 33.4 is 100.00000000000001 in JavaScript, which isn't "more than 100".
+    const sum = grams.slice(0, 3).reduce((total, [, amount]) => total + (amount ?? 0), 0);
     if (Math.round(sum * 10) / 10 > 100) {
       fieldErrors.macros = "Protein, carbs and fat add up to more than 100 g per 100 g.";
     }

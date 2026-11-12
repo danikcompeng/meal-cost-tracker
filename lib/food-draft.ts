@@ -2,11 +2,11 @@
 // Pure, no React.
 
 import type { FoodSource } from "./food-validation";
-import type { Macros } from "./macros";
+import { NO_EXTRAS, type Nutrients } from "./macros";
 import type { OffDraft } from "./open-food-facts";
 import type { BaseUnit } from "./units";
 
-export type FoodDraft = Macros & {
+export type FoodDraft = Nutrients & {
   name: string | null;
   brand: string | null;
   unit: BaseUnit;
@@ -15,6 +15,8 @@ export type FoodDraft = Macros & {
   source: FoodSource;
   /** Calories were converted from kJ, so the form can say so. */
   kcalFromKj: boolean;
+  /** Sodium was worked out from salt, so the form can say so. */
+  sodiumFromSalt: boolean;
 };
 
 /** Open Food Facts found it: start from their numbers. */
@@ -36,8 +38,10 @@ export function emptyDraft(barcode: string | null): FoodDraft {
     protein_g: null,
     carbs_g: null,
     fat_g: null,
+    ...NO_EXTRAS,
     barcode,
     source: "manual",
     kcalFromKj: false,
+    sodiumFromSalt: false,
   };
 }

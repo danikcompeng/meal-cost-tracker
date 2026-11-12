@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { formatMoney } from "@/lib/cost";
-import { missingNote, totalNumber, type DayTotals, type Total } from "@/lib/day-totals";
+import { hasAnyExtra, missingNote, totalNumber, type DayTotals, type Total } from "@/lib/day-totals";
 import {
   hasAnyTarget,
   kcalHeadline,
@@ -14,7 +14,8 @@ import {
 // The summary tile. Calories is the ONE big number on this screen (design
 // rule 1): what's left of your target today, or what you've eaten when
 // there's no target or it's a past day. Protein comes next in matcha, then
-// carbs and fat, and cost is last in small grey. Missing values are never
+// carbs and fat, then sugar, fiber, sat fat and sodium small and quiet,
+// and cost is last in small grey. Missing values are never
 // counted as 0: each total is what's known, with a note saying how many
 // foods are missing it.
 //
@@ -65,6 +66,8 @@ export function DaySummary({
         <MacroRow label="Carbs" total={totals.carbs_g} target={isToday ? targets.daily_carbs_g : null} />
         <MacroRow label="Fat" total={totals.fat_g} target={isToday ? targets.daily_fat_g : null} />
       </ul>
+
+      {hasAnyExtra(totals) && <ExtraNutrients totals={totals} />}
 
       <p className="mt-5 text-[13px] text-muted-foreground tabular-nums">
         {totals.cost.sum === null
@@ -136,6 +139,48 @@ function MacroRow({
         </span>
       )}
     </li>
+  );
+}
+
+const EXTRAS = [
+  { key: "sugar_g", unit: "g", word: "sugar" },
+  { key: "fiber_g", unit: "g", word: "fiber" },
+  { key: "saturated_fat_g", unit: "g", word: "sat fat" },
+  { key: "sodium_mg", unit: "mg", word: "sodium" },
+] as const;
+
+/**
+ * The quiet four, small and grey under the macros: "12 g sugar", with the
+ * value doing the work instead of a "Sugar:" label. No bars or targets.
+ * A nutrient none of the day's foods have shows "— sodium".
+ */
+function ExtraNutrients({ totals }: { totals: DayTotals }) {
+  return (
+    <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 text-[13px] tabular-nums">
+      {EXTRAS.map(({ key, unit, word }) => {
+        const total = totals[key];
+        const known = total.sum !== null;
+        return (
+          <li key={key}>
+            {known ? (
+              <span className="font-medium">{`${totalNumber(total)} ${unit}`}</span>
+            ) : (
+              // A bare "—" may be read as nothing by screen readers.
+              <>
+                <span aria-hidden="true" className="text-muted-foreground">
+                  —
+                </span>
+                <span className="sr-only">unknown</span>
+              </>
+            )}{" "}
+            <span className="text-muted-foreground">{word}</span>
+            {total.missing > 0 && known && (
+              <span className="block text-muted-foreground">+ {total.missing} unknown</span>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

@@ -18,6 +18,12 @@ const oats = {
       proteins_100g: 11,
       carbohydrates_100g: 60,
       fat_100g: 8,
+      sugars_100g: 1.1,
+      fiber_100g: 9,
+      "saturated-fat_100g": 1.5,
+      // Grams, as they always store it: 0.006 g = 6 mg.
+      sodium_100g: 0.006,
+      salt_100g: 0.015,
     },
   },
 };
@@ -35,7 +41,12 @@ describe("parseOffResponse", () => {
       protein_g: 11,
       carbs_g: 60,
       fat_g: 8,
+      sugar_g: 1.1,
+      fiber_g: 9,
+      saturated_fat_g: 1.5,
+      sodium_mg: 6,
       kcalFromKj: false,
+      sodiumFromSalt: false,
     });
   });
 
@@ -83,6 +94,43 @@ describe("parseOffResponse", () => {
     // 1046 / 4.184 = 250
     expect(draft?.kcal).toBe(250);
     expect(draft?.kcalFromKj).toBe(true);
+  });
+
+  describe("sodium", () => {
+    const withNutriments = (nutriments: Record<string, unknown>) =>
+      parseOffResponse({ status: 1, product: { product_name: "Cereal", nutriments } });
+
+    it("turns their grams into mg (real Cheerios reply: 0.487 g = 487 mg)", () => {
+      const draft = withNutriments({ sodium_100g: 0.487179487179487, salt_100g: 1.21794871794872 });
+      expect(draft?.sodium_mg).toBe(487);
+      expect(draft?.sodiumFromSalt).toBe(false);
+    });
+
+    it("works it out from salt when that's all they have: salt g x 400", () => {
+      // Salt = sodium x 2.5, so 1.5 g salt = 0.6 g = 600 mg sodium.
+      const draft = withNutriments({ salt_100g: 1.5 });
+      expect(draft?.sodium_mg).toBe(600);
+      expect(draft?.sodiumFromSalt).toBe(true);
+    });
+
+    it("matches their own numbers (real Nutella reply: salt 0.107 g, sodium 0.0428 g)", () => {
+      expect(withNutriments({ salt_100g: 0.107 })?.sodium_mg).toBe(43);
+      expect(withNutriments({ sodium_100g: 0.0428 })?.sodium_mg).toBe(43);
+    });
+
+    it("leaves sodium blank when they have neither, and keeps a real 0", () => {
+      expect(withNutriments({ proteins_100g: 3 })?.sodium_mg).toBeNull();
+      expect(withNutriments({ sodium_100g: "" })?.sodium_mg).toBeNull();
+      expect(withNutriments({ salt_100g: 0 })?.sodium_mg).toBe(0);
+    });
+  });
+
+  it("leaves missing sugar, fiber and sat fat blank (null), never 0", () => {
+    const draft = parseOffResponse({
+      status: 1,
+      product: { product_name: "Bar", nutriments: { sugars_100g: "12", fiber_100g: null } },
+    });
+    expect(draft).toMatchObject({ sugar_g: 12, fiber_g: null, saturated_fat_g: null });
   });
 
   it("treats plain energy_100g as kJ", () => {

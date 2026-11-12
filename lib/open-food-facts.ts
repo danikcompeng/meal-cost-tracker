@@ -8,7 +8,7 @@
 // Missing stays missing: a value they don't have becomes null (a blank box),
 // never 0. A 0 they DO have (diet soda: 0 g fat) stays 0.
 
-import type { Macros } from "./macros";
+import type { Macros, Nutrients } from "./macros";
 
 /** Who we are, sent with every request, as Open Food Facts asks apps to do. */
 export const OFF_USER_AGENT = "MealCostTracker/0.1 (https://meal-cost-tracker.vercel.app)";
@@ -29,7 +29,7 @@ export function offProductUrl(barcode: string): string {
   return `https://world.openfoodfacts.org/api/v2/product/${barcode}.json?fields=${FIELDS}`;
 }
 
-export type OffDraft = Macros & {
+export type OffDraft = Nutrients & {
   name: string | null;
   brand: string | null;
   /** Their nutrition is per 100 g or per 100 ml; never "each". */
@@ -37,9 +37,18 @@ export type OffDraft = Macros & {
   packageSize: number | null;
   /** True when calories were worked out from kJ (they only had kJ). */
   kcalFromKj: boolean;
+  /** True when sodium was worked out from salt (they only had salt). */
+  sodiumFromSalt: boolean;
 };
 
 export const KJ_PER_KCAL = 4.184;
+
+/**
+ * Salt is sodium chloride. EU labels list "salt", worked out by law as
+ * sodium x 2.5, and Open Food Facts uses the same factor. So 1 g of salt
+ * is 1000 / 2.5 = 400 mg of sodium: 1.5 g salt -> 600 mg sodium.
+ */
+export const SODIUM_MG_PER_G_SALT = 400;
 
 /**
  * Reads their reply. Returns null when they don't have the product, or
@@ -66,6 +75,20 @@ export function parseOffResponse(json: unknown): OffDraft | null {
     }
   }
 
+  // Sodium: careful, they store it in GRAMS even when the label says mg
+  // (Cheerios comes back as 0.487, which is 487 mg per 100 g). If they only
+  // have salt, work sodium out from it. Rounded to whole mg, like labels.
+  let sodium_mg: number | null = null;
+  let sodiumFromSalt = false;
+  const sodiumG = amount(n.sodium_100g);
+  const saltG = amount(n.salt_100g);
+  if (sodiumG !== null) {
+    sodium_mg = Math.round(sodiumG * 1000);
+  } else if (saltG !== null) {
+    sodium_mg = Math.round(saltG * SODIUM_MG_PER_G_SALT);
+    sodiumFromSalt = true;
+  }
+
   const draft: OffDraft = {
     name,
     brand,
@@ -75,7 +98,12 @@ export function parseOffResponse(json: unknown): OffDraft | null {
     protein_g: amount(n.proteins_100g),
     carbs_g: amount(n.carbohydrates_100g),
     fat_g: amount(n.fat_100g),
+    sugar_g: amount(n.sugars_100g),
+    fiber_g: amount(n.fiber_100g),
+    saturated_fat_g: amount(n["saturated-fat_100g"]),
+    sodium_mg,
     kcalFromKj,
+    sodiumFromSalt,
   };
 
   const hasNutrition = [draft.kcal, draft.protein_g, draft.carbs_g, draft.fat_g].some(
