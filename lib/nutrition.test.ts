@@ -19,6 +19,7 @@ const oats: Food = {
   fiber_g: 10,
   saturated_fat_g: 1.2,
   sodium_mg: 6,
+  counts_toward_hydration: false,
 };
 
 const egg: Food = {
@@ -34,6 +35,7 @@ const egg: Food = {
   carbs_g: 0.4,
   fat_g: 4.8,
   ...NO_EXTRAS,
+  counts_toward_hydration: false,
 };
 
 const rice: Food = {
@@ -49,6 +51,19 @@ const rice: Food = {
   carbs_g: 79,
   fat_g: 0.6,
   ...NO_EXTRAS,
+  counts_toward_hydration: false,
+};
+
+const water: Food = {
+  ...rice,
+  id: "water",
+  name: "Water",
+  unit: "ml",
+  kcal: 0,
+  protein_g: 0,
+  carbs_g: 0,
+  fat_g: 0,
+  counts_toward_hydration: true,
 };
 
 // Decimal maths in JavaScript is a hair off (0.1 + 0.2 = 0.30000000000000004),
@@ -107,6 +122,12 @@ describe("snapshotFor", () => {
   it("keeps a free food at a real $0", () => {
     expect(snapshotFor({ ...oats, price: 0 }, 150).cost).toBe(0);
   });
+
+  it("copies the water for a food that counts toward hydration, and 0 otherwise", () => {
+    expect(snapshotFor(water, 250).water_ml).toBe(250);
+    expect(snapshotFor({ ...water, counts_toward_hydration: false }, 250).water_ml).toBe(0);
+    expect(snapshotFor(oats, 150).water_ml).toBe(0);
+  });
 });
 
 describe("nutrientsFromRow", () => {
@@ -136,7 +157,13 @@ describe("scaleSnapshot", () => {
     saturated_fat_g: 1.8,
     sodium_mg: 9,
     cost: 1.05,
+    water_ml: 0,
   };
+
+  it("scales water too, and keeps 0 at 0 (never unknown)", () => {
+    expect(scaleSnapshot({ ...logged, water_ml: 250 }, 250, 500).water_ml).toBe(500);
+    expect(scaleSnapshot(logged, 150, 300).water_ml).toBe(0);
+  });
 
   it("scales everything by the new amount", () => {
     expectClose(scaleSnapshot(logged, 150, 300), {

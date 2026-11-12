@@ -21,12 +21,13 @@ export async function saveTargets(
       protein: formData.get("protein"),
       carbs: formData.get("carbs"),
       fat: formData.get("fat"),
+      water: formData.get("water"),
     });
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 
     // "Upsert": add your row the first time, change it after that. The
-    // database tells the two apart by user_id, the primary key. All four
-    // targets are always sent, so clearing a box clears that target.
+    // database tells the two apart by user_id, the primary key. Every
+    // target is always sent, so clearing a box clears that target.
     const { error } = await supabase
       .from("user_settings")
       .upsert(

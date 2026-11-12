@@ -10,7 +10,9 @@ what they actually paid. Every feature must serve that.
 (Competitor research and the gap we fill: notes.md, 2026-11-09.)
 
 Main screen: today's meals against daily targets (calories, protein,
-carbs, fat), plus what today costs.
+carbs, fat, water), plus what today costs. Folded, the summary is
+progress rings with one number each; "Show details" unfolds the exact
+amounts (plans/rings-and-hydration.md).
 
 Core features:
 1. Staple recipes: your own small set of meals you eat on repeat. Each
@@ -69,6 +71,8 @@ through their parent row.
   kcal, protein_g, carbs_g, fat_g,
   sugar_g, fiber_g, saturated_fat_g, sodium_mg  ("More nutrients",
   shown small and quiet; sodium in mg, the rest in g),
+  counts_toward_hydration (only true for ml foods; on by default for a
+  new food whose name contains the word "water"),
   serving_size (optional), created_at
   unique (user_id, barcode)
   All nutrients are optional: blank = unknown (null), never 0.
@@ -101,11 +105,14 @@ through their parent row.
   kcal, protein_g, carbs_g, fat_g,
   sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost  (snapshot for this
   amount, copied when logged/marked eaten; null = unknown, never 0),
+  water_ml  (snapshot: the amount when the food counts toward
+  hydration, else 0; never null, so water never shows "+ unknown"),
   created_at
   RLS: own rows, and food_id must be one of your foods.
 
 - user_settings (one row per user)
   user_id, daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g,
+  daily_water_ml (optional; blank = no water ring, just the total),
   weekly_budget, week_starts_on, timezone
 
 Formulas (pure functions in /lib):
@@ -157,7 +164,8 @@ Layout
 Motion (Framer Motion)
 - Signature moment: the "I'm tired of this" swap. Ingredient tiles rotate
   like a carousel and the new meal slides in. This should feel delightful.
-- Everything else is subtle: the budget bar fills smoothly, lists fade in.
+- Everything else is subtle: progress rings and the budget bar fill
+  smoothly, lists fade in.
 - Respect prefers-reduced-motion.
 
 Rules

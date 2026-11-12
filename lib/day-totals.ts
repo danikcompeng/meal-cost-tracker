@@ -53,9 +53,14 @@ export function hasAnyExtra(totals: DayTotals): boolean {
 
 const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
-/** A total rounded to whole numbers: "1,240", or "—" when unknown. */
+/**
+ * A total rounded to whole numbers: "1,240", or "—" when unknown. A little
+ * that rounds down to 0 shows "<1": "0" would claim there's none at all.
+ */
 export function totalNumber(total: Total): string {
-  return total.sum === null ? "—" : whole.format(total.sum);
+  if (total.sum === null) return "—";
+  if (total.sum > 0 && Math.round(total.sum) === 0) return "<1";
+  return whole.format(total.sum);
 }
 
 /** "+ 1 food without calories", "+ 2 foods without a price", or null. */

@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
+import { waterTotal } from "@/lib/hydration";
+import { showsWater } from "@/lib/summary";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import type { Targets } from "@/lib/targets";
 import type { Food, MealEntry } from "@/lib/types";
@@ -33,12 +35,15 @@ export function TodayView({
   targets,
   logFood,
   suggestedMeal,
+  detailsOpen,
 }: {
   day: string;
   isToday: boolean;
   entries: MealEntry[];
   foods: Food[];
   targets: Targets;
+  /** The summary's "Show details" was left open on this device. */
+  detailsOpen: boolean;
   /** A food you just scanned: its "Log it" sheet opens straight away. */
   logFood: Food | null;
   /** The meal for the time of day, picked for that sheet. */
@@ -55,6 +60,8 @@ export function TodayView({
     // page doesn't open the sheet again.
     if (logFood) router.replace(isToday ? "/" : `/?day=${day}`, { scroll: false });
   }
+
+  const water = waterTotal(entries);
 
   // First use: there's nothing to log until you've added a food.
   if (foods.length === 0 && entries.length === 0) {
@@ -82,7 +89,14 @@ export function TodayView({
     // reducedMotion="user": if your phone asks for less motion, Framer
     // Motion skips the slides and keeps only gentle fades.
     <MotionConfig reducedMotion="user">
-      <DaySummary totals={dayTotals(entries)} isToday={isToday} targets={targets} />
+      <DaySummary
+        totals={dayTotals(entries)}
+        water={water}
+        isToday={isToday}
+        targets={targets}
+        showWater={showsWater(targets, foods.some((f) => f.counts_toward_hydration), water)}
+        initialOpen={detailsOpen}
+      />
 
       {entries.length === 0 && (
         <p className="mt-6 text-center text-muted-foreground">

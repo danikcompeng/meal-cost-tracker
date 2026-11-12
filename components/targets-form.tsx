@@ -1,6 +1,7 @@
 "use client";
 
-// The "Daily targets" tile on the Settings screen: four optional boxes.
+// The "Daily targets" tile on the Settings screen: five optional boxes
+// (calories, protein, carbs, fat and a water goal).
 // Both hints under the boxes are advice only and never stop you saving.
 
 import { useActionState, useState } from "react";
@@ -10,7 +11,7 @@ import { saveTargets, type TargetsFormState } from "@/lib/settings-actions";
 import { lowCalorieNote, targetsHint, validateTargets, type Targets } from "@/lib/targets";
 import { Field } from "./form-field";
 
-type Key = "kcal" | "protein" | "carbs" | "fat";
+type Key = "kcal" | "protein" | "carbs" | "fat" | "water";
 type Fields = Record<Key, string>;
 
 const FIELDS: { key: Key; label: string; suffix: string }[] = [
@@ -18,6 +19,7 @@ const FIELDS: { key: Key; label: string; suffix: string }[] = [
   { key: "protein", label: "Protein", suffix: "g" },
   { key: "carbs", label: "Carbs", suffix: "g" },
   { key: "fat", label: "Fat", suffix: "g" },
+  { key: "water", label: "Water", suffix: "ml" },
 ];
 
 // String(null) is "null", so "no target" has to become an empty box by hand.
@@ -29,6 +31,7 @@ function fieldsFrom(t: Targets): Fields {
     protein: toField(t.daily_protein_g),
     carbs: toField(t.daily_carbs_g),
     fat: toField(t.daily_fat_g),
+    water: toField(t.daily_water_ml),
   };
 }
 

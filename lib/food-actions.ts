@@ -23,6 +23,7 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
       price: formData.get("price"),
       packageSize: formData.get("packageSize"),
       unit: formData.get("unit"),
+      countsTowardHydration: formData.get("countsTowardHydration"),
       kcal: formData.get("kcal"),
       protein: formData.get("protein"),
       carbs: formData.get("carbs"),

@@ -13,7 +13,7 @@ export async function getTargets(): Promise<Targets> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("user_settings")
-    .select("daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g")
+    .select("daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g, daily_water_ml")
     .maybeSingle();
 
   if (error) throw new Error(`Couldn't load your targets: ${error.message}`);
@@ -24,5 +24,6 @@ export async function getTargets(): Promise<Targets> {
     daily_protein_g: numberOrNull(data.daily_protein_g),
     daily_carbs_g: numberOrNull(data.daily_carbs_g),
     daily_fat_g: numberOrNull(data.daily_fat_g),
+    daily_water_ml: numberOrNull(data.daily_water_ml),
   };
 }

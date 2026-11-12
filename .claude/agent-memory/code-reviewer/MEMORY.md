@@ -47,6 +47,13 @@
   components/use-barcode-camera.ts (cancelled/finished flags), scan-flow.tsx (requestId).
   FoodForm: hidden barcode input keeps barcode on edit; source only on insert.
   Today ?log=<foodId> opens Log sheet; TodayView key includes logFood id; close() strips URL.
+- Rings + hydration (plan: plans/rings-and-hydration.md; 009_hydration.sql: foods.
+  counts_toward_hydration bool + check "only ml", meal_entries.water_ml numeric not null default 0,
+  user_settings.daily_water_ml 1..10000). lib/hydration.ts (soundsLikeWater \b = SQL \m\M,
+  waterForAmount, waterText "<1 ml"/"1.3 L"), lib/summary.ts (summarySlots, showsWater, costLine,
+  DETAILS_COOKIE "today_details"). components/progress-ring.tsx (pathLength, aria-hidden),
+  summary-rings.tsx, summary-details.tsx, day-summary.tsx (toggle + cookie), hydration-switch.tsx.
+  "<1" in totalNumber (day-totals.ts), "<0.1" in macroText.
 
 ## Project decisions
 - Unit prices for g/ml shown "per 100" ($0.70 / 100 g); "each" shown per item.
@@ -73,6 +80,10 @@
   (salt is 0 kcal), and sodium > 0 doesn't block the fill. Don't flag. Fiber not compared with
   carbs (US vs EU labels). Sodium per-100 g limit 39,400 (39,300 + slack). Food rows unchanged.
   OFF sodium_100g is grams (x1000); salt-only x400.
+- Rings (approved 2026-11-11): small rings show eaten, big ring "kcal left"; switch default on
+  for names with the word "water"; only ml counts; cost "at least" with a missing price;
+  water_ml 0 never null (no "+ unknown"); details open/closed in a cookie read by app/page.tsx.
+  Past days / blank target = number, no ring. Don't re-raise these.
 
 ## Won't fix (do not re-raise)
 - formatMoney shows "$0.00" for values < $0.00005 (finding 1c, 2026-11-07).
@@ -80,6 +91,9 @@
 ## Deferred (fix later)
 - Targets per day: targets aren't stored per day, so past days show no bars; revisit when
   per-day targets are built (2026-11-11).
+- Count "each" drinks toward hydration (decided 2026-11-11): only ml foods can count for now, so
+  a "1 bottle" water saved as each can't. Needs ml-per-item on the food. Remind when touching
+  hydration (counts_toward_hydration / water_ml).
 - "Bought another?" (decided 2026-11-11): when Kitchen/purchases are built, scanning a food you
   already have should offer to record a new purchase (price), not only go to Log it.
   Remind when reviewing the Kitchen/purchases feature or touching lookupBarcode "mine".
@@ -89,32 +103,8 @@
   the key) risks the sheet not opening after a scan. Don't re-raise unless it's seen in use.
 
 ## Review history
-- 2026-11-07 lib/cost.ts: 1a/1b/3a fixed, verified. Looks good.
-- 2026-11-09 rename ingredients -> foods: Minor issues, fixed same day except 3d.
-- 2026-11-09 macros on foods: Minor issues (unit-note clearing, segmented track invisible,
-  36px segments, calorieHint comment 20% vs 25%).
-- 2026-11-09 daily food log: Minor issues (rounded-snapshot drift, throws -> error.tsx, stale
-  day past midnight, "1,000" -> 1, unlogged getRecentFoodIds error). Since fixed.
-- 2026-11-09 0 kcal fills blank macros: Looks good / minor (comment vs calorieHint, tests).
-- 2026-11-11 daily targets (uncommitted): Minor issues, matches plan. RLS/upsert/CHECKs correct,
-  no null->0. Raised: run 006 BEFORE pushing (Today throws without the table); low-calorie note
-  flashes while typing 2 -> 2000; 20% boundary test missing (test named "20%" checks 14%);
-  page fn `Targets` shadows type name; header at 320 px unsure. Earlier 0-kcal comment now true.
-- 2026-11-11 barcode scanning (uncommitted, on main): Minor issues, matches plan. Security clean
-  (re-validated input, RLS-scoped lookup, digits-only OFF URL). Raised: run 007 before even local
-  testing (getFoods selects brand/barcode); test on a branch preview per plan, not main; X during
-  "Looking up" then "mine" result still router.replace()s to Today; no cancelled check after
-  await video.play() (stream null -> TypeError); typed 8-digit UPC-E passing EAN-8 check saved as
-  8 digits (dup food when later scanned); unknown camera / later detect / action errors unlogged;
-  ?log= close->remount can drop a sheet opened right after; found result is a full page, not
-  the plan's "panel grows into sheet" (asked developer to confirm).
-- 2026-11-11 more nutrients (uncommitted): Minor issues. validateMacros, fill rule, 008 backfill
-  (matches app rule), RLS, null handling all correct. Raised: run 008 first; "More nutrients"
-  auto-open is derived (open || hasError), so a live OFF error collapses the section mid-typing
-  when fixed (inert blurs focus) and the chevron is dead while an error shows -> latch open;
-  water (backfilled 0s) alone makes Today's extras grid appear (asked to confirm); fill hint says
-  "Blank macros" about boxes hidden under the fold; sodium "1,170" refused as ambiguous comma;
-  today-skeleton listed in plan but untouched (fine). Tiny-package fix reminded (next commit).
+- [Review history](review-history.md) — every past review: date, verdict, findings raised (check
+  before re-raising). Latest: 2026-11-11 rings + hydration, Minor issues.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
@@ -134,4 +124,7 @@
   Closing a screen should also invalidate in-flight requests.
 - UI state derived from a live condition (isOpen = open || hasError) flips back the moment the
   condition clears; if it should stay, latch it into state. Watch hide/inert on focused inputs.
+- A saved value the old rules FORCED (false because the unit wasn't ml) isn't the user's choice;
+  edit forms that "keep the saved setting" should treat it as untouched (food-form, 2026-11-11).
+- Manual backfills run in the SQL editor bypass RLS (admin role): always scope them by id/user.
 - Developer responds well to concrete worked examples (rice test); keep using them.

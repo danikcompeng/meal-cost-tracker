@@ -16,6 +16,7 @@ export type FoodInput = Nutrients & {
   price: number;
   package_size: number;
   unit: BaseUnit;
+  counts_toward_hydration: boolean;
 };
 
 /** How a food was added (the `source` column). */
@@ -65,6 +66,8 @@ export function validateFood(
     price: unknown;
     packageSize: unknown;
     unit: unknown;
+    /** The hydration switch: "true" when on. */
+    countsTowardHydration?: unknown;
   } & RawMacros,
 ): ValidationResult {
   const fieldErrors: Record<string, string> = {};
@@ -126,6 +129,9 @@ export function validateFood(
       price: Math.round(price * 100) / 100,
       package_size: base.amount,
       unit: base.unit,
+      // Only ml foods can count: their amount is the water. Switching a
+      // food to g or each clears it (the database refuses it otherwise).
+      counts_toward_hydration: base.unit === "ml" && raw.countsTowardHydration === "true",
       ...macros.value,
     },
   };

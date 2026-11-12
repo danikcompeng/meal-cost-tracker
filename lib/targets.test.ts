@@ -21,8 +21,30 @@ describe("validateTargets", () => {
   it("accepts whole numbers", () => {
     expect(validateTargets({ kcal: "2000", protein: "140", carbs: "200", fat: "60" })).toEqual({
       ok: true,
-      value: { daily_kcal: 2000, daily_protein_g: 140, daily_carbs_g: 200, daily_fat_g: 60 },
+      value: {
+        daily_kcal: 2000,
+        daily_protein_g: 140,
+        daily_carbs_g: 200,
+        daily_fat_g: 60,
+        daily_water_ml: null,
+      },
     });
+  });
+
+  it("reads a water goal in ml, rounded, up to 10,000", () => {
+    expect(validateTargets({ water: "2000.4" })).toEqual({
+      ok: true,
+      value: { ...NO_TARGETS, daily_water_ml: 2000 },
+    });
+    const tooMuch = validateTargets({ water: "10001" });
+    expect(!tooMuch.ok && tooMuch.fieldErrors.water).toBe("That looks too high. The most is 10,000 ml.");
+  });
+
+  it("refuses a 0 ml water goal (it'd be met before you drink anything)", () => {
+    for (const water of ["0", "0.4"]) {
+      const result = validateTargets({ water });
+      expect(!result.ok && result.fieldErrors.water).toMatch(/can't be 0/);
+    }
   });
 
   it("rounds decimals to whole numbers", () => {
@@ -71,11 +93,18 @@ describe("hasAnyTarget", () => {
   it("is false with nothing set and true with one target", () => {
     expect(hasAnyTarget(NO_TARGETS)).toBe(false);
     expect(hasAnyTarget({ ...NO_TARGETS, daily_fat_g: 0 })).toBe(true);
+    expect(hasAnyTarget({ ...NO_TARGETS, daily_water_ml: 2000 })).toBe(true);
   });
 });
 
 describe("targetsHint", () => {
-  const t = { daily_kcal: 2000, daily_protein_g: 140, daily_carbs_g: 200, daily_fat_g: 70 };
+  const t = {
+    daily_kcal: 2000,
+    daily_protein_g: 140,
+    daily_carbs_g: 200,
+    daily_fat_g: 70,
+    daily_water_ml: null,
+  };
 
   it("stays quiet when macros roughly match (560 + 800 + 630 = 1,990)", () => {
     expect(targetsHint(t)).toBeNull();
@@ -90,7 +119,7 @@ describe("targetsHint", () => {
 
   it("draws the line exactly at 20%", () => {
     // 4 * 400 = 1,600 kcal: 400 less, exactly 20% of 2,000. No hint.
-    const edge = { daily_kcal: 2000, daily_protein_g: 0, daily_carbs_g: 400, daily_fat_g: 0 };
+    const edge = { ...t, daily_kcal: 2000, daily_protein_g: 0, daily_carbs_g: 400, daily_fat_g: 0 };
     expect(targetsHint(edge)).toBeNull();
     // 4 * 399 = 1,596 kcal: 404 less, just over 20%. Hint.
     expect(targetsHint({ ...edge, daily_carbs_g: 399 })).toMatch(/1,596 kcal, 404 less/);

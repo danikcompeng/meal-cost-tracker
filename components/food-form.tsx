@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Field } from "./form-field";
+import { HydrationSwitch } from "./hydration-switch";
 import { MoreNutrients } from "./more-nutrients";
 import { NutrientInput } from "./nutrient-input";
 import { SegmentedControl } from "./segmented-control";
@@ -13,6 +14,7 @@ import { FIELD_COLUMNS, validateFood, validateMacros } from "@/lib/food-validati
 import { unitPriceLabel } from "@/lib/cost";
 import { basisChangeNote, basisLabel, calorieHint, type Nutrients } from "@/lib/macros";
 import type { FoodDraft } from "@/lib/food-draft";
+import { soundsLikeWater } from "@/lib/hydration";
 import { missingMacros, missingNote } from "@/lib/open-food-facts";
 import { inputUnitsFor, toBaseUnit, type BaseUnit, type InputUnit } from "@/lib/units";
 import type { FormState, Food } from "@/lib/types";
@@ -134,6 +136,16 @@ export function FoodForm({
     return {};
   });
 
+  // The hydration switch. null = you haven't touched it yet, so it follows
+  // the name: on for "Water", "Sparkling water"... A saved ml food keeps
+  // its saved setting, and once you flip it, it's yours. A saved g or each
+  // food starts untouched too: its "doesn't count" was never your choice
+  // (it couldn't count), so switching it to ml follows the name.
+  const [hydration, setHydration] = useState<boolean | null>(() =>
+    editing && editing.unit === "ml" ? editing.counts_toward_hydration : null,
+  );
+  const countsTowardHydration = hydration ?? soundsLikeWater(fields.name);
+
   const fromOpenFoodFacts = draft?.source === "open_food_facts";
   // Shown while Calories still holds the converted number. If you type
   // your own, the note no longer applies.
@@ -147,6 +159,7 @@ export function FoodForm({
       if (result.ok) {
         setFields(EMPTY);
         setMacroUnits({});
+        setHydration(null);
         onDone(result.id);
       }
       return result;
@@ -248,6 +261,14 @@ export function FoodForm({
         value={measuredBy}
         onChange={setMeasuredBy}
       />
+
+      {/* Only ml foods can count: their amount IS the water. For g or each
+          the switch disappears and the food is saved as not counting. */}
+      {measuredBy === "ml" && (
+        <div className="-mt-3">
+          <HydrationSwitch checked={countsTowardHydration} onChange={setHydration} />
+        </div>
+      )}
 
       <fieldset className="space-y-3">
         <legend className="mb-3 text-[13px] font-medium text-muted-foreground">

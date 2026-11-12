@@ -39,6 +39,12 @@ describe("macroText", () => {
     expect(macroText(null, "kcal")).toBe("— kcal");
   });
 
+  it("shows <0.1 for a little above 0 that rounds down, never 0", () => {
+    expect(macroText(0.03, "g", "fat")).toBe("<0.1 g fat");
+    expect(macroText(0.04, "kcal")).toBe("<0.1 kcal");
+    expect(macroText(0.05, "g", "fat")).toBe("0.1 g fat");
+  });
+
   it("shows a real 0 as 0, not —", () => {
     expect(macroText(0, "g", "fat")).toBe("0 g fat");
   });

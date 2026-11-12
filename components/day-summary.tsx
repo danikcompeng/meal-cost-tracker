@@ -1,44 +1,57 @@
-import Link from "next/link";
-import { motion } from "framer-motion";
-import { formatMoney } from "@/lib/cost";
-import { hasAnyExtra, missingNote, totalNumber, type DayTotals, type Total } from "@/lib/day-totals";
-import {
-  hasAnyTarget,
-  kcalHeadline,
-  ofTarget,
-  progress,
-  type Progress,
-  type Targets,
-} from "@/lib/targets";
+"use client";
 
-// The summary tile. Calories is the ONE big number on this screen (design
-// rule 1): what's left of your target today, or what you've eaten when
-// there's no target or it's a past day. Protein comes next in matcha, then
-// carbs and fat, then sugar, fiber, sat fat and sodium small and quiet,
-// and cost is last in small grey. Missing values are never
-// counted as 0: each total is what's known, with a note saying how many
-// foods are missing it.
+import { useState } from "react";
+import Link from "next/link";
+import { motion, useReducedMotion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { missingNote, type DayTotals } from "@/lib/day-totals";
+import { costLine, DETAILS_COOKIE, summarySlots } from "@/lib/summary";
+import { hasAnyTarget, progress, type Targets } from "@/lib/targets";
+import { SummaryDetails } from "./summary-details";
+import { SummaryRings } from "./summary-rings";
+
+// The summary tile. Folded, it's fewer numbers at a glance: the big
+// calories ring (the ONE big number on this screen), small rings for
+// protein, carbs, fat and water with one number each, and the cost.
+// "Show details" unfolds the exact "62 of 140 g" amounts, the "+ N
+// unknown" notes and sugar, fiber, sat fat and sodium.
 //
-// Past days get no bars: targets aren't stored per day yet, so an old day
+// Past days get no rings: targets aren't stored per day yet, so an old day
 // would be judged against a target you set later.
+
 export function DaySummary({
   totals,
+  water,
   isToday,
   targets,
+  showWater,
+  initialOpen,
 }: {
   totals: DayTotals;
+  /** ml of water logged that day. */
+  water: number;
   isToday: boolean;
   targets: Targets;
+  showWater: boolean;
+  /** From the cookie, so the server already draws it open or closed. */
+  initialOpen: boolean;
 }) {
-  const kcal = isToday ? progress(totals.kcal, targets.daily_kcal) : null;
+  const [open, setOpen] = useState(initialOpen);
+  const reduceMotion = useReducedMotion();
 
-  // When nothing is known the big number is "—" (or the whole target), so
-  // a "+ 2 foods" note would read oddly; say what's going on instead.
-  const kcalNote =
-    totals.kcal.sum === null
-      ? "None of these foods have calories yet"
-      : missingNote(totals.kcal.missing, "calories");
+  const kcal = isToday ? progress(totals.kcal, targets.daily_kcal) : null;
+  const slots = summarySlots(totals, water, targets, isToday, showWater);
   const costNote = missingNote(totals.cost.missing, "a price");
+
+  function toggle() {
+    const next = !open;
+    setOpen(next);
+    // A cookie rather than localStorage: cookies are sent with every
+    // request, so the server can draw the tile open or closed straight
+    // away. localStorage is only readable in the browser, after the page
+    // has loaded, so the details would jump open a moment later.
+    document.cookie = `${DETAILS_COOKIE}=${next ? "1" : "0"}; path=/; max-age=31536000; samesite=lax`;
+  }
 
   return (
     <section aria-labelledby="summary-label" className="rounded-2xl bg-card p-5">
@@ -46,158 +59,69 @@ export function DaySummary({
         {kcal ? "Calories today" : isToday ? "Eaten today" : "Eaten this day"}
       </h2>
 
-      {kcal ? (
-        <KcalLeft total={totals.kcal} p={kcal} />
-      ) : (
-        <p className="mt-1 text-primary">
-          <span className="text-5xl font-bold tabular-nums">{totalNumber(totals.kcal)}</span>
-          <span className="ml-1.5 text-base font-medium">kcal</span>
+      {/* Tapping anywhere on the rings does the same as the button below:
+          a bigger target for fingers. Keyboards and screen readers use the
+          button, so this isn't a second thing to Tab to. */}
+      <div onClick={toggle} className="cursor-pointer">
+        <SummaryRings kcalTotal={totals.kcal} kcal={kcal} slots={slots} />
+      </div>
+      {totals.kcal.sum === null && (
+        <p className="mt-2 text-center text-[13px] text-muted-foreground">
+          None of these foods have calories yet
         </p>
       )}
-      {kcalNote && <p className="mt-1 text-[13px] text-muted-foreground">{kcalNote}</p>}
 
-      <ul className="mt-5 space-y-3 tabular-nums">
-        <MacroRow
-          label="Protein"
-          total={totals.protein_g}
-          target={isToday ? targets.daily_protein_g : null}
-          highlight
-        />
-        <MacroRow label="Carbs" total={totals.carbs_g} target={isToday ? targets.daily_carbs_g : null} />
-        <MacroRow label="Fat" total={totals.fat_g} target={isToday ? targets.daily_fat_g : null} />
-      </ul>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-expanded={open}
+        aria-controls="summary-details"
+        className="mx-auto mt-3 flex h-11 items-center gap-1 px-3 text-[13px] font-medium text-muted-foreground"
+      >
+        {open ? "Hide details" : "Show details"}
+        <motion.span
+          aria-hidden="true"
+          animate={{ rotate: open ? 180 : 0 }}
+          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          className="inline-flex"
+        >
+          <ChevronDown className="size-4" />
+        </motion.span>
+      </button>
 
-      {hasAnyExtra(totals) && <ExtraNutrients totals={totals} />}
+      {/* Height can't be skipped by Framer Motion's reduced-motion setting
+          (it only skips movement like slides), so it's turned off here.
+          initial={false}: if the cookie says open, it starts open with no
+          animation. inert keeps the folded rows out of Tab and screen
+          readers. */}
+      <motion.div
+        id="summary-details"
+        initial={false}
+        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+        className="overflow-hidden"
+        inert={!open}
+      >
+        <div className="pt-2 pb-4">
+          <SummaryDetails totals={totals} kcal={kcal} slots={slots} />
+        </div>
+      </motion.div>
 
-      <p className="mt-5 text-[13px] text-muted-foreground tabular-nums">
-        {totals.cost.sum === null
-          ? "No prices yet for these foods"
-          : `${isToday ? "Today costs" : "This day cost"} ${formatMoney(totals.cost.sum)}`}
-        {totals.cost.sum !== null && costNote && <span className="block">{costNote}</span>}
+      <p className="text-center text-[13px] text-muted-foreground tabular-nums">
+        {costLine(totals.cost, isToday)}
+        {open && totals.cost.sum !== null && costNote && (
+          <span className="block">{costNote}</span>
+        )}
       </p>
 
       {!hasAnyTarget(targets) && (
         <Link
           href="/settings"
-          className="-mb-2 inline-flex h-11 items-center font-medium text-primary hover:underline"
+          className="-mb-2 flex h-11 items-center justify-center font-medium text-primary hover:underline"
         >
           Set daily targets
         </Link>
       )}
     </section>
-  );
-}
-
-/** "860 kcal left" in matcha, or "120 kcal over" in plain ink (never red). */
-function KcalLeft({ total, p }: { total: Total; p: Progress }) {
-  const { prefix, number, suffix } = kcalHeadline(p);
-  return (
-    <>
-      <p className={p.over ? "mt-1 text-foreground" : "mt-1 text-primary"}>
-        {prefix && <span className="mr-1.5 text-base font-medium">{prefix}</span>}
-        <span className="text-5xl font-bold tabular-nums">{number}</span>
-        <span className="ml-1.5 text-base font-medium">{suffix}</span>
-      </p>
-      <Bar fraction={p.fraction} className="mt-3" />
-      <p className="mt-2 text-[13px] text-muted-foreground tabular-nums">
-        {ofTarget(total, p.target)} eaten
-      </p>
-    </>
-  );
-}
-
-function MacroRow({
-  label,
-  total,
-  target,
-  highlight,
-}: {
-  label: string;
-  total: Total;
-  target: number | null;
-  highlight?: boolean;
-}) {
-  const p = progress(total, target);
-  const known = total.sum !== null;
-  // Only protein gets "Goal reached": more protein is the point of this app,
-  // more carbs or fat isn't something to celebrate.
-  const reached = highlight && p?.reached && known;
-
-  return (
-    <li>
-      <div className="flex items-baseline justify-between gap-3">
-        <span className={highlight ? "font-semibold text-primary" : "font-semibold"}>{label}</span>
-        <span>
-          {p ? `${ofTarget(total, p.target)} g` : known ? `${totalNumber(total)} g` : "—"}
-          {reached && <span className="font-medium text-primary"> · Goal reached</span>}
-        </span>
-      </div>
-      {p && <Bar fraction={p.fraction} className="mt-1.5" />}
-      {total.missing > 0 && known && (
-        <span className="mt-1 block text-right text-[13px] text-muted-foreground">
-          + {total.missing} unknown
-        </span>
-      )}
-    </li>
-  );
-}
-
-const EXTRAS = [
-  { key: "sugar_g", unit: "g", word: "sugar" },
-  { key: "fiber_g", unit: "g", word: "fiber" },
-  { key: "saturated_fat_g", unit: "g", word: "sat fat" },
-  { key: "sodium_mg", unit: "mg", word: "sodium" },
-] as const;
-
-/**
- * The quiet four, small and grey under the macros: "12 g sugar", with the
- * value doing the work instead of a "Sugar:" label. No bars or targets.
- * A nutrient none of the day's foods have shows "— sodium".
- */
-function ExtraNutrients({ totals }: { totals: DayTotals }) {
-  return (
-    <ul className="mt-5 grid grid-cols-2 gap-x-4 gap-y-2 text-[13px] tabular-nums">
-      {EXTRAS.map(({ key, unit, word }) => {
-        const total = totals[key];
-        const known = total.sum !== null;
-        return (
-          <li key={key}>
-            {known ? (
-              <span className="font-medium">{`${totalNumber(total)} ${unit}`}</span>
-            ) : (
-              // A bare "—" may be read as nothing by screen readers.
-              <>
-                <span aria-hidden="true" className="text-muted-foreground">
-                  —
-                </span>
-                <span className="sr-only">unknown</span>
-              </>
-            )}{" "}
-            <span className="text-muted-foreground">{word}</span>
-            {total.missing > 0 && known && (
-              <span className="block text-muted-foreground">+ {total.missing} unknown</span>
-            )}
-          </li>
-        );
-      })}
-    </ul>
-  );
-}
-
-/**
- * A thin progress bar. Hidden from screen readers, because the amount is
- * always written out next to it. It grows with scaleX (a transform), which
- * Framer Motion skips when your phone asks for reduced motion.
- */
-function Bar({ fraction, className }: { fraction: number; className?: string }) {
-  return (
-    <div aria-hidden="true" className={`h-1.5 overflow-hidden rounded-full bg-background ${className ?? ""}`}>
-      <motion.div
-        className="h-full origin-left rounded-full bg-matcha-soft"
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: fraction }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-      />
-    </div>
   );
 }

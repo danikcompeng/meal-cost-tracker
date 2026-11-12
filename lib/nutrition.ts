@@ -7,6 +7,7 @@
 // 500 g gives $2.50 instead of the real $2.48.
 
 import { costOfAmount } from "./cost";
+import { waterForAmount } from "./hydration";
 import { basisAmount, NUTRIENT_KEYS, type Nutrients } from "./macros";
 import { numberOrNull } from "./numbers";
 import type { Food } from "./types";
@@ -48,6 +49,7 @@ export type Snapshot = Nutrients & {
   unit: BaseUnit;
   amount: number;
   cost: number | null;
+  water_ml: number;
 };
 
 export function snapshotFor(food: Food, amount: number): Snapshot {
@@ -57,6 +59,7 @@ export function snapshotFor(food: Food, amount: number): Snapshot {
     amount,
     ...nutrientsForAmount(food, amount),
     cost: costOfAmount(food.price, food.package_size, amount),
+    water_ml: waterForAmount(food, amount),
   };
 }
 
@@ -66,12 +69,17 @@ export function snapshotFor(food: Food, amount: number): Snapshot {
  * later can never change a past day.
  */
 export function scaleSnapshot(
-  entry: Nutrients & { cost: number | null },
+  entry: Nutrients & { cost: number | null; water_ml: number },
   oldAmount: number,
   newAmount: number,
-): Nutrients & { cost: number | null } {
+): Nutrients & { cost: number | null; water_ml: number } {
   const factor = newAmount / oldAmount;
   const scale = (value: number | null) =>
     value === null || !Number.isFinite(factor) ? null : value * factor;
-  return { ...mapNutrients(entry, scale), cost: scale(entry.cost) };
+  return {
+    ...mapNutrients(entry, scale),
+    cost: scale(entry.cost),
+    // Water is never unknown, so it can't become null: 0 stays 0.
+    water_ml: scale(entry.water_ml) ?? 0,
+  };
 }

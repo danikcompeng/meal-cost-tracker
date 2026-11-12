@@ -84,6 +84,11 @@ describe("totalNumber", () => {
   it("shows — when unknown", () => {
     expect(totalNumber({ sum: null, missing: 2 })).toBe("—");
   });
+
+  it("shows <1 for a little above 0 that rounds down, never 0", () => {
+    expect(totalNumber({ sum: 0.4, missing: 0 })).toBe("<1");
+    expect(totalNumber({ sum: 0.5, missing: 0 })).toBe("1");
+  });
 });
 
 describe("missingNote", () => {

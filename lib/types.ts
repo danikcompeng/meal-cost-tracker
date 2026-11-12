@@ -12,6 +12,8 @@ export type Food = Nutrients & {
   price: number;
   package_size: number;
   unit: BaseUnit;
+  /** The "Counts toward hydration" switch. Only ever true for ml foods. */
+  counts_toward_hydration: boolean;
 };
 
 /**
@@ -27,6 +29,8 @@ export type MealEntry = Nutrients & {
   unit: BaseUnit;
   amount: number;
   cost: number | null;
+  /** Water this entry adds, in ml. 0 (never null) when the food doesn't count. */
+  water_ml: number;
 };
 
 /** What a form action sends back to the form after it runs. */

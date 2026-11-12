@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { AppHeader } from "@/components/app-header";
 import { DayNav } from "@/components/day-nav";
 import { DayRollover } from "@/components/day-rollover";
@@ -12,6 +13,7 @@ import { getFoods } from "@/lib/foods";
 import { orderByRecent } from "@/lib/recent";
 import { getTargets } from "@/lib/settings";
 import { mealForHour } from "@/lib/meals";
+import { DETAILS_COOKIE } from "@/lib/summary";
 import { userHour, userToday } from "@/lib/server-helpers";
 
 export const metadata: Metadata = { title: "Today · Meal Cost Tracker" };
@@ -43,12 +45,13 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
-  const [entries, foods, recentIds, targets, hour] = await Promise.all([
+  const [entries, foods, recentIds, targets, hour, cookieStore] = await Promise.all([
     getEntriesForDay(day),
     getFoods(),
     getRecentFoodIds(),
     getTargets(),
     userHour(),
+    cookies(),
   ]);
 
   // "?log=<food id>" comes from the scanner: open the "Log it" sheet for
@@ -76,6 +79,9 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
         // Worked out on the server from your timezone, so the page and the
         // browser agree on it (no flicker when the page comes alive).
         suggestedMeal={mealForHour(hour)}
+        // Read on the server, so the summary is drawn open or closed
+        // straight away instead of jumping after the page loads.
+        detailsOpen={cookieStore.get(DETAILS_COOKIE)?.value === "1"}
       />
     </>
   );

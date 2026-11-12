@@ -26,6 +26,7 @@ describe("validateFood", () => {
         price: 3.49,
         package_size: 500,
         unit: "g",
+        counts_toward_hydration: false,
         // No macros sent: they come back as null ("not entered"), not 0.
         kcal: null,
         protein_g: null,
@@ -123,6 +124,22 @@ describe("validateFood", () => {
     expect(validateFood({ ...valid, packageSize: "0.001" }).ok).toBe(true);
     // Checked after converting: 0.0001 kg is 0.1 g, which is fine.
     expect(validateFood({ ...valid, unit: "kg", packageSize: "0.0001" }).ok).toBe(true);
+  });
+
+  it("keeps the hydration switch for ml foods only", () => {
+    const on = { ...valid, unit: "l", packageSize: "1", countsTowardHydration: "true" };
+    expect(validateFood(on).ok && validateFood(on)).toMatchObject({
+      value: { unit: "ml", counts_toward_hydration: true },
+    });
+    // Switched to g: the switch is cleared, so the database never refuses it.
+    const grams = validateFood({ ...on, unit: "g" });
+    expect(grams.ok && grams.value.counts_toward_hydration).toBe(false);
+    const off = validateFood({ ...on, countsTowardHydration: "false" });
+    expect(off.ok && off.value.counts_toward_hydration).toBe(false);
+    // Nothing sent (an old form) means off.
+    expect(validateFood({ ...valid, unit: "ml" }).ok && validateFood({ ...valid, unit: "ml" })).toMatchObject({
+      value: { counts_toward_hydration: false },
+    });
   });
 
   it("rejects a unit it doesn't know", () => {

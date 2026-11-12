@@ -13,6 +13,8 @@ export type Targets = {
   daily_protein_g: number | null;
   daily_carbs_g: number | null;
   daily_fat_g: number | null;
+  /** Water goal in ml. Blank = no goal: no ring, just the total. */
+  daily_water_ml: number | null;
 };
 
 export const NO_TARGETS: Targets = {
@@ -20,17 +22,25 @@ export const NO_TARGETS: Targets = {
   daily_protein_g: null,
   daily_carbs_g: null,
   daily_fat_g: null,
+  daily_water_ml: null,
 };
 
-export type RawTargets = { kcal?: unknown; protein?: unknown; carbs?: unknown; fat?: unknown };
+export type RawTargets = {
+  kcal?: unknown;
+  protein?: unknown;
+  carbs?: unknown;
+  fat?: unknown;
+  water?: unknown;
+};
 
 export type TargetsResult =
   | { ok: true; value: Targets }
   | { ok: false; fieldErrors: Record<string, string> };
 
-// Same limits as the database (006_user_settings.sql).
+// Same limits as the database (006_user_settings.sql, 009_hydration.sql).
 const MAX_KCAL = 10000;
 const MAX_GRAMS = 1000;
+const MAX_WATER_ML = 10000;
 
 /**
  * Turns the four boxes into targets. Blank = no target. Decimals are
@@ -64,11 +74,16 @@ export function validateTargets(raw: RawTargets): TargetsResult {
     daily_protein_g: read("protein", MAX_GRAMS, "g"),
     daily_carbs_g: read("carbs", MAX_GRAMS, "g"),
     daily_fat_g: read("fat", MAX_GRAMS, "g"),
+    daily_water_ml: read("water", MAX_WATER_ML, "ml"),
   };
 
   // 0.4 rounds to 0 too, so check after rounding.
   if (value.daily_kcal === 0) {
     fieldErrors.kcal = "Calories can't be 0. Leave it blank for no target.";
+  }
+  // A 0 ml goal is met before you drink anything, so it can't be a goal.
+  if (value.daily_water_ml === 0) {
+    fieldErrors.water = "Water can't be 0. Leave it blank for no goal.";
   }
 
   if (Object.keys(fieldErrors).length > 0) return { ok: false, fieldErrors };
@@ -80,7 +95,8 @@ export function hasAnyTarget(t: Targets): boolean {
     t.daily_kcal !== null ||
     t.daily_protein_g !== null ||
     t.daily_carbs_g !== null ||
-    t.daily_fat_g !== null
+    t.daily_fat_g !== null ||
+    t.daily_water_ml !== null
   );
 }
 
