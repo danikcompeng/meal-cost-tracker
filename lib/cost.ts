@@ -69,12 +69,17 @@ const wholeGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const tenthGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 
 /**
- * "21 g protein per $". Under 10 keeps one decimal ("4.5 g"), where the
- * difference between 4 and 5 matters; above that whole grams are enough.
+ * Just the number of protein per $: "21", "4.5". Under 10 keeps one
+ * decimal, where the difference between 4 and 5 matters; above that whole
+ * grams are enough.
  */
+export function proteinPerDollarNumber(value: number): string {
+  return value < 10 ? tenthGrams.format(value) : wholeGrams.format(value);
+}
+
+/** "21 g protein per $", "4.5 g protein per $". */
 export function proteinPerDollarText(value: number): string {
-  const n = value < 10 ? tenthGrams.format(value) : wholeGrams.format(value);
-  return `${n} g protein per $`;
+  return `${proteinPerDollarNumber(value)} g protein per $`;
 }
 
 /**

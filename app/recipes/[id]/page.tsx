@@ -5,10 +5,11 @@ import { ChevronLeft } from "lucide-react";
 import { RecipeSkeleton } from "@/components/recipes-skeleton";
 import { RecipeView } from "@/components/recipe-view";
 import { TabBar } from "@/components/tab-bar";
-import { getRecentFoodIds } from "@/lib/entries";
+import { getEatenHistory, getRecentFoodIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
-import { getRecipe } from "@/lib/recipes";
+import { getRecipe, getRecipes } from "@/lib/recipes";
 import { orderByRecent } from "@/lib/recent";
+import { userToday } from "@/lib/server-helpers";
 
 export const metadata: Metadata = { title: "Recipe · Meal Cost Tracker" };
 
@@ -33,10 +34,15 @@ export default function RecipePage({ params }: PageProps<"/recipes/[id]">) {
 }
 
 async function Recipe({ id }: { id: string }) {
-  const [recipe, foods, recentIds] = await Promise.all([
+  const today = await userToday();
+  // Your other recipes and what you ate lately are for "Tired of this?":
+  // loading them with the page means the swap stack opens instantly.
+  const [recipe, foods, recentIds, recipes, history] = await Promise.all([
     getRecipe(id),
     getFoods(),
     getRecentFoodIds(),
+    getRecipes(),
+    getEatenHistory(today),
   ]);
 
   // Someone else's recipe, a deleted one, or a typo in the address.
@@ -56,5 +62,14 @@ async function Recipe({ id }: { id: string }) {
   }
 
   // A fresh view per recipe, so an open sheet never follows you to another.
-  return <RecipeView key={recipe.id} recipe={recipe} foods={orderByRecent(foods, recentIds)} />;
+  return (
+    <RecipeView
+      key={recipe.id}
+      recipe={recipe}
+      foods={orderByRecent(foods, recentIds)}
+      recipes={recipes}
+      history={history}
+      today={today}
+    />
+  );
 }

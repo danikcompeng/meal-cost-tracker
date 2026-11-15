@@ -104,7 +104,7 @@ Top to bottom:
  │                                  │
  │ 25 g        480        40 g      │   medium, protein in matcha
  │ protein     kcal       per $     │   13 px grey
- │ +1 g        -20                  │   13 px grey, vs now
+ │ +1 g                             │   13 px grey, protein vs now
  │                                  │
  │ Red lentils · Rice · Onion · +3  │   ingredient chips, one line
  │ Last had 5 days ago              │   13 px grey

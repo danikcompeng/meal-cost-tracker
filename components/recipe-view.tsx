@@ -4,11 +4,14 @@
 // which sheet is open (editing the recipe, adding an ingredient, or
 // changing one), if any.
 
-import { useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { recipeTotals } from "@/lib/recipe-totals";
+import type { EatenRow } from "@/lib/swap";
 import type { Food, Recipe, RecipeIngredient } from "@/lib/types";
 import { amountText } from "@/lib/units";
 import { BottomSheet } from "./bottom-sheet";
@@ -19,6 +22,8 @@ import { IngredientRow } from "./ingredient-row";
 import { RecipeCost } from "./recipe-cost";
 import { RecipeForm } from "./recipe-form";
 import { RecipeNutrients } from "./recipe-nutrients";
+import { SwapButton } from "./swap-button";
+import { SwapSheet } from "./swap-sheet";
 
 type Sheet =
   | { mode: "edit" }
@@ -26,12 +31,35 @@ type Sheet =
   // added, so the list can say so while you pick the next one.
   | { mode: "add"; food: Food | null; added: string | null }
   | { mode: "ingredient"; ingredient: RecipeIngredient }
+  | { mode: "swap" }
   | null;
 
-export function RecipeView({ recipe, foods }: { recipe: Recipe; foods: Food[] }) {
+export function RecipeView({
+  recipe,
+  foods,
+  recipes,
+  history,
+  today,
+}: {
+  recipe: Recipe;
+  foods: Food[];
+  /** All your recipes, for "Tired of this?". */
+  recipes: Recipe[];
+  /** What you ate lately; null if it didn't load. */
+  history: EatenRow[] | null;
+  today: string;
+}) {
+  const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(null);
   const close = () => setSheet(null);
   const { ingredients } = recipe;
+  const [opening, startOpening] = useTransition();
+  // The meal you're tired of, per serving. Kept as the same object between
+  // redraws, so the swap stack doesn't re-rank for nothing.
+  const swapCurrent = useMemo(() => {
+    const { per, cost } = recipeTotals(recipe);
+    return { recipeId: recipe.id, name: recipe.name, protein: per.protein_g, cost };
+  }, [recipe]);
   // The food whose amount you're typing in the Add sheet, if any.
   const adding = sheet?.mode === "add" ? sheet.food : null;
 
@@ -68,7 +96,12 @@ export function RecipeView({ recipe, foods }: { recipe: Recipe; foods: Food[] })
       </header>
 
       <RecipeCost recipe={recipe} />
-      {ingredients.length > 0 && <RecipeNutrients recipe={recipe} />}
+      {ingredients.length > 0 && (
+        <>
+          <SwapButton onClick={() => setSheet({ mode: "swap" })} />
+          <RecipeNutrients recipe={recipe} />
+        </>
+      )}
 
       <section aria-labelledby="ingredients" className="mt-8">
         <h2 id="ingredients" className="mb-1 px-3 text-[13px] font-medium text-muted-foreground tabular-nums">
@@ -164,6 +197,28 @@ export function RecipeView({ recipe, foods }: { recipe: Recipe; foods: Food[] })
             onSaved={() => setSheet((s) => (s?.mode === "ingredient" ? null : s))}
           />
         </BottomSheet>
+      )}
+
+      {sheet?.mode === "swap" && (
+        <SwapSheet
+          current={swapCurrent}
+          recipes={recipes}
+          history={history}
+          today={today}
+          // Nothing logged here, so the cards show one serving.
+          servings={1}
+          pickLabel="Open it"
+          dragLabel="Open"
+          pendingLabel={opening ? "Opening…" : null}
+          // Fetch the top card's page in the background, so "Open it"
+          // doesn't wait for the server on a slow phone signal.
+          onTop={(swap) => router.prefetch(`/recipes/${swap.id}`)}
+          // Nothing to replace on a recipe screen: "Open it" goes to that
+          // recipe. The page there is a fresh view, so this sheet closes.
+          // Inside a transition, `opening` is true until the page arrives.
+          onPick={(swap) => startOpening(() => router.push(`/recipes/${swap.id}`))}
+          onClose={close}
+        />
       )}
     </MotionConfig>
   );
