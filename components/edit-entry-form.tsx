@@ -14,8 +14,18 @@ import type { FormState, MealEntry } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
+import { SwapButton } from "./swap-button";
 
-export function EditEntryForm({ entry, onDone }: { entry: MealEntry; onDone: () => void }) {
+export function EditEntryForm({
+  entry,
+  onDone,
+  onSwap,
+}: {
+  entry: MealEntry;
+  onDone: () => void;
+  /** Recipe entries only: "Tired of this?" opens the swap stack instead. */
+  onSwap?: () => void;
+}) {
   const [amount, setAmount] = useState(String(entry.amount));
   const [meal, setMeal] = useState<Meal>(entry.meal);
   const [confirming, setConfirming] = useState(false);
@@ -57,6 +67,9 @@ export function EditEntryForm({ entry, onDone }: { entry: MealEntry; onDone: () 
         <AmountField unit={entry.unit} value={amount} onChange={setAmount} error={errors.amount} />
         <AmountPreview values={preview} />
       </div>
+
+      {/* For anyone who didn't spot the icon on the row. */}
+      {onSwap && <SwapButton onClick={onSwap} />}
 
       <SegmentedControl
         name="meal"

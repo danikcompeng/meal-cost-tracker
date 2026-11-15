@@ -48,7 +48,12 @@ export function SwapStack({
   pendingLabel?: string | null;
   /** So the sheet can put keyboard focus on Skip (after Back or Start over). */
   skipRef: RefObject<HTMLButtonElement | null>;
-  onCommit: (direction: SwapDirection) => void;
+  /**
+   * After the card has left. A pick that saves something (a swap on
+   * Today) gives back a promise of "did it work?": on false, the card
+   * comes back so you can try again.
+   */
+  onCommit: (direction: SwapDirection) => void | Promise<boolean>;
 }) {
   const reduceMotion = useReducedMotion();
   const pending = pendingLabel !== null;
@@ -82,25 +87,46 @@ export function SwapStack({
   }, [swap.id, x]);
 
   // Closing the sheet mid-flight: stop the animation, so it can't open a
-  // recipe (or, on Today, swap your meal) after you said no.
-  useEffect(() => () => x.stop(), [x]);
+  // recipe (or, on Today, swap your meal) after you said no. `alive` stops
+  // a failed swap from bringing back a card that's no longer on screen.
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+      x.stop();
+    };
+  }, [x]);
+
+  /** Hand the card over; if a save says it didn't work, bring it back. */
+  function finish(direction: SwapDirection, id: string) {
+    const result = onCommit(direction);
+    if (!result) return;
+    void result.then((ok) => {
+      if (ok || !alive.current || topId.current !== id) return;
+      leaving.current = false;
+      // Slides back in from the side it left by (with reduced motion it
+      // never left, so it's already there).
+      if (!reduceMotion) animate(x, 0, { type: "spring", stiffness: 380, damping: 32 });
+    });
+  }
 
   function commit(direction: SwapDirection) {
     if (leaving.current || pending) return;
     leaving.current = true;
+    const id = swap.id;
     if (reduceMotion) {
       // No fly-off: the next card cross-fades in instead.
-      onCommit(direction);
+      finish(direction, id);
       return;
     }
-    const id = swap.id;
     setFlyingId(id);
     const side = direction === "pick" ? 1 : -1;
     // Far enough to be off any phone screen, quick enough to feel snappy.
     animate(x, side * Math.max(window.innerWidth, 480), { duration: 0.22, ease: "easeIn" }).then(() => {
       // Landed: the card is touchable again if you come Back to it.
       setFlyingId(null);
-      if (topId.current === id) onCommit(direction);
+      if (topId.current === id) finish(direction, id);
     });
   }
 
@@ -182,14 +208,19 @@ export function SwapStack({
         </motion.div>
       </div>
 
+      {/* While a pick is saving, both buttons wait. focusableWhenDisabled:
+          a plain disabled button drops keyboard focus to the page, so
+          after a failed swap you'd start again from the top of the sheet.
+          This keeps focus where it was and just ignores the taps. */}
       <div className="flex gap-3">
         <Button
           ref={skipRef}
           variant="outline"
           onClick={() => commit("skip")}
           disabled={pending}
+          focusableWhenDisabled
           aria-label={`Skip ${swap.name}`}
-          className="h-12 flex-1 text-base"
+          className="h-12 flex-1 text-base aria-disabled:opacity-50"
         >
           <X aria-hidden="true" className="size-5" />
           Skip
@@ -197,10 +228,11 @@ export function SwapStack({
         <Button
           onClick={() => commit("pick")}
           disabled={pending}
+          focusableWhenDisabled
           // The visible words come first, so voice control ("tap Open
           // it") matches what's on the button.
           aria-label={pending ? undefined : `${pickLabel}: ${swap.name}`}
-          className="h-12 flex-1 text-base"
+          className="h-12 flex-1 text-base aria-disabled:opacity-50"
         >
           <Check aria-hidden="true" className="size-5" />
           {pendingLabel ?? pickLabel}

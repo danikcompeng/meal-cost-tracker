@@ -44,3 +44,17 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   recipes with ingredients; food-picker.tsx groups "Your recipes" + recipe-option.tsx;
   log-recipe-form.tsx (Servings prefilled 1, no autoFocus); MAX_SERVINGS_LOGGED = 20 in
   entry-validation.ts; 011 checks: recipe_id -> unit 'serving', food_id -> unit <> 'serving'.
+- Swap (plans/swap.md, no migration): lib/swap.ts swapCandidates, rankSwaps (score() keys:
+  protein group, toGet, cost group, recent, gap, cost, -daysSince; then name, id),
+  lastEatenByRecipe, hadThisWeek, swapHeaderNotes, constants. daysBetween in dates.ts.
+  getEatenHistory(today) in entries.ts (null = failed or hit 1,000 rows; two reads: recipes 60
+  days, all 7 days). Build: 1 ranking, 2 card stack from recipe screen, 3 swapEntry/undoSwap.
+  Step 2: swap-sheet.tsx (index, Back, counter, live region, end/empty), swap-stack.tsx (shared
+  x motion value, leaving ref, animate().then -> onCommit, window arrow keys), swap-card.tsx,
+  swap-empty.tsx (SwapEmpty, SwapEnd), swap-button.tsx; recipe-view "swap" sheet, onPick =
+  router.push. MotionConfig reducedMotion="user" in recipe-view, recipe-list, scan-flow, today-view.
+  Step 3: swapEntry / undoSwap in entry-actions.ts (SwapResult type), validateSwap / swappedFrom /
+  validateUndoSwap / UNDO_CHANGED in entry-validation.ts, isUuid in lib/ids.ts,
+  swapCurrentFromEntry in swap.ts. today-view.tsx pickSwap (useTransition, returns
+  Promise<boolean>) + undo + Toast; undo-toast.tsx (10 s timer, hover/focus pause, status box);
+  entry-row.tsx two buttons, data-swap-entry on the shuffle button (Undo focus target).

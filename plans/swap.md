@@ -29,6 +29,17 @@ Changed after the step 1 code review (these replace the text below):
   so Supabase's 1,000-row limit can't cut it short; if either hits the
   limit it counts as "didn't load" instead of a guessed "60+ days".
 
+Changed while building step 3 (swapping on Today):
+- Undo checks the entry still has the recipe you swapped to, the same
+  servings AND the same meal, both before writing and in the write
+  itself; otherwise "It's changed since the swap, so it can't be
+  undone." and the Undo button goes. The swap's write checks the entry
+  is unchanged since it was read, too.
+- A failed swap reloads the day (the swap may have saved and only the
+  answer got lost). If you closed the sheet meanwhile, "Couldn't swap"
+  shows in the message above the tab bar instead.
+- After Undo, focus goes back to the row's swap icon.
+
 "Tired of this?" opens a stack of your other recipes, best match first.
 Swipe right (or tap Swap, or press →) to swap, swipe left (Skip, ←) to see
 the next one. Swapping a logged meal replaces it in the same meal with a

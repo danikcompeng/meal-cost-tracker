@@ -5,6 +5,7 @@ import {
   lastEatenByRecipe,
   rankSwaps,
   swapCandidates,
+  swapCurrentFromEntry,
   swapHeaderNotes,
   type EatenRow,
   type Kitchen,
@@ -482,5 +483,25 @@ describe("hadThisWeek", () => {
     const k = hadThisWeek(rows, [dal], TODAY);
     expect(k.source).toBe("had-this-week");
     expect([...k.foodIds].sort()).toEqual(["banana", "lentils", "onion"]);
+  });
+});
+
+describe("swapCurrentFromEntry", () => {
+  const entry = { recipe_id: "oats-bowl", name: "Overnight oats", amount: 1.5, protein_g: 36, cost: 1.68 };
+
+  it("divides the entry's own snapshot by its servings", () => {
+    const now = swapCurrentFromEntry(entry);
+    expect(now.recipeId).toBe("oats-bowl");
+    expect(now.protein).toBeCloseTo(24);
+    expect(now.cost).toBeCloseTo(1.12);
+  });
+
+  it("keeps unknowns unknown, and works when the recipe was deleted", () => {
+    expect(swapCurrentFromEntry({ ...entry, recipe_id: null, protein_g: null, cost: null })).toEqual({
+      recipeId: null,
+      name: "Overnight oats",
+      protein: null,
+      cost: null,
+    });
   });
 });

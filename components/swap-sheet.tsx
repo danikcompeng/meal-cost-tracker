@@ -39,7 +39,9 @@ export function SwapSheet({
   pickLabel,
   dragLabel,
   pendingLabel = null,
+  error = null,
   onTop,
+  onMove,
   onPick,
   onClose,
 }: {
@@ -55,9 +57,17 @@ export function SwapSheet({
   dragLabel: string;
   /** Set while a pick is under way ("Opening…"). */
   pendingLabel?: string | null;
+  /** Why the last pick didn't work ("Couldn't swap. Please try again."). */
+  error?: string | null;
   /** Called with each card as it comes to the top (to get it ready). */
   onTop?: (swap: RankedSwap) => void;
-  onPick: (swap: RankedSwap) => void;
+  /**
+   * You moved to another card yourself (Skip, Back, Start over). Not when
+   * the page's data reloads and a card drops out of the list.
+   */
+  onMove?: () => void;
+  /** A pick that saves gives back "did it work?" (see SwapStack). */
+  onPick: (swap: RankedSwap) => void | Promise<boolean>;
   onClose: () => void;
 }) {
   const ranked = useMemo(
@@ -84,14 +94,22 @@ export function SwapSheet({
   const swap = ranked[index] as RankedSwap | undefined;
   const others = recipes.filter((r) => r.id !== current.recipeId);
 
-  // Tell the page when a card comes to the top. The ref holds the latest
-  // onTop, so a new function each render doesn't call it again.
+  // Tell the page when a different card comes to the top. The ref holds
+  // the latest onTop, so a new function each render doesn't call it again.
+  // Compared by id: when the page's data reloads (after a failed swap, say)
+  // the ranking is worked out again into new objects, but it's still the
+  // same card, so it mustn't count as "a new card" (which clears the error).
   const onTopRef = useRef(onTop);
   useEffect(() => {
     onTopRef.current = onTop;
   });
+  const lastTopId = useRef<string | null>(null);
   useEffect(() => {
-    if (swap) onTopRef.current?.(swap);
+    // The end tile: forget the last card, so Start over counts as new.
+    if (!swap) lastTopId.current = null;
+    if (!swap || swap.id === lastTopId.current) return;
+    lastTopId.current = swap.id;
+    onTopRef.current?.(swap);
   }, [swap]);
 
   /**
@@ -103,6 +121,7 @@ export function SwapSheet({
    */
   function goTo(next: number, focusSkip = false) {
     const card = ranked[next];
+    onMove?.();
     flushSync(() => {
       setTopId(card ? card.id : END);
       setAnnouncement(
@@ -134,11 +153,15 @@ export function SwapSheet({
             <div className="mb-2 flex h-11 items-center justify-between">
               {/* Hidden, not removed, on the first card, so the counter
                   doesn't jump sideways. */}
+              {/* aria-disabled, not disabled, while a pick is saving: the
+                  real thing would drop keyboard focus to the page. */}
               <button
                 type="button"
-                onClick={() => goTo(index - 1, index - 1 === 0)}
-                disabled={pendingLabel !== null}
-                className={`-ml-2 flex h-11 items-center gap-1 px-2 text-sm font-medium text-muted-foreground hover:text-foreground ${
+                onClick={() => {
+                  if (pendingLabel === null) goTo(index - 1, index - 1 === 0);
+                }}
+                aria-disabled={pendingLabel !== null}
+                className={`-ml-2 flex h-11 items-center gap-1 px-2 text-sm font-medium text-muted-foreground hover:text-foreground aria-disabled:opacity-50 ${
                   index === 0 ? "invisible" : ""
                 }`}
               >
@@ -161,10 +184,7 @@ export function SwapSheet({
                 dragLabel={dragLabel}
                 pendingLabel={pendingLabel}
                 skipRef={skipRef}
-                onCommit={(direction) => {
-                  if (direction === "pick") onPick(swap);
-                  else goTo(index + 1);
-                }}
+                onCommit={(direction) => (direction === "pick" ? onPick(swap) : goTo(index + 1))}
               />
             ) : (
               <SwapEnd
@@ -173,6 +193,14 @@ export function SwapSheet({
                 onRestart={() => goTo(0, true)}
                 onKeep={onClose}
               />
+            )}
+
+            {/* role="alert": read out straight away, since the card that
+                came back looks just like before. */}
+            {error && (
+              <p role="alert" className="mt-3 text-center text-sm text-destructive">
+                {error}
+              </p>
             )}
           </>
         )}

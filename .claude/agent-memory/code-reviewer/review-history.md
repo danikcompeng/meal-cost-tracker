@@ -62,3 +62,53 @@ metadata:
   purpose for one tap: suggest a comment + focus the name/Log it); nits: LogFoodForm back says
   "All foods", option button classes duplicated, `grouped` ignores onPickRecipe, Today now errors
   if getRecipes fails (optional fallback).
+- 2026-11-14 swap step 1 (uncommitted: lib/swap.ts ranking, daysBetween, getEatenHistory in
+  entries.ts): Minor issues. Group order, 15% EPSILON, cents chips, id tie-break, servings
+  scaling all correct. Raised: cost-unknown note "so it's further down" false when that recipe
+  ranks 1st (cost is key 3); kcal "—" never says who's missing it (no kcalMissing); 1,000-row
+  Supabase cap can drop old recipe rows -> false "Not had it in 60+ days"; current-unknown
+  protein = tie but current-unknown cost still sinks unknowns (inconsistent, plan says tie for
+  both); "Not a close match: ..., $0.62 cheaper" repeats the chip; CLAUDE.md "uses the most
+  ingredients" vs "fewest to get" (toGet is fine-grained, cost rarely decides); no cost-band
+  boundary tests; SwapCurrent.recipeId unused; localeCompare locale; swap-card.tsx untracked
+  outside step 1; no servings > 0 guard (0 -> "Same cost" for all).
+  Re-check same day: all fixed and tested (1c entries.ts split moved to step 2). OK to commit.
+  Nits left: RankedSwap.notes doc still says "why it's lower"; CLAUDE.md:27 "uses the most
+  ingredients" still differs from "fewest to get" (developer's own wording, their call).
+- 2026-11-14 swap step 2 (uncommitted: swap-sheet/stack/card/empty/button, recipe-view, page,
+  getEatenHistory): Fix before committing. Verified fine: .limit() returns `this` so .not after
+  it works; 60/7-day ranges; null on error/limit; leaving-ref guard vs swipe+tap; listener
+  cleanup; Value "—"+sr "unknown"; label-in-name; overflow-x-clip maths; MotionConfig on Today.
+  Raised: pointerdown on the flying card stops x's animation, .then never fires -> leaving stuck,
+  dead stack (verified in motion-dom); Back mid-flight -> x.set doesn't stop it, stale index
+  skips forward 2; close mid-flight still router.pushes (4th "outlives component"); flick
+  against the drag side commits (offset +90, velocity -800 -> skip); Back to card 1 hides the
+  focused Back (focus lost); restarted latch moves focus on Back-from-end; reasons before the h3
+  (heading nav skips chips); dark mode --card == --popover so the card is invisible in the
+  sheet; Open it gives no pending feedback (prefetch); e.repeat; nits: kcal change missing vs
+  plan, proteinPerDollar formatting duplicated, pickLabel === "Open it" coupling, touch-pan-y
+  redundant, CLAUDE.md still says carousel, step 3 needs a "pick failed" path.
+  Re-check same day: all fixed (flyingId state + drag false, topId ref, jump(0), stop on
+  unmount, same-side flick, prefetch + useTransition "Opening…", goTo flushSync + focus Skip,
+  e.repeat, borders, h3 first + order-first, id-based top card, memoized current). Verified
+  drag "x" -> false only calls controls.stop() which no-ops when not dragging. One new bug:
+  flyingId is never cleared, so Back to the card you just skipped leaves it undraggable
+  (pointer-events-none). Fix: setFlyingId(null) in the .then. Rest OK to commit.
+- 2026-11-15 swap step 3 (uncommitted: swapEntry/undoSwap, validateUndoSwap, undo-toast, two-button
+  entry row, ids.ts): Minor issues. Verified fine: snapshot from live recipe incl. amount/unit/name;
+  update+select("id") catches 0 rows under RLS; undo .eq(recipe_id) guard; validateUndoSwap types,
+  nulls, water, trim/100 = DB check, meal+servings unchanged; double tap (leaving ref), double Undo;
+  edit->swap focus (cleanup focuses row before the swap sheet records opener); always-mounted status
+  box; row key recipe+name; MotionConfig fades. Raised: swapping/swapError shared across sheets
+  (close mid-swap: failure silent, next sheet shows "Swapping…" + old error; 5th "outlives");
+  Swap/Skip `disabled` while pending drops keyboard focus (toast already knows aria-disabled);
+  read-then-write gap (undo can leave amount 2 with 1.5's snapshot; add .eq amount/meal; comment
+  overclaims); lost response -> retry says "already have"; iOS VoiceOver may not set activeElement
+  (hadFocus, timer pause) - unsure; stale error under the next card (clear via onTop); Undo button
+  kept after UNDO_CHANGED; two toasts overlap 200 ms; SWAP_FAILED/UNDO_FAILED duplicated.
+  Re-check same day: all fixed (swapStatus tied to sheet, .eq amount/recipe_id/meal filters,
+  focusableWhenDisabled, onTop by id, final Undo errors, mode="wait"). New: router.refresh() in
+  the no-signal catch -> Next falls back to a full page load when the RSC fetch fails (verified
+  render-tree.js exitStatus 2; experimental.useOffline is off) = offline browser error page;
+  refresh only after a server answer. Also success does setSwapStatus(null) unconditionally,
+  wiping another sheet's pending/error (use s?.sheet === mine). Rest OK.

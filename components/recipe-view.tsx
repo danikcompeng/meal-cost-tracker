@@ -98,7 +98,7 @@ export function RecipeView({
       <RecipeCost recipe={recipe} />
       {ingredients.length > 0 && (
         <>
-          <SwapButton onClick={() => setSheet({ mode: "swap" })} />
+          <SwapButton onClick={() => setSheet({ mode: "swap" })} className="mt-4" />
           <RecipeNutrients recipe={recipe} />
         </>
       )}

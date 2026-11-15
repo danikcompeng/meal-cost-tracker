@@ -1,5 +1,6 @@
 import "server-only";
 import { toFood } from "./foods";
+import { isUuid } from "./ids";
 import { createClient } from "./supabase/server";
 import type { Recipe } from "./types";
 
@@ -25,9 +26,7 @@ export async function getRecipes(): Promise<Recipe[]> {
 
 /** One of your recipes, or null if it doesn't exist or isn't yours. */
 export async function getRecipe(id: string): Promise<Recipe | null> {
-  // Recipe ids are uuids. Anything else in the address (a typo) would make
-  // Postgres fail with "invalid input syntax for type uuid" and show the
-  // error screen, when "this recipe doesn't exist" is the honest answer.
+  // A typo in the address isn't a uuid: "this recipe doesn't exist".
   if (!isUuid(id)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -54,12 +53,6 @@ export async function recipeNamesUsingFood(foodId: string): Promise<string[]> {
     .map((row) => (row as unknown as { recipe: { name: string } | null }).recipe?.name)
     .filter((name): name is string => typeof name === "string")
     .sort((a, b) => a.localeCompare(b));
-}
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function isUuid(value: string): boolean {
-  return UUID.test(value);
 }
 
 type IngredientRow = { amount: unknown; created_at: string; food: Record<string, unknown> | null };

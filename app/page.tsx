@@ -8,7 +8,7 @@ import { TabBar } from "@/components/tab-bar";
 import { TodaySkeleton } from "@/components/today-skeleton";
 import { TodayView } from "@/components/today-view";
 import { dayTitle, isLoggableDay } from "@/lib/dates";
-import { getEntriesForDay, getRecentFoodIds, getRecentRecipeIds } from "@/lib/entries";
+import { getEatenHistory, getEntriesForDay, getRecentFoodIds, getRecentRecipeIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
 import { getRecipes } from "@/lib/recipes";
 import { orderByRecent } from "@/lib/recent";
@@ -46,13 +46,15 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
-  const [entries, foods, recentIds, recipes, recentRecipeIds, targets, hour, cookieStore] =
+  const [entries, foods, recentIds, recipes, recentRecipeIds, history, targets, hour, cookieStore] =
     await Promise.all([
       getEntriesForDay(day),
       getFoods(),
       getRecentFoodIds(),
       getRecipes(),
       getRecentRecipeIds(),
+      // For "Tired of this?": what you ate lately (null if it didn't load).
+      getEatenHistory(today),
       getTargets(),
       userHour(),
       cookies(),
@@ -77,10 +79,15 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
         // from the scanner always opens its sheet.
         key={`${day}:${logFood?.id ?? ""}`}
         day={day}
+        today={today}
         isToday={day === today}
         entries={entries}
         foods={orderByRecent(foods, recentIds)}
         recipes={orderByRecent(loggable, recentRecipeIds)}
+        // All of them: the swap leaves out empty ones itself, and still
+        // needs to know they exist ("none has ingredients yet").
+        swapRecipes={recipes}
+        history={history}
         targets={targets}
         logFood={logFood}
         // Worked out on the server from your timezone, so the page and the

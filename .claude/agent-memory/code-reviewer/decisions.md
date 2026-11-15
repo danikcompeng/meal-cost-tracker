@@ -31,6 +31,12 @@ Per feature (all approved, don't re-raise)
 - Recipes (2026-11-14): any ingredient missing a value -> that recipe total "—" (NOT "+ N
   unknown"); a logged recipe saves it null. Water never null. Steps column unused for now.
   Picking a food already in the recipe opens its edit sheet. No Playwright yet.
+- Swap (2026-11-14, plans/swap.md "Approved with these answers" overrides section 0):
+  "foods you have" = foods eaten in last 7 days (alone or in a recipe, recipe's CURRENT
+  ingredients), worded "you've had this week", never "in your kitchen" until purchases.
+  Servings stay the same. Recency is the LAST group on purpose. Protein 15% or 2 g; cost
+  10% or $0.25; recent = < 3 days; history 60 days. "Not had it in 60+ days" also for new
+  recipes (worded true either way). Swap is recipe -> recipe only.
 
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

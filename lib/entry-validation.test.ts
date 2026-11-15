@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest";
+import { NO_EXTRAS } from "./macros";
+import type { Meal } from "./meals";
 import {
+  swappedFrom,
+  UNDO_CHANGED,
   validateEntryChange,
   validateNewEntry,
   validateNewRecipeEntry,
+  validateSwap,
+  validateUndoSwap,
 } from "./entry-validation";
 
 const today = "2026-11-09";
@@ -100,5 +106,100 @@ describe("validateNewRecipeEntry", () => {
     expect(error("20")).toBeFalsy();
     expect(error("21")).toMatch(/a lot of servings/);
     expect(error("1,5")).toBeFalsy();
+  });
+});
+
+const ENTRY_ID = "3f2b6c1e-8a4d-4f7e-9b2a-1c5d7e9f0a12";
+const RECIPE_ID = "7a1c2e3f-4b5d-4c6e-8f9a-0b1c2d3e4f5a";
+
+describe("validateSwap", () => {
+  it("accepts two uuids", () => {
+    expect(validateSwap({ entryId: ENTRY_ID, recipeId: RECIPE_ID })).toEqual({
+      ok: true,
+      value: { entryId: ENTRY_ID, recipeId: RECIPE_ID },
+    });
+  });
+
+  it("refuses anything that isn't a uuid", () => {
+    for (const bad of ["", "dal", 42, null, undefined, `${RECIPE_ID} or 1=1`]) {
+      expect(validateSwap({ entryId: ENTRY_ID, recipeId: bad }).ok).toBe(false);
+      expect(validateSwap({ entryId: bad, recipeId: RECIPE_ID }).ok).toBe(false);
+    }
+  });
+});
+
+describe("validateUndoSwap", () => {
+  // Overnight oats, 1.5 servings at lunch, before it was swapped.
+  const before = {
+    recipe_id: RECIPE_ID,
+    name: "Overnight oats",
+    meal: "lunch",
+    amount: 1.5,
+    kcal: 750,
+    protein_g: 36,
+    carbs_g: 90,
+    fat_g: 20,
+    ...NO_EXTRAS,
+    cost: 1.68,
+    water_ml: 0,
+  };
+  const now: { meal: Meal; amount: number } = { meal: "lunch", amount: 1.5 };
+  const errors = (raw: unknown, at = now) => {
+    const result = validateUndoSwap(raw, at);
+    return result.ok ? null : result.fieldErrors;
+  };
+
+  it("accepts the entry's old copy, unknowns and all", () => {
+    const result = validateUndoSwap(before, now);
+    expect(result.ok && result.value).toEqual(before);
+    // A recipe deleted since, unknown protein and cost: still fine.
+    expect(errors({ ...before, recipe_id: null, protein_g: null, cost: null })).toBeNull();
+  });
+
+  it("refuses negative, text, NaN and Infinity numbers", () => {
+    for (const bad of [-1, "36", Number.NaN, Number.POSITIVE_INFINITY, undefined, true]) {
+      expect(errors({ ...before, protein_g: bad })).toHaveProperty("protein_g");
+      expect(errors({ ...before, cost: bad })).toHaveProperty("cost");
+      expect(errors({ ...before, water_ml: bad })).toHaveProperty("water_ml");
+    }
+    // Water is never unknown.
+    expect(errors({ ...before, water_ml: null })).toHaveProperty("water_ml");
+  });
+
+  it("checks the servings like an entry edit, and they must be unchanged", () => {
+    expect(errors({ ...before, amount: 0 })).toHaveProperty("amount");
+    expect(errors({ ...before, amount: 25 }, { ...now, amount: 25 })).toHaveProperty("amount");
+    expect(errors({ ...before, amount: "1.5" })).toHaveProperty("amount");
+    // You changed it to 2 servings after the swap: the old copy is for 1.5.
+    expect(errors(before, { ...now, amount: 2 })).toEqual({ entry: UNDO_CHANGED });
+  });
+
+  it("checks the meal, and it must be unchanged", () => {
+    expect(errors({ ...before, meal: "brunch" })).toHaveProperty("meal");
+    expect(errors(before, { ...now, meal: "dinner" })).toEqual({ entry: UNDO_CHANGED });
+  });
+
+  it("refuses a missing or too-long name and a recipe that isn't a uuid", () => {
+    expect(errors({ ...before, name: "  " })).toHaveProperty("name");
+    expect(errors({ ...before, name: "x".repeat(101) })).toHaveProperty("name");
+    expect(errors({ ...before, recipe_id: "dal" })).toHaveProperty("recipe_id");
+  });
+
+  it("accepts exactly what swappedFrom sent after the swap", () => {
+    const entry = {
+      ...before,
+      id: ENTRY_ID,
+      day: "2026-11-09",
+      meal: "lunch" as const,
+      food_id: null,
+      unit: "serving" as const,
+    };
+    const result = validateUndoSwap(swappedFrom(entry), now);
+    expect(result.ok && result.value).toEqual(before);
+  });
+
+  it("refuses something that isn't an entry at all", () => {
+    expect(errors(null)).toHaveProperty("entry");
+    expect(errors("undo")).toHaveProperty("entry");
   });
 });

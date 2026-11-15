@@ -161,6 +161,29 @@ export function hadThisWeek(rows: EatenRow[], recipes: Recipe[], today: string):
 }
 
 /**
+ * The meal you're tired of, from a logged entry: its own snapshot per
+ * serving (1.5 servings with 36 g protein -> 24 g a serving). That's what
+ * your day actually counts, even if the recipe was edited since. Unknown
+ * stays unknown.
+ */
+export function swapCurrentFromEntry(entry: {
+  recipe_id: string | null;
+  name: string;
+  amount: number;
+  protein_g: number | null;
+  cost: number | null;
+}): SwapCurrent {
+  const perServing = (value: number | null) =>
+    value === null || !(entry.amount > 0) ? null : value / entry.amount;
+  return {
+    recipeId: entry.recipe_id,
+    name: entry.name,
+    protein: perServing(entry.protein_g),
+    cost: perServing(entry.cost),
+  };
+}
+
+/**
  * Lines shown once above the stack when the CURRENT meal is missing a
  * number, because then nothing can be matched on it.
  */

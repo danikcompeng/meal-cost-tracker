@@ -14,11 +14,14 @@ export function MealSection({
   entries,
   onAdd,
   onOpen,
+  onSwap,
 }: {
   meal: Meal;
   entries: MealEntry[];
   onAdd: () => void;
   onOpen: (entry: MealEntry) => void;
+  /** "Tired of this?" on a recipe entry. */
+  onSwap: (entry: MealEntry) => void;
 }) {
   const label = MEAL_LABELS[meal];
   const kcal = dayTotals(entries).kcal;
@@ -60,7 +63,13 @@ export function MealSection({
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 >
-                  <EntryRow entry={entry} onOpen={() => onOpen(entry)} />
+                  <EntryRow
+                    entry={entry}
+                    onOpen={() => onOpen(entry)}
+                    // Swaps are recipe to recipe; a recipe entry is in
+                    // servings (even if the recipe was deleted since).
+                    onSwap={entry.unit === "serving" ? () => onSwap(entry) : undefined}
+                  />
                 </motion.li>
               ))}
             </AnimatePresence>
