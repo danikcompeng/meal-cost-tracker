@@ -40,3 +40,7 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   recipe-validation.ts, nutrientsPerServing / recipeSnapshotFor in nutrition.ts. Kitchen tab ->
   /recipes; kitchen-switch.tsx links /recipes | /foods. Food in a recipe: delete + unit change
   refused in food-actions.ts. Build order: 1 maths, 2 screens, 3 logging from Today.
+  Step 3: logRecipe in entry-actions.ts, getRecentRecipeIds in entries.ts, page.tsx filters
+  recipes with ingredients; food-picker.tsx groups "Your recipes" + recipe-option.tsx;
+  log-recipe-form.tsx (Servings prefilled 1, no autoFocus); MAX_SERVINGS_LOGGED = 20 in
+  entry-validation.ts; 011 checks: recipe_id -> unit 'serving', food_id -> unit <> 'serving'.

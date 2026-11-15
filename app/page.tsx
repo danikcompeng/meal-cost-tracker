@@ -8,8 +8,9 @@ import { TabBar } from "@/components/tab-bar";
 import { TodaySkeleton } from "@/components/today-skeleton";
 import { TodayView } from "@/components/today-view";
 import { dayTitle, isLoggableDay } from "@/lib/dates";
-import { getEntriesForDay, getRecentFoodIds } from "@/lib/entries";
+import { getEntriesForDay, getRecentFoodIds, getRecentRecipeIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
+import { getRecipes } from "@/lib/recipes";
 import { orderByRecent } from "@/lib/recent";
 import { getTargets } from "@/lib/settings";
 import { mealForHour } from "@/lib/meals";
@@ -45,14 +46,19 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
-  const [entries, foods, recentIds, targets, hour, cookieStore] = await Promise.all([
-    getEntriesForDay(day),
-    getFoods(),
-    getRecentFoodIds(),
-    getTargets(),
-    userHour(),
-    cookies(),
-  ]);
+  const [entries, foods, recentIds, recipes, recentRecipeIds, targets, hour, cookieStore] =
+    await Promise.all([
+      getEntriesForDay(day),
+      getFoods(),
+      getRecentFoodIds(),
+      getRecipes(),
+      getRecentRecipeIds(),
+      getTargets(),
+      userHour(),
+      cookies(),
+    ]);
+  // A recipe with no ingredients has nothing to log yet, so it's left out.
+  const loggable = recipes.filter((recipe) => recipe.ingredients.length > 0);
 
   // "?log=<food id>" comes from the scanner: open the "Log it" sheet for
   // that food straight away. An id that isn't one of your foods is ignored.
@@ -74,6 +80,7 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
         isToday={day === today}
         entries={entries}
         foods={orderByRecent(foods, recentIds)}
+        recipes={orderByRecent(loggable, recentRecipeIds)}
         targets={targets}
         logFood={logFood}
         // Worked out on the server from your timezone, so the page and the

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { dayTotals } from "./day-totals";
 import { NO_EXTRAS } from "./macros";
 import {
   nutrientsForAmount,
@@ -305,6 +306,15 @@ describe("recipeSnapshotFor", () => {
       ingredients: [{ food: { ...tapWater, counts_toward_hydration: false }, amount: 2000 }],
     };
     expect(recipeSnapshotFor(cooking, 1).water_ml).toBe(0);
+  });
+
+  it("shows on Today as one entry missing fiber, next to the foods that have it", () => {
+    // Oats (fiber known) logged on its own, plus the recipe (fiber unknown):
+    // the day sums the oats' fiber and says "+ 1 food without fiber".
+    const totals = dayTotals([snapshotFor(oats, 100), recipeSnapshotFor(oatsAndEggs, 1)]);
+    expect(totals.fiber_g).toEqual({ sum: 10, missing: 1 });
+    expect(totals.protein_g.missing).toBe(0);
+    expect(totals.protein_g.sum).toBeCloseTo(13 + 12.8, 9);
   });
 
   it("editing 1 serving up to 3 gives the same numbers as logging 3", () => {

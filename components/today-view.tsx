@@ -13,17 +13,20 @@ import { waterTotal } from "@/lib/hydration";
 import { showsWater } from "@/lib/summary";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import type { Targets } from "@/lib/targets";
-import type { Food, MealEntry } from "@/lib/types";
+import type { Food, MealEntry, Recipe } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
 import { DaySummary } from "./day-summary";
 import { EditEntryForm } from "./edit-entry-form";
 import { FoodPicker } from "./food-picker";
 import { LogFoodForm } from "./log-food-form";
+import { LogRecipeForm } from "./log-recipe-form";
 import { MealSection } from "./meal-section";
 
+// Adding: first the list (food and recipe both null), then the amount
+// for whichever you picked.
 type Sheet =
-  | { mode: "add"; meal: Meal; food: Food | null }
+  | { mode: "add"; meal: Meal; food: Food | null; recipe: Recipe | null }
   | { mode: "edit"; entry: MealEntry }
   | null;
 
@@ -32,6 +35,7 @@ export function TodayView({
   isToday,
   entries,
   foods,
+  recipes,
   targets,
   logFood,
   suggestedMeal,
@@ -41,6 +45,8 @@ export function TodayView({
   isToday: boolean;
   entries: MealEntry[];
   foods: Food[];
+  /** Recipes you can log (ones with ingredients), recently eaten first. */
+  recipes: Recipe[];
   targets: Targets;
   /** The summary's "Show details" was left open on this device. */
   detailsOpen: boolean;
@@ -51,13 +57,24 @@ export function TodayView({
 }) {
   const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(() =>
-    logFood ? { mode: "add", meal: suggestedMeal, food: logFood } : null,
+    logFood ? { mode: "add", meal: suggestedMeal, food: logFood, recipe: null } : null,
   );
 
   function close() {
     setSheet(null);
     // Take "?log=" out of the address, so refreshing or going back to this
     // page doesn't open the sheet again.
+    if (logFood) router.replace(isToday ? "/" : `/?day=${day}`, { scroll: false });
+  }
+
+  /**
+   * After logging: close the sheet the form belongs to, and only that one.
+   * A slow save can finish after you closed it and opened another (say,
+   * "+ Add to dinner"); that one must stay open. A sheet keeps the same
+   * object until it's replaced, so comparing objects tells them apart.
+   */
+  function finish(mine: Sheet) {
+    setSheet((current) => (current === mine ? null : current));
     if (logFood) router.replace(isToday ? "/" : `/?day=${day}`, { scroll: false });
   }
 
@@ -111,7 +128,7 @@ export function TodayView({
             key={meal}
             meal={meal}
             entries={entries.filter((e) => e.meal === meal)}
-            onAdd={() => setSheet({ mode: "add", meal, food: null })}
+            onAdd={() => setSheet({ mode: "add", meal, food: null, recipe: null })}
             onOpen={(entry) => setSheet({ mode: "edit", entry })}
           />
         ))}
@@ -119,16 +136,30 @@ export function TodayView({
 
       {sheet?.mode === "add" && (
         <BottomSheet title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`} onClose={close}>
-          {sheet.food ? (
+          {sheet.recipe ? (
+            <LogRecipeForm
+              recipe={sheet.recipe}
+              day={day}
+              initialMeal={sheet.meal}
+              onBack={() => setSheet({ ...sheet, recipe: null })}
+              onDone={() => finish(sheet)}
+            />
+          ) : sheet.food ? (
             <LogFoodForm
               food={sheet.food}
               day={day}
               initialMeal={sheet.meal}
+              backLabel={recipes.length > 0 ? "Recipes and foods" : "All foods"}
               onBack={() => setSheet({ ...sheet, food: null })}
-              onDone={close}
+              onDone={() => finish(sheet)}
             />
           ) : (
-            <FoodPicker foods={foods} onPick={(food) => setSheet({ ...sheet, food })} />
+            <FoodPicker
+              foods={foods}
+              onPick={(food) => setSheet({ ...sheet, food })}
+              recipes={recipes}
+              onPickRecipe={(recipe) => setSheet({ ...sheet, recipe })}
+            />
           )}
         </BottomSheet>
       )}

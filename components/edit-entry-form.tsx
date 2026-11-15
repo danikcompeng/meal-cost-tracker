@@ -42,7 +42,8 @@ export function EditEntryForm({ entry, onDone }: { entry: MealEntry; onDone: () 
     });
   }
 
-  const parsed = validateEntryChange({ meal, amount });
+  // The entry's unit picks the rules: servings (at most 20) for a recipe.
+  const parsed = validateEntryChange({ meal, amount, unit: entry.unit });
   const preview = parsed.ok ? scaleSnapshot(entry, entry.amount, parsed.value.amount) : null;
   const errors = state.fieldErrors ?? {};
   const message = state.message ?? deleteError ?? errors.meal;

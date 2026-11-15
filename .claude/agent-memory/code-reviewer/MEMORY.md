@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-14
-  recipes step 2, Minor issues.
+  recipes step 3 (logging from Today), Minor issues.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -27,7 +27,8 @@
 - Form validation vs DB column precision (numeric(p,s) rounding vs CHECK > 0).
 - Async code that outlives its component: after every await, re-check a cancelled flag /
   request id before touching state or the router. Includes form callbacks (onSaved -> parent
-  setSheet) that fire after the sheet was closed (camera hook, scan-flow, recipe-view).
+  setSheet) that fire after the sheet was closed (camera hook, scan-flow, recipe-view,
+  today-view log forms). Raised 3 times: explain with a slow-network walk-through.
 - UI state derived from a live condition (open || hasError) flips back when it clears; latch it.
 - A saved value the old rules FORCED isn't the user's choice (hydration false on non-ml food).
 - <dialog> + React: React removes the element before close(), so focus isn't restored;

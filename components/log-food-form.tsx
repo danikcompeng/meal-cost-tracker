@@ -20,12 +20,15 @@ export function LogFoodForm({
   food,
   day,
   initialMeal,
+  backLabel = "All foods",
   onBack,
   onDone,
 }: {
   food: Food;
   day: string;
   initialMeal: Meal;
+  /** What the back button returns to: "Recipes and foods" when you have recipes. */
+  backLabel?: string;
   onBack: () => void;
   onDone: () => void;
 }) {
@@ -61,7 +64,7 @@ export function LogFoodForm({
         className="-ml-2 flex h-11 items-center gap-1 px-2 text-sm font-medium text-muted-foreground hover:text-foreground"
       >
         <ChevronLeft aria-hidden="true" className="size-4" />
-        All foods
+        {backLabel}
       </button>
       <p className="text-lg font-medium">{food.name}</p>
 

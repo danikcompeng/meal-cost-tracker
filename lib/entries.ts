@@ -10,7 +10,7 @@ import type { MealEntry } from "./types";
 // One string, not "a" + "b": Supabase reads this text to know the row's
 // shape, and a joined string is just "some string" to TypeScript.
 const ENTRY_COLUMNS =
-  "id, day, meal, food_id, name, unit, amount, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost, water_ml";
+  "id, day, meal, food_id, recipe_id, name, unit, amount, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost, water_ml";
 
 export async function getEntriesForDay(day: string): Promise<MealEntry[]> {
   const supabase = await createClient();

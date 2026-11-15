@@ -1,6 +1,6 @@
 import type { Nutrients } from "./macros";
 import type { Meal } from "./meals";
-import type { BaseUnit } from "./units";
+import type { BaseUnit, EntryUnit } from "./units";
 
 /** Calories and nutrients are per 100 g, per 100 ml, or per 1 item ("each"). */
 export type Food = Nutrients & {
@@ -37,16 +37,19 @@ export type Recipe = {
 };
 
 /**
- * One thing you ate. Name, unit, macros and cost are a snapshot copied when
- * it was logged, for this amount. food_id is null if the food was deleted.
+ * One thing you ate: a food, or servings of a recipe. Name, unit, macros
+ * and cost are a snapshot copied when it was logged, for this amount.
+ * food_id / recipe_id is null if that food or recipe was deleted.
  */
 export type MealEntry = Nutrients & {
   id: string;
   day: string;
   meal: Meal;
   food_id: string | null;
+  recipe_id: string | null;
   name: string;
-  unit: BaseUnit;
+  /** "serving" for a recipe, the food's own unit otherwise. */
+  unit: EntryUnit;
   amount: number;
   cost: number | null;
   /** Water this entry adds, in ml. 0 (never null) when the food doesn't count. */

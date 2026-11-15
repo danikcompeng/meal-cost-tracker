@@ -115,6 +115,8 @@ export async function removeIngredient(recipeId: string, foodId: string): Promis
 }
 
 // "layout" refreshes /recipes and every /recipes/[id] page under it.
+// Today too: its "Add to lunch" list offers your recipes.
 function refresh() {
   revalidatePath("/recipes", "layout");
+  revalidatePath("/");
 }

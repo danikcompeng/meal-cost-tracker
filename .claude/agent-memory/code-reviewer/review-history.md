@@ -54,3 +54,11 @@ metadata:
   back; Kitchen pill ~98 px in a 96 px column at 320 px (check); nits: per-serving maths
   recomputed in 3 components, usedInRecipesMessage in recipe-totals.ts, FK code const in 2
   files, /recipes loads all foods for hasFoods. Future: toFood Number(price) when price nullable.
+- 2026-11-14 recipes step 3 (uncommitted: logging recipes from Today): Minor issues. logRecipe
+  re-reads recipe, empty-recipe guard, null propagation, water, unit 'serving', 011 checks/RLS,
+  servings cap on log + edit, tests all correct. Raised: onDone after closing the sheet closes a
+  sheet opened since (3rd time; suggested identity check setSheet(s => s === mine ? null : s));
+  "no price yet per serving" wording; focus drops to <body> on recipe pick (no autoFocus, on
+  purpose for one tap: suggest a comment + focus the name/Log it); nits: LogFoodForm back says
+  "All foods", option button classes duplicated, `grouped` ignores onPickRecipe, Today now errors
+  if getRecipes fails (optional fallback).
