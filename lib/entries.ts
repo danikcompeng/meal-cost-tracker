@@ -54,6 +54,23 @@ export async function getRecentFoodIds(): Promise<string[]> {
   return (data ?? []).map((row) => row.food_id as string);
 }
 
+/** Recipe ids you logged lately, newest first, for the recipe list's order. */
+export async function getRecentRecipeIds(): Promise<string[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("meal_entries")
+    .select("recipe_id")
+    .not("recipe_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(100);
+  // Same as foods: a nicety, so on failure the list is just A to Z.
+  if (error) {
+    logDbError("getRecentRecipeIds", error);
+    return [];
+  }
+  return (data ?? []).map((row) => row.recipe_id as string);
+}
+
 // Postgres "numeric" can arrive as a string, so convert (see numberOrNull).
 function toEntry(row: Record<string, unknown>): MealEntry {
   return {

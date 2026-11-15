@@ -46,3 +46,11 @@ metadata:
   010 re-run errors on add column (use if not exists; safe anyway); fieldset/legend so screen
   readers hear "water" with "Daily goal"; missing showWater field = off (maybe !== "false");
   showsWater() is now a one-line wrapper.
+- 2026-11-14 recipes step 2 (uncommitted: Kitchen switch, list, recipe screen, ingredients):
+  Minor issues. sumOrNull "—" rule, upsert + RLS, delete/unit lock, uuid guard, no null->0 all
+  correct. Raised: closing the Add sheet while "Adding…" -> onSaved setSheet re-opens it (or
+  replaces another sheet); Remove not disabled while saving (remove then upsert re-adds it);
+  unit-lock error shows under Package size, far from "Measured by", and stays after switching
+  back; Kitchen pill ~98 px in a 96 px column at 320 px (check); nits: per-serving maths
+  recomputed in 3 components, usedInRecipesMessage in recipe-totals.ts, FK code const in 2
+  files, /recipes loads all foods for hasFoods. Future: toFood Number(price) when price nullable.

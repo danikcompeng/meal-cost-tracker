@@ -2,20 +2,23 @@ import Link from "next/link";
 import { ScanButton } from "./scan-button";
 import { cn } from "@/lib/utils";
 
+// Kitchen holds your recipes and your foods, with a [ Recipes | Foods ]
+// switch at the top of both (components/kitchen-switch.tsx). It opens on
+// Recipes, the one you'll use more. /foods still works as an address.
 const TABS = [
   { id: "today", href: "/", label: "Today" },
-  { id: "foods", href: "/foods", label: "Foods" },
+  { id: "kitchen", href: "/recipes", label: "Kitchen" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
 
 // Fixed to the bottom of the screen, where your thumb is. The active tab
-// gets the butter-yellow pill (the only place butter is used). Scan sits in
-// the middle as the one filled button: it's the main thing you do when
+// gets the butter-yellow pill (butter only marks where you are). Scan sits
+// in the middle as the one filled button: it's the main thing you do when
 // unpacking groceries.
 // `active` is left out on screens that aren't tabs, like Settings.
 export function TabBar({ active }: { active?: TabId }) {
-  const [today, foods] = TABS;
+  const [today, kitchen] = TABS;
   return (
     <nav
       aria-label="Main"
@@ -29,7 +32,7 @@ export function TabBar({ active }: { active?: TabId }) {
           <ScanButton />
         </li>
         <li className="justify-self-center">
-          <Tab tab={foods} active={active} />
+          <Tab tab={kitchen} active={active} />
         </li>
       </ul>
     </nav>
@@ -42,7 +45,9 @@ function Tab({ tab, active }: { tab: (typeof TABS)[number]; active?: TabId }) {
       href={tab.href}
       aria-current={tab.id === active ? "page" : undefined}
       className={cn(
-        "flex h-11 items-center rounded-full px-6 text-base font-medium transition-colors",
+        // px-4, not wider: "Kitchen" (about 58 px of text) still fits its
+        // third of a 320 px phone, about 96 px, beside Scan.
+        "flex h-11 items-center rounded-full px-4 text-base font-medium transition-colors",
         tab.id === active
           ? "bg-highlight text-highlight-foreground"
           : "text-muted-foreground hover:text-foreground",

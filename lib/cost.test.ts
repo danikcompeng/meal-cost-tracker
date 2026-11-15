@@ -5,8 +5,17 @@ import {
   formatMoney,
   pricePerUnit,
   proteinPerDollar,
+  proteinPerDollarText,
   unitPriceLabel,
 } from "./cost";
+
+describe("proteinPerDollarText", () => {
+  it("shows whole grams from 10 up, one decimal under 10", () => {
+    expect(proteinPerDollarText(21.43)).toBe("21 g protein per $");
+    expect(proteinPerDollarText(4.46)).toBe("4.5 g protein per $");
+    expect(proteinPerDollarText(0)).toBe("0 g protein per $");
+  });
+});
 
 describe("pricePerUnit", () => {
   it("divides price by package size", () => {

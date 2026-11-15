@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
 import { TabBar } from "@/components/tab-bar";
 import { FoodManager } from "@/components/food-manager";
+import { KitchenSwitch } from "@/components/kitchen-switch";
 import { getFoods } from "@/lib/foods";
 
 export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
@@ -13,7 +14,9 @@ export default function FoodsPage() {
     <>
       {/* Bottom padding leaves room for the tab bar fixed at the bottom. */}
       <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-28">
-        <AppHeader title="Foods" />
+        <AppHeader title="Foods">
+          <KitchenSwitch current="foods" />
+        </AppHeader>
         {/* Loading your foods needs your login cookie, which is only
             known per request, so that part streams in behind Suspense while
             the header shows instantly. */}
@@ -21,7 +24,8 @@ export default function FoodsPage() {
           <Foods />
         </Suspense>
       </main>
-      <TabBar active="foods" />
+      {/* Foods lives in the Kitchen tab, next to Recipes. */}
+      <TabBar active="kitchen" />
     </>
   );
 }

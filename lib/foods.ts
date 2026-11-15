@@ -36,7 +36,8 @@ export async function getFood(id: string): Promise<Food | null> {
 
 // Postgres "numeric" can arrive as a string; make sure we have numbers.
 // Nutrients go through nutrientsFromRow, because Number(null) is 0.
-function toFood(row: Record<string, unknown>): Food {
+// Also used by lib/recipes.ts for the foods inside a recipe.
+export function toFood(row: Record<string, unknown>): Food {
   return {
     ...(row as unknown as Food),
     price: Number(row.price),

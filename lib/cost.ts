@@ -65,6 +65,18 @@ export function proteinPerDollar(protein: number | null, cost: number | null): n
   return protein / cost;
 }
 
+const wholeGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+const tenthGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+
+/**
+ * "21 g protein per $". Under 10 keeps one decimal ("4.5 g"), where the
+ * difference between 4 and 5 matters; above that whole grams are enough.
+ */
+export function proteinPerDollarText(value: number): string {
+  const n = value < 10 ? tenthGrams.format(value) : wholeGrams.format(value);
+  return `${n} g protein per $`;
+}
+
 /**
  * A human-friendly price label. "$0.007 per g" is hard to read, so grams and
  * millilitres are shown per 100 instead: "$0.70 / 100 g".

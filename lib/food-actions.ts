@@ -7,13 +7,17 @@ import type { PostgrestError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 import { duplicateChanges, findDuplicate } from "./food-duplicates";
 import { parseSource, validateFood, type FoodInput } from "./food-validation";
-import { getFoods } from "./foods";
+import { getFood, getFoods } from "./foods";
+import { usedInRecipesMessage } from "./recipe-totals";
+import { recipeNamesUsingFood } from "./recipes";
 import { guarded, logDbError, requireUser } from "./server-helpers";
 import type { Food, FormState } from "./types";
 
 // Postgres error code for "this would break a unique rule": here, saving a
 // second food with a barcode you already have.
 const UNIQUE_VIOLATION = "23505";
+// "Something still points at this row": here, a recipe uses the food.
+const FOREIGN_KEY_VIOLATION = "23503";
 
 export async function saveFood(_prev: FormState, formData: FormData): Promise<FormState> {
   return guarded("saveFood", "Couldn't save. Please try again.", async () => {
@@ -70,6 +74,15 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
       }
     }
 
+    // (isEdit already means id is a string, but TypeScript can't see that
+    // through a separate boolean, so it's checked again here.)
+    if (isEdit && typeof id === "string") {
+      const current = await getFood(id);
+      const locked = current && (await unitLockedMessage(current, value.unit));
+      // Shown under "Measured by", the switch you changed.
+      if (locked) return { ok: false, fieldErrors: { measuredBy: locked } };
+    }
+
     // "Where it came from" is set once, when the food is added. Editing a
     // scanned food by hand doesn't change how it was added.
     const query = isEdit
@@ -102,6 +115,9 @@ type Supabase = Awaited<ReturnType<typeof requireUser>>;
  * - "How it was added", like any edit.
  */
 async function updateExisting(supabase: Supabase, existing: Food, value: FoodInput): Promise<FormState> {
+  const locked = await unitLockedMessage(existing, value.unit);
+  if (locked) return { ok: false, message: locked };
+
   const changes: Partial<FoodInput> = { ...value };
   delete changes.name;
   delete changes.brand;
@@ -119,10 +135,23 @@ async function updateExisting(supabase: Supabase, existing: Food, value: FoodInp
   return saved(data.id);
 }
 
+/**
+ * A food in a recipe can't change unit: the recipe's "150" was typed for
+ * the old unit, and would suddenly mean 150 items. Null = the change is
+ * fine (same unit, or in no recipe).
+ */
+async function unitLockedMessage(food: Food, newUnit: Food["unit"]): Promise<string | null> {
+  if (food.unit === newUnit) return null;
+  const names = await recipeNamesUsingFood(food.id);
+  return names.length > 0 ? usedInRecipesMessage(names, "unit") : null;
+}
+
 function saved(id: string): FormState {
-  // The Today screen's food picker shows foods too.
+  // The Today screen's food picker shows foods too, and recipes use the
+  // food's price and nutrients ("layout" = every page under /recipes).
   revalidatePath("/foods");
   revalidatePath("/");
+  revalidatePath("/recipes", "layout");
   return { ok: true, id };
 }
 
@@ -154,8 +183,19 @@ async function foodIdWithBarcode(supabase: Supabase, barcode: string): Promise<s
 export async function deleteFood(id: string): Promise<FormState> {
   return guarded("deleteFood", "Couldn't delete. Please try again.", async () => {
     const supabase = await requireUser();
+
+    // Deleting a food that's in a recipe would make the recipe look
+    // cheaper and lighter than it really is, so say where it's used.
+    const names = await recipeNamesUsingFood(id);
+    if (names.length > 0) return { ok: false, message: usedInRecipesMessage(names, "delete") };
+
     const { error } = await supabase.from("foods").delete().eq("id", id);
     if (error) {
+      // The database's own safety net (migration 011), e.g. if it was
+      // added to a recipe in another tab a moment ago.
+      if (error.code === FOREIGN_KEY_VIOLATION) {
+        return { ok: false, message: "It's in a recipe. Remove it there first." };
+      }
       logDbError("deleteFood", error);
       return { ok: false, message: "Couldn't delete. Please try again." };
     }

@@ -270,6 +270,11 @@ export function FoodForm({
         value={measuredBy}
         onChange={setMeasuredBy}
       />
+      {/* "It's in Overnight oats, so its unit can't change." Hidden again
+          once you switch back to the unit it's saved with. */}
+      {errors.measuredBy && measuredBy !== editing?.unit && (
+        <p className="-mt-3 text-sm text-destructive">{errors.measuredBy}</p>
+      )}
 
       {/* Only ml foods can count: their amount IS the water. For g or each
           the switch disappears and the food is saved as not counting. */}
