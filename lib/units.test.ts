@@ -19,3 +19,11 @@ describe("inputUnitsFor", () => {
     expect(inputUnitsFor("each")).toEqual(["each"]);
   });
 });
+
+describe("amountText for recipes", () => {
+  it("writes servings, with 1 serving singular", () => {
+    expect(amountText(1, "serving")).toBe("1 serving");
+    expect(amountText(1.5, "serving")).toBe("1.5 servings");
+    expect(amountText(2, "serving")).toBe("2 servings");
+  });
+});

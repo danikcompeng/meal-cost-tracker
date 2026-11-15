@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { NO_EXTRAS } from "./macros";
-import { nutrientsForAmount, nutrientsFromRow, scaleSnapshot, snapshotFor } from "./nutrition";
-import type { Food } from "./types";
+import {
+  nutrientsForAmount,
+  nutrientsFromRow,
+  nutrientsPerServing,
+  recipeSnapshotFor,
+  scaleSnapshot,
+  snapshotFor,
+} from "./nutrition";
+import type { Food, Recipe } from "./types";
 
 const oats: Food = {
   id: "oats",
@@ -202,5 +209,114 @@ describe("scaleSnapshot", () => {
       cost: direct.cost,
     });
     expect(edited.cost).toBeCloseTo(2.48, 2);
+  });
+});
+
+// Tap water: free, 0 kcal and 0 macros, counts toward hydration. Like a
+// real Water food, it has no sodium entered (the 0 kcal rule never fills
+// sodium), and none of the other extras either.
+const tapWater: Food = { ...water, price: 0, package_size: 1000 };
+
+// 100 g oats (379 kcal, 13 g protein, $0.70) + 2 eggs (144 kcal, 12.6 g
+// protein, $0.80) + 300 ml tap water, making 2 servings.
+const oatsAndEggs: Recipe = {
+  id: "r1",
+  name: "Oats and eggs",
+  servings: 2,
+  ingredients: [
+    { food: oats, amount: 100 },
+    { food: egg, amount: 2 },
+    { food: tapWater, amount: 300 },
+  ],
+};
+
+describe("nutrientsPerServing", () => {
+  it("works out all eight nutrients per serving", () => {
+    // 150 g oats, 3 servings = 50 g of oats each
+    expectClose(nutrientsPerServing([{ food: oats, amount: 150 }], 3), {
+      kcal: 189.5,
+      protein_g: 6.5,
+      carbs_g: 30,
+      fat_g: 3.5,
+      sugar_g: 0.5,
+      fiber_g: 5,
+      saturated_fat_g: 0.6,
+      sodium_mg: 3,
+    });
+  });
+
+  it("mixes g, each and ml foods, each by its own basis", () => {
+    expectClose(nutrientsPerServing(oatsAndEggs.ingredients, 2), {
+      kcal: 261.5, // (379 + 144 + 0) / 2
+      protein_g: 12.8, // (13 + 12.6 + 0) / 2
+      carbs_g: 30.4,
+      fat_g: 8.3,
+    });
+  });
+
+  it("makes ONLY the nutrient an ingredient is missing unknown, never a lower number", () => {
+    // Egg and water have no fiber entered, so the recipe's fiber is
+    // unknown, even though oats has 10 g. Protein is still known.
+    const result = nutrientsPerServing(oatsAndEggs.ingredients, 2);
+    expect(result.fiber_g).toBeNull();
+    expect(result.sodium_mg).toBeNull();
+    expect(result.protein_g).toBeCloseTo(12.8, 9);
+  });
+
+  it("keeps a real 0 at 0", () => {
+    const result = nutrientsPerServing([{ food: tapWater, amount: 500 }], 1);
+    expect(result.kcal).toBe(0);
+    expect(result.protein_g).toBe(0);
+  });
+
+  it("is all unknown for an empty recipe or servings of 0", () => {
+    const empty = nutrientsPerServing([], 2);
+    const noServings = nutrientsPerServing([{ food: oats, amount: 150 }], 0);
+    for (const value of [...Object.values(empty), ...Object.values(noServings)]) {
+      expect(value).toBeNull();
+    }
+  });
+});
+
+describe("recipeSnapshotFor", () => {
+  it("copies the name, measures in servings and scales one serving by what you ate", () => {
+    const snap = recipeSnapshotFor(oatsAndEggs, 1.5);
+    expect(snap).toMatchObject({ name: "Oats and eggs", unit: "serving", amount: 1.5 });
+    expectClose(snap, {
+      kcal: 392.25, // 261.5 x 1.5
+      protein_g: 19.2, // 12.8 x 1.5
+      cost: 1.125, // ($0.70 + $0.80 + $0) / 2 x 1.5
+      water_ml: 225, // 300 / 2 x 1.5
+      fiber_g: null, // unknown stays unknown, Today shows "+ 1 food without fiber"
+    });
+  });
+
+  it("has no cost when one ingredient has no usable price", () => {
+    const noPrice: Recipe = {
+      ...oatsAndEggs,
+      ingredients: [...oatsAndEggs.ingredients, { food: { ...rice, package_size: 0 }, amount: 50 }],
+    };
+    expect(recipeSnapshotFor(noPrice, 1).cost).toBeNull();
+  });
+
+  it("adds no water for an ingredient with the hydration switch off", () => {
+    const cooking: Recipe = {
+      ...oatsAndEggs,
+      ingredients: [{ food: { ...tapWater, counts_toward_hydration: false }, amount: 2000 }],
+    };
+    expect(recipeSnapshotFor(cooking, 1).water_ml).toBe(0);
+  });
+
+  it("editing 1 serving up to 3 gives the same numbers as logging 3", () => {
+    // Changing servings on Today scales the saved copy, like any entry.
+    const edited = scaleSnapshot(recipeSnapshotFor(oatsAndEggs, 1), 1, 3);
+    const direct = recipeSnapshotFor(oatsAndEggs, 3);
+    expectClose(edited, {
+      kcal: direct.kcal,
+      protein_g: direct.protein_g,
+      cost: direct.cost,
+      water_ml: direct.water_ml,
+      fiber_g: null,
+    });
   });
 });

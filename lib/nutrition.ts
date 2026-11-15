@@ -6,12 +6,12 @@
 // $0.00496, rounded that's $0.0050, and scaling the rounded number up to
 // 500 g gives $2.50 instead of the real $2.48.
 
-import { costOfAmount } from "./cost";
-import { waterForAmount } from "./hydration";
+import { costOfAmount, costPerServing } from "./cost";
+import { waterForAmount, waterPerServing } from "./hydration";
 import { basisAmount, NUTRIENT_KEYS, type Nutrients } from "./macros";
-import { numberOrNull } from "./numbers";
-import type { Food } from "./types";
-import type { BaseUnit } from "./units";
+import { numberOrNull, sumOrNull } from "./numbers";
+import type { Food, Recipe } from "./types";
+import type { BaseUnit, EntryUnit } from "./units";
 
 /** Applies `fn` to every nutrient, keeping each one's own key. */
 function mapNutrients(n: Nutrients, fn: (value: number | null) => number | null): Nutrients {
@@ -43,10 +43,33 @@ export function nutrientsForAmount(
   return mapNutrients(food, (value) => (value === null ? null : (amount * value) / basis));
 }
 
+/**
+ * All eight nutrients in one serving of a recipe: the sum over its
+ * ingredients, divided by servings. Each ingredient uses
+ * nutrientsForAmount, the same maths as logging that food on its own.
+ *
+ * One ingredient missing a nutrient makes THAT nutrient null ("—") for
+ * the recipe. The other seven still work. A shown number is never a
+ * lower one that quietly left an ingredient out.
+ */
+export function nutrientsPerServing(
+  ingredients: { food: Nutrients & { unit: BaseUnit }; amount: number }[],
+  servings: number,
+): Nutrients {
+  const perIngredient = ingredients.map((i) => nutrientsForAmount(i.food, i.amount));
+  const out = {} as Nutrients;
+  for (const key of NUTRIENT_KEYS) {
+    const total = sumOrNull(perIngredient.map((n) => n[key]));
+    out[key] =
+      total === null || !Number.isFinite(servings) || servings <= 0 ? null : total / servings;
+  }
+  return out;
+}
+
 /** What gets copied into a log entry: it never changes after this. */
 export type Snapshot = Nutrients & {
   name: string;
-  unit: BaseUnit;
+  unit: EntryUnit;
   amount: number;
   cost: number | null;
   water_ml: number;
@@ -60,6 +83,27 @@ export function snapshotFor(food: Food, amount: number): Snapshot {
     ...nutrientsForAmount(food, amount),
     cost: costOfAmount(food.price, food.package_size, amount),
     water_ml: waterForAmount(food, amount),
+  };
+}
+
+/**
+ * What gets copied into the log when you eat `servings` of a recipe
+ * (1.5 servings = 1.5 x one serving). Stored as totals for what you ate,
+ * like a food entry, so Today adds it up the same way. Measured in
+ * "serving", so editing it later scales it like any other entry.
+ *
+ * A nutrient the recipe doesn't know stays unknown here, and Today then
+ * shows its usual "+ 1 food without …" note for it.
+ */
+export function recipeSnapshotFor(recipe: Recipe, servings: number): Snapshot {
+  const scale = (value: number | null) => (value === null ? null : value * servings);
+  return {
+    name: recipe.name,
+    unit: "serving",
+    amount: servings,
+    ...mapNutrients(nutrientsPerServing(recipe.ingredients, recipe.servings), scale),
+    cost: scale(costPerServing(recipe.ingredients, recipe.servings)),
+    water_ml: waterPerServing(recipe.ingredients, recipe.servings) * servings,
   };
 }
 

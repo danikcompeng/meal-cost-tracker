@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { soundsLikeWater, waterForAmount, waterText, waterTotal } from "./hydration";
+import {
+  soundsLikeWater,
+  waterForAmount,
+  waterPerServing,
+  waterText,
+  waterTotal,
+} from "./hydration";
 
 describe("soundsLikeWater", () => {
   it("is true for names with the word water in them, any case", () => {
@@ -46,5 +52,27 @@ describe("waterText", () => {
 
   it("shows <1 ml for a little that rounds down to 0", () => {
     expect(waterText(0.3)).toBe("<1 ml");
+  });
+});
+
+describe("waterPerServing", () => {
+  const water = { unit: "ml", counts_toward_hydration: true } as const;
+  const cookingWater = { unit: "ml", counts_toward_hydration: false } as const;
+  const oats = { unit: "g", counts_toward_hydration: false } as const;
+
+  it("counts only ml foods with the switch on, divided by servings", () => {
+    const ingredients = [
+      { food: water, amount: 300 },
+      // Drained pasta water you don't drink: switch off, adds nothing.
+      { food: cookingWater, amount: 500 },
+      { food: oats, amount: 100 },
+    ];
+    expect(waterPerServing(ingredients, 2)).toBe(150);
+  });
+
+  it("is 0, never unknown, when nothing counts or the recipe is empty", () => {
+    expect(waterPerServing([{ food: oats, amount: 100 }], 2)).toBe(0);
+    expect(waterPerServing([], 2)).toBe(0);
+    expect(waterPerServing([{ food: water, amount: 300 }], 0)).toBe(0);
   });
 });

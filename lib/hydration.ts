@@ -22,6 +22,21 @@ export function waterForAmount(
   return food.unit === "ml" && food.counts_toward_hydration ? amount : 0;
 }
 
+/**
+ * Water in one serving of a recipe. Each ingredient adds water by the
+ * same rule as logging it on its own: only if its food is measured in ml
+ * and has "Counts toward hydration" on. Oats cooked in milk add none.
+ * Never null, like waterForAmount: a food that doesn't hydrate adds 0.
+ */
+export function waterPerServing(
+  ingredients: { food: { unit: BaseUnit; counts_toward_hydration: boolean }; amount: number }[],
+  servings: number,
+): number {
+  if (!Number.isFinite(servings) || servings <= 0) return 0;
+  const total = ingredients.reduce((sum, i) => sum + waterForAmount(i.food, i.amount), 0);
+  return total / servings;
+}
+
 /** Adds up a day's water. Never unknown: a food that doesn't count adds 0. */
 export function waterTotal(entries: { water_ml: number }[]): number {
   return entries.reduce((sum, e) => sum + e.water_ml, 0);

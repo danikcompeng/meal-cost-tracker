@@ -1,6 +1,6 @@
-// Pure cost math: no database, no React. That makes it easy to unit test,
-// and later the recipe cost-per-serving function will live here too.
+// Pure cost math: no database, no React. That makes it easy to unit test.
 
+import { sumOrNull } from "./numbers";
 import type { BaseUnit } from "./units";
 
 /**
@@ -29,6 +29,40 @@ export function costOfAmount(
   const perUnit = pricePerUnit(price, packageSize);
   if (perUnit === null || !Number.isFinite(amount) || amount < 0) return null;
   return amount * perUnit;
+}
+
+/** Just the parts of a food that cost needs. */
+type Priced = { price: number; package_size: number };
+
+/**
+ * Cost of one serving of a recipe = cost of everything in it / servings.
+ * Oats $0.74 + milk $0.30 + banana $0.25, 1 serving -> $1.29.
+ *
+ * One ingredient without a price makes the whole thing null ("—"), never
+ * a cheaper number that leaves it out. An empty recipe is null too.
+ */
+export function costPerServing(
+  ingredients: { food: Priced; amount: number }[],
+  servings: number,
+): number | null {
+  if (!Number.isFinite(servings) || servings <= 0) return null;
+  const total = sumOrNull(
+    ingredients.map((i) => costOfAmount(i.food.price, i.food.package_size, i.amount)),
+  );
+  return total === null ? null : total / servings;
+}
+
+/**
+ * Protein per $ = protein_g / cost: grams of protein you get for $1.
+ * 24 g protein for $1.12 -> about 21 g per $.
+ *
+ * Hidden (null) when either is unknown, and when the cost is $0: dividing
+ * by 0 would claim "infinite protein per dollar".
+ */
+export function proteinPerDollar(protein: number | null, cost: number | null): number | null {
+  if (protein === null || cost === null) return null;
+  if (!Number.isFinite(protein) || !Number.isFinite(cost) || cost <= 0) return null;
+  return protein / cost;
 }
 
 /**

@@ -17,6 +17,26 @@ export type Food = Nutrients & {
 };
 
 /**
+ * One food in a recipe, and how much of it goes into the WHOLE recipe,
+ * in the food's own unit (150 g of oats, 2 eggs). Not per serving.
+ */
+export type RecipeIngredient = { food: Food; amount: number };
+
+/**
+ * A staple meal made from your foods. Recipes are live: change a food's
+ * price or protein and the recipe changes too. What you logged doesn't,
+ * because a log entry keeps its own copy (see recipeSnapshotFor).
+ */
+export type Recipe = {
+  id: string;
+  name: string;
+  /** How many servings the whole recipe makes. Above 0, decimals allowed. */
+  servings: number;
+  /** In the order you added them. */
+  ingredients: RecipeIngredient[];
+};
+
+/**
  * One thing you ate. Name, unit, macros and cost are a snapshot copied when
  * it was logged, for this amount. food_id is null if the food was deleted.
  */

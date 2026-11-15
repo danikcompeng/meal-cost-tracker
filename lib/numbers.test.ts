@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { numberOrNull, parseDecimal } from "./numbers";
+import { numberOrNull, parseDecimal, sumOrNull } from "./numbers";
 
 describe("numberOrNull", () => {
   it("keeps null as null, never 0", () => {
@@ -36,5 +36,21 @@ describe("parseDecimal", () => {
   it("rejects words and Infinity", () => {
     expect(parseDecimal("abc")).toBe("invalid");
     expect(parseDecimal("Infinity")).toBe("invalid");
+  });
+});
+
+describe("sumOrNull", () => {
+  it("adds up numbers, and real zeros count", () => {
+    expect(sumOrNull([1, 2, 3])).toBe(6);
+    expect(sumOrNull([0, 0])).toBe(0);
+  });
+
+  it("is unknown when ANY value is unknown, never a smaller sum", () => {
+    expect(sumOrNull([1, null, 3])).toBeNull();
+    expect(sumOrNull([1, Number.NaN])).toBeNull();
+  });
+
+  it("is unknown for an empty list (nothing yet isn't 0)", () => {
+    expect(sumOrNull([])).toBeNull();
   });
 });

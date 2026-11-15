@@ -29,3 +29,21 @@ export function parseDecimal(value: unknown): number | null | "invalid" | "ambig
 }
 
 export const AMBIGUOUS_COMMA = "Write it without a comma, like 1000 or 1.5.";
+
+/**
+ * Adds up numbers where ONE unknown makes the whole sum unknown. Used for
+ * recipes: if one ingredient has no price, the recipe's cost is "—", not
+ * a lower number that quietly leaves that ingredient out.
+ *
+ * An empty list is null too: a recipe with nothing in it hasn't got a
+ * cost of $0, it just hasn't got a cost yet.
+ */
+export function sumOrNull(values: (number | null)[]): number | null {
+  if (values.length === 0) return null;
+  let sum = 0;
+  for (const value of values) {
+    if (value === null || !Number.isFinite(value)) return null;
+    sum += value;
+  }
+  return sum;
+}

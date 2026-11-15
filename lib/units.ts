@@ -3,6 +3,12 @@
 export const BASE_UNITS = ["g", "ml", "each"] as const;
 export type BaseUnit = (typeof BASE_UNITS)[number];
 
+/**
+ * What a log entry is measured in: a food's own unit, or servings for a
+ * recipe ("1.5 servings"). Foods are never measured in servings.
+ */
+export type EntryUnit = BaseUnit | "serving";
+
 // Units the form lets you type in. Bigger units get converted to a base unit.
 export const INPUT_UNITS = ["g", "kg", "ml", "l", "each"] as const;
 export type InputUnit = (typeof INPUT_UNITS)[number];
@@ -31,11 +37,12 @@ export function inputUnitsFor(base: BaseUnit): InputUnit[] {
 
 const amountFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
 
-/** "150 g", "250 ml", "1 item", "2 items". */
-export function amountText(amount: number, unit: BaseUnit): string {
+/** "150 g", "250 ml", "1 item", "2 items", "1 serving", "1.5 servings". */
+export function amountText(amount: number, unit: EntryUnit): string {
   const n = amountFormat.format(amount);
-  if (unit !== "each") return `${n} ${unit}`;
-  return `${n} ${amount === 1 ? "item" : "items"}`;
+  if (unit === "each") return `${n} ${amount === 1 ? "item" : "items"}`;
+  if (unit === "serving") return `${n} ${amount === 1 ? "serving" : "servings"}`;
+  return `${n} ${unit}`;
 }
 
 export function isInputUnit(value: unknown): value is InputUnit {

@@ -87,19 +87,25 @@ through their parent row.
   Existing ingredient prices become one purchase each.
 
 - recipes
-  id, user_id, name, servings, steps, created_at
+  id, user_id, name, servings (> 0, up to 100, 2 decimals),
+  steps (optional, no UI yet), created_at
 
 - recipe_ingredients
-  recipe_id, food_id, amount
+  recipe_id (on delete cascade), food_id, amount (in the food's unit,
+  for the whole recipe), created_at (keeps the order you added them)
+  primary key (recipe_id, food_id): each food once per recipe.
+  A food that's in a recipe can't be deleted (the app says which recipe;
+  the database refuses as a backstop) and can't change unit.
   RLS: you must own the recipe AND the food.
 
 - meal_entries (the plan and the log in one table)
   id, user_id, day (date, in the user's timezone),
   meal ('breakfast'|'lunch'|'dinner'|'snack'),
-  food_id (on delete set null), recipe_id (added with recipes),
+  food_id (on delete set null), recipe_id (on delete set null),
   at most one of recipe_id / food_id (the app requires exactly one when
   logging; both are empty once the food or recipe is deleted),
-  name, unit  (copied when logged, so past days keep their labels),
+  name, unit  (copied when logged, so past days keep their labels;
+  unit is 'serving' for a recipe, the food's unit otherwise),
   amount (servings or food unit, > 0),
   status ('planned' | 'eaten'),
   kcal, protein_g, carbs_g, fat_g,
@@ -108,7 +114,8 @@ through their parent row.
   water_ml  (snapshot: the amount when the food counts toward
   hydration, else 0; never null, so water never shows "+ unknown"),
   created_at
-  RLS: own rows, and food_id must be one of your foods.
+  RLS: own rows, food_id must be one of your foods and recipe_id one of
+  your recipes.
 
 - user_settings (one row per user)
   user_id, daily_kcal, daily_protein_g, daily_carbs_g, daily_fat_g,
@@ -122,9 +129,21 @@ Formulas (pure functions in /lib):
 - Cost of amount  = amount x price per unit
 - Nutrient amount = amount x (nutrient / basis_amount), for all eight
   nutrients (the list is NUTRIENT_KEYS in lib/macros.ts)
-- Per serving     = sum over recipe ingredients / servings, all eight
-  nutrients, with unknowns counted the same "+ N unknown" way
+- Per serving     = sum over recipe ingredients / servings, for cost,
+  all eight nutrients and water (an ingredient adds water only if its
+  food counts toward hydration)
 - Protein per $   = protein_g / cost   (hidden if cost is 0 or unknown)
+
+Missing stays missing (one rule, everywhere): never show a lower number
+that quietly leaves an unknown out.
+- A recipe is one meal, so if ANY ingredient is missing a price or a
+  nutrient, that recipe total is "—", and the screen names who's
+  missing it ("Water has no sodium"). Logged, it's saved as unknown.
+- A day adds up separate entries: it sums the known ones and always
+  says what's left out ("+ 1 food without protein"; cost says "at
+  least"), so the shown number is never mistaken for the whole day.
+- Logging a recipe snapshots per serving x servings eaten, so editing a
+  recipe or food later never changes a past day.
 
 ## Working rules
 - Build ONE feature at a time. Do not start the next feature until

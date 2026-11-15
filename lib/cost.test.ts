@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { costOfAmount, formatMoney, pricePerUnit, unitPriceLabel } from "./cost";
+import {
+  costOfAmount,
+  costPerServing,
+  formatMoney,
+  pricePerUnit,
+  proteinPerDollar,
+  unitPriceLabel,
+} from "./cost";
 
 describe("pricePerUnit", () => {
   it("divides price by package size", () => {
@@ -92,5 +99,51 @@ describe("costOfAmount", () => {
     expect(costOfAmount(3.5, 0, 150)).toBeNull();
     expect(costOfAmount(3.5, 500, Number.NaN)).toBeNull();
     expect(costOfAmount(3.5, 500, -1)).toBeNull();
+  });
+});
+
+describe("costPerServing", () => {
+  const oats = { price: 3.5, package_size: 500 }; // $0.007 per g
+  const eggs = { price: 4.8, package_size: 12 }; // $0.40 each
+
+  it("adds up every ingredient and divides by servings", () => {
+    // 150 g oats $1.05 + 2 eggs $0.80 = $1.85 for the recipe
+    const ingredients = [
+      { food: oats, amount: 150 },
+      { food: eggs, amount: 2 },
+    ];
+    expect(costPerServing(ingredients, 2)).toBeCloseTo(0.925, 10);
+    expect(costPerServing(ingredients, 2.5)).toBeCloseTo(0.74, 10);
+  });
+
+  it("is unknown when ONE ingredient has no price, never a cheaper number", () => {
+    const ingredients = [
+      { food: oats, amount: 150 },
+      { food: { price: 2, package_size: 0 }, amount: 100 },
+    ];
+    expect(costPerServing(ingredients, 1)).toBeNull();
+  });
+
+  it("keeps a free ingredient at a real $0", () => {
+    expect(costPerServing([{ food: { price: 0, package_size: 1000 }, amount: 250 }], 1)).toBe(0);
+  });
+
+  it("is unknown for an empty recipe or servings of 0", () => {
+    expect(costPerServing([], 4)).toBeNull();
+    expect(costPerServing([{ food: oats, amount: 150 }], 0)).toBeNull();
+  });
+});
+
+describe("proteinPerDollar", () => {
+  it("is grams of protein for $1", () => {
+    // 24 g protein for $1.12 -> about 21.4 g per $
+    expect(proteinPerDollar(24, 1.12)).toBeCloseTo(21.43, 2);
+    expect(proteinPerDollar(0, 1)).toBe(0);
+  });
+
+  it("is hidden when the cost is $0 or either number is unknown", () => {
+    expect(proteinPerDollar(24, 0)).toBeNull();
+    expect(proteinPerDollar(24, null)).toBeNull();
+    expect(proteinPerDollar(null, 1.12)).toBeNull();
   });
 });
