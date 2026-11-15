@@ -24,7 +24,8 @@ Core features:
 3. "I'm tired of this" swap (the signature feature): one tap replaces a
    planned or eaten meal with another of YOUR recipes that
    - keeps protein per serving close (within about 15%),
-   - uses the most ingredients already in your kitchen,
+   - needs the fewest foods you'd have to get (for now: foods you haven't
+     logged in the last 7 days),
    - costs least at the prices you actually paid,
    - and you haven't eaten recently.
    All three of protein, kitchen and price count. Scoring is a pure
