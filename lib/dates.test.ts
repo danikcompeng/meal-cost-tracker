@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   dayLabel,
+  daysBetween,
   dayTitle,
   hourIn,
   isLoggableDay,
@@ -80,6 +81,24 @@ describe("addDays", () => {
     // US clocks change on 2026-11-01.
     expect(addDays("2026-10-31", 1)).toBe("2026-11-01");
     expect(addDays("2026-11-01", 1)).toBe("2026-11-02");
+  });
+});
+
+describe("daysBetween", () => {
+  it("counts whole days, negative going back", () => {
+    expect(daysBetween("2026-11-09", "2026-11-14")).toBe(5);
+    expect(daysBetween("2026-11-14", "2026-11-14")).toBe(0);
+    expect(daysBetween("2026-11-14", "2026-11-09")).toBe(-5);
+  });
+
+  it("crosses a month and a year end", () => {
+    expect(daysBetween("2026-10-30", "2026-11-02")).toBe(3);
+    expect(daysBetween("2026-12-31", "2027-01-01")).toBe(1);
+  });
+
+  it("isn't thrown off by daylight saving", () => {
+    // US clocks change on 2026-11-01.
+    expect(daysBetween("2026-10-31", "2026-11-02")).toBe(2);
   });
 });
 

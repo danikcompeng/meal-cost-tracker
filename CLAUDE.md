@@ -28,7 +28,24 @@ Core features:
    - costs least at the prices you actually paid,
    - and you haven't eaten recently.
    All three of protein, kitchen and price count. Scoring is a pure
-   function in /lib so it can be unit tested.
+   function in /lib so it can be unit tested (lib/swap.ts, plan in
+   plans/swap.md). Sorted like a spreadsheet by several columns, each a
+   coarse group so the later ones still get a say:
+   1. protein: close (within 15% or 2 g, whichever is bigger) → known
+      but not close → unknown
+   2. foods you'd need to get (the ones you don't have): none → 1 → 2
+      or more
+   3. cost: cheaper or at most 10% / $0.25 more → pricier → unknown
+   4. not eaten in the last 3 days → eaten recently
+   5. ties: closer protein, cheaper, longer since eaten, name, id
+   Unknowns sort last in their column (even when the current meal's
+   value is unknown too) and never earn a reason chip. A card's notes say
+   what's unknown and who's missing it, never where it sits in the stack.
+   Until purchases exist, "foods you have" = foods logged in the last 7
+   days, alone or inside a recipe, and the card says exactly that ("Uses
+   3 foods you've had this week"), never "in your kitchen". Purchases
+   will replace that input without changing the ranking.
+   Servings stay the same when you swap.
 4. What's in my kitchen: each purchase records what you actually paid and
    how much you got. It counts as "in the kitchen" until you mark it used
    up with a manual tap (never subtracted automatically, so the list
@@ -183,8 +200,11 @@ Layout
   Day / Week views.
 
 Motion (Framer Motion)
-- Signature moment: the "I'm tired of this" swap. Ingredient tiles rotate
-  like a carousel and the new meal slides in. This should feel delightful.
+- Signature moment: the "I'm tired of this" swap. Your other recipes come
+  up as a card stack, best match first, each card showing its
+  ingredients as chips. Swipe right (or tap Swap) to swap, left (Skip)
+  for the next card; the card tilts and flies off, and the new meal
+  slides into Today's row. This should feel delightful.
 - Everything else is subtle: progress rings and the budget bar fill
   smoothly, lists fade in.
 - Respect prefers-reduced-motion.

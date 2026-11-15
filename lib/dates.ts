@@ -58,6 +58,16 @@ export function addDays(day: string, days: number): string {
 }
 
 /**
+ * Whole days from `from` to `to`: daysBetween("2026-11-09", "2026-11-14")
+ * -> 5. Negative if `to` is earlier. Done in UTC like addDays: the days
+ * are plain dates, so a daylight-saving change can't make one 23 hours.
+ */
+export function daysBetween(from: string, to: string): number {
+  const ms = Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`);
+  return Math.round(ms / 86_400_000);
+}
+
+/**
  * Days you can log to: anything from 2000 up to today. One extra day of
  * slack covers a browser whose timezone cookie hasn't reached the server yet.
  * Future days are for planning, which comes later.
