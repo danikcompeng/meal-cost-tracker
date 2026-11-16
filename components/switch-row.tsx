@@ -33,7 +33,7 @@ export function SwitchRow({
         role="switch"
         aria-checked={checked}
         onClick={() => onChange(!checked)}
-        className="flex min-h-11 w-full items-center justify-between gap-3 py-1 text-left"
+        className="focus-ring flex min-h-11 w-full items-center justify-between gap-3 rounded-md py-1 text-left"
       >
         <span>
           <span className="block font-medium">{label}</span>

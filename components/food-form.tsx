@@ -401,7 +401,7 @@ export function FoodForm({
                   aria-label="Package unit"
                   value={fields.unit}
                   onChange={set("unit")}
-                  className="h-11 rounded-r-lg border border-l-0 border-input bg-background px-2 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="focus-ring h-11 rounded-r-lg border border-l-0 border-input bg-background px-2 text-base focus-visible:border-ring"
                 >
                   {inputUnitsFor(measuredBy).map((u) => (
                     <option key={u} value={u}>
@@ -423,7 +423,7 @@ export function FoodForm({
         <p className="text-sm text-destructive">
           {state.message}{" "}
           {state.existingId && (
-            <Link href={`/?log=${state.existingId}`} className="font-medium text-primary">
+            <Link href={`/?log=${state.existingId}`} className="focus-ring rounded-sm font-medium text-primary">
               Log that one
             </Link>
           )}

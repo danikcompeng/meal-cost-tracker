@@ -19,7 +19,10 @@ export function KitchenSwitch({ current }: { current: (typeof PAGES)[number]["id
           href={page.href}
           aria-current={page.id === current ? "page" : undefined}
           className={cn(
-            "flex h-11 flex-1 items-center justify-center rounded-md text-base transition-colors",
+            // The ring sits in the track's 4 px padding, on white, never
+            // on the butter yellow of the current page (too faint there in
+            // dark mode).
+            "focus-ring flex h-11 flex-1 items-center justify-center rounded-md text-base transition-colors",
             page.id === current
               ? "bg-highlight font-medium text-highlight-foreground"
               : "text-muted-foreground hover:bg-accent",

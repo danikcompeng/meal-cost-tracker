@@ -14,7 +14,7 @@ export function AppHeader({
   children?: React.ReactNode;
 }) {
   const quiet =
-    "flex h-11 items-center px-2 text-sm text-muted-foreground hover:text-foreground";
+    "focus-ring flex h-11 items-center rounded-md px-2 text-sm text-muted-foreground hover:text-foreground";
   return (
     <header className="mb-8">
       <div className="flex items-baseline justify-between">

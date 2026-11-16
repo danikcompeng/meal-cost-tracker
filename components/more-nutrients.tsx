@@ -54,7 +54,7 @@ export function MoreNutrients({
         onClick={() => setOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls="more-nutrients"
-        className="flex h-11 w-full items-center justify-between gap-3 text-left"
+        className="focus-ring flex h-11 w-full items-center justify-between gap-3 rounded-md text-left"
       >
         <span className="font-medium">More nutrients</span>
         <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground tabular-nums">

@@ -33,8 +33,10 @@ export function SegmentedControl<T extends string>({
             className={cn(
               "flex h-11 flex-1 cursor-pointer items-center justify-center rounded-md text-base transition-colors",
               // Keyboard focus ring, shown on the label because the real
-              // radio button is hidden.
-              "has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50",
+              // radio button is hidden (focus-ring-within, globals.css).
+              // Outside the label, in the track's 4 px padding, so it's on
+              // white, never on the butter yellow of the selected option.
+              "focus-ring-within",
               option.value === value
                 ? "bg-highlight font-medium text-highlight-foreground"
                 : "text-muted-foreground hover:bg-accent",

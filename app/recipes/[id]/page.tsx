@@ -53,7 +53,7 @@ async function Recipe({ id }: { id: string }) {
         <h1 className="text-lg font-semibold">This recipe doesn&apos;t exist anymore</h1>
         <Link
           href="/recipes"
-          className="mt-4 inline-flex h-11 items-center gap-1 font-medium text-primary"
+          className="focus-ring mt-4 inline-flex h-11 items-center gap-1 rounded-md font-medium text-primary"
         >
           <ChevronLeft aria-hidden="true" className="size-4" />
           Back to recipes

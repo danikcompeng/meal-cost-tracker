@@ -500,7 +500,7 @@ export function TodayView({
         </Link>
         <p className="mt-3 text-sm text-muted-foreground">
           or{" "}
-          <Link href="/scan" className="font-medium text-primary">
+          <Link href="/scan" className="focus-ring rounded-sm font-medium text-primary">
             scan a barcode
           </Link>
         </p>

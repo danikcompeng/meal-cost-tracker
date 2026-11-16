@@ -207,7 +207,7 @@ export function ScanFlow() {
           <button
             type="button"
             onClick={cameraProblem ? () => setStep({ kind: "blocked", problem: cameraProblem }) : startCamera}
-            className="-ml-2 flex h-11 items-center gap-1 px-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            className="focus-ring -ml-2 flex h-11 items-center gap-1 rounded-md px-2 text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <ChevronLeft aria-hidden="true" className="size-4" />
             {cameraProblem ? "Back" : "Scan again"}

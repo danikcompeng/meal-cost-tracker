@@ -149,6 +149,44 @@
   padding-bottom: calc(7rem + env(safe-area-inset-bottom));
 }
 
+/* The app's one focus ring: solid matcha, 2 px, with a 2 px gap, on every
+   button, link and box. Only for the keyboard (:focus-visible), so a tap
+   on a phone never draws it. Solid because the see-through ring it
+   replaces (matcha at 50%) was only 2.2:1 on white, and a focus ring
+   needs 3:1 to be seen: this is 6.0:1 on white, 5.3:1 on tiles and
+   7.9:1 in dark mode. An outline (not a box-shadow ring) leaves a real
+   gap, so it shows even around a matcha button, and it follows rounded
+   corners. Replaces the browser's own ring (Safari's is blue). */
+@utility focus-ring {
+  outline: none;
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
+/* The same ring drawn just inside the edge, for things whose outside
+   would be cut off: rows in a list that hides overflow for its animations
+   (Today's entries). Not on the butter-yellow selected option: matcha on
+   dark-mode butter is only 1.2:1, so those keep the outside ring, on the
+   track's background. */
+@utility focus-ring-inset {
+  outline: none;
+  &:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+}
+
+/* The ring on a box whose real control inside is hidden, like a label
+   around a hidden radio button (segmented-control.tsx). */
+@utility focus-ring-within {
+  &:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

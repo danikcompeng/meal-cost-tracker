@@ -5,8 +5,12 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commits 4 (error/404/offline strip) and 5 (login), both Minor issues. Plan: plans/states-a11y.md (commits 6-9 queued:
-  role=alert + edit-sheet message slot are commit 7, so don't raise them as missing earlier).
+  states commit 6 (matcha focus rings), Minor issues. Plan: plans/states-a11y.md (commits 7-9 queued:
+  role=alert + edit-sheet message slot are commit 7, busy-button colour/contrast/tap targets commit 9).
+- Focus rings (since commit 6): `focus-ring` / `focus-ring-inset` @utility in globals.css (solid 2 px
+  var(--ring) outline). New buttons/links need one. Dark matcha ring on butter = 1.22:1 (never inset
+  on a highlight fill); opacity on an element fades its outline too. `cn` here is shadcn's compiled
+  "cn" package (not tailwind-merge): unknown classes pass through untouched.
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 

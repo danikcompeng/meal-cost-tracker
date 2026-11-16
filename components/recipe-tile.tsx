@@ -16,7 +16,7 @@ export function RecipeTile({ recipe }: { recipe: Recipe }) {
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="flex flex-col gap-0.5 rounded-2xl bg-card px-4 py-3 transition-colors hover:bg-accent"
+      className="focus-ring flex flex-col gap-0.5 rounded-2xl bg-card px-4 py-3 transition-colors hover:bg-accent"
     >
       <span className="flex items-baseline justify-between gap-3">
         <span className="min-w-0 truncate font-medium">{recipe.name}</span>

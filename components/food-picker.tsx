@@ -46,7 +46,7 @@ export function FoodPicker({
     return (
       <p className="py-8 text-center text-muted-foreground">
         You have no foods yet.{" "}
-        <Link href="/foods" className="font-medium text-primary">
+        <Link href="/foods" className="focus-ring rounded-sm font-medium text-primary">
           Add one on Foods
         </Link>
       </p>
@@ -71,7 +71,7 @@ export function FoodPicker({
       {matches.length === 0 && recipeMatches.length === 0 ? (
         <p className="py-6 text-center text-muted-foreground">
           Nothing called “{query.trim()}”.{" "}
-          <Link href="/foods" className="font-medium text-primary">
+          <Link href="/foods" className="focus-ring rounded-sm font-medium text-primary">
             Add it on Foods
           </Link>
         </p>

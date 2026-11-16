@@ -47,7 +47,7 @@ export function FoodRow({
       <button
         type="button"
         onClick={onEdit}
-        className="flex min-w-0 flex-1 flex-col items-start gap-0.5 py-3 text-left"
+        className="focus-ring flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md py-3 text-left"
       >
         <span className="font-medium">
           {name}

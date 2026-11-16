@@ -5,7 +5,7 @@ import type { Recipe } from "@/lib/types";
 
 /** One tappable row in the picker, shared by recipes and foods so they match. */
 export const OPTION_CLASS =
-  "flex min-h-14 w-full flex-col items-start justify-center rounded-lg px-2 py-2 text-left hover:bg-accent";
+  "focus-ring flex min-h-14 w-full flex-col items-start justify-center rounded-lg px-2 py-2 text-left hover:bg-accent";
 
 // One recipe in Today's "Add to lunch" list, with one serving's numbers.
 //   Overnight oats

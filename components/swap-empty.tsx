@@ -64,7 +64,10 @@ export function SwapEnd({
           <span className="min-w-0 truncate">Keep {currentName}</span>
         </Button>
       </div>
-      <Link href="/recipes" className="mt-4 flex h-11 items-center text-sm font-medium text-primary">
+      <Link
+        href="/recipes"
+        className="focus-ring mt-4 flex h-11 items-center rounded-md text-sm font-medium text-primary"
+      >
         New recipe
       </Link>
     </section>

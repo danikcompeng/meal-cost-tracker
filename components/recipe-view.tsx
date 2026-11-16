@@ -78,7 +78,7 @@ export function RecipeView({
       <header className="mb-8">
         <Link
           href="/recipes"
-          className="-ml-2 flex h-11 w-fit items-center gap-1 px-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+          className="focus-ring -ml-2 flex h-11 w-fit items-center gap-1 rounded-md px-2 text-sm font-medium text-muted-foreground hover:text-foreground"
         >
           <ChevronLeft aria-hidden="true" className="size-4" />
           Recipes
@@ -88,7 +88,7 @@ export function RecipeView({
           <button
             type="button"
             onClick={() => setSheet({ mode: "edit" })}
-            className="-mr-2 flex h-11 shrink-0 items-center px-2 text-sm text-muted-foreground hover:text-foreground"
+            className="focus-ring -mr-2 flex h-11 shrink-0 items-center rounded-md px-2 text-sm text-muted-foreground hover:text-foreground"
           >
             Edit
           </button>
@@ -129,7 +129,7 @@ export function RecipeView({
         <button
           type="button"
           onClick={() => setSheet({ mode: "add", food: null, added: null })}
-          className="mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="focus-ring mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Plus aria-hidden="true" className="size-4" />
           Add ingredient

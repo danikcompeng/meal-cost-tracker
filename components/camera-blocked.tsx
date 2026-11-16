@@ -136,7 +136,7 @@ export function CameraBlocked({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="-mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="focus-ring -mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
         >
           <X aria-hidden="true" className="size-6" />
         </button>
@@ -161,7 +161,7 @@ export function CameraBlocked({
             </ol>
           </section>
           <details className="mt-3 rounded-2xl px-4 py-2">
-            <summary className="flex h-11 cursor-pointer items-center text-sm font-medium text-muted-foreground">
+            <summary className="focus-ring flex h-11 cursor-pointer items-center rounded-md text-sm font-medium text-muted-foreground">
               Other phone or app?
             </summary>
             <div className="space-y-4 pb-2">

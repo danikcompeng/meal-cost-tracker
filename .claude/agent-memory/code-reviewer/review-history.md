@@ -291,3 +291,14 @@ metadata:
   focus on failure; sendMagicLink/verify drop could use checkFirst; 0/5xx comment "never checked"
   not guaranteed (504/timeout); local fallback re-sends a revoke (2x wait); plan wording differs
   (code's is better); question: global sign-out logs the iPhone app out from the laptop.
+- 2026-11-16 states commit 6 (focus-ring / focus-ring-inset @utility in globals.css, Button/Input, ~28
+  components): Minor issues. Verified: utilities layer beats base `* outline-ring/50`; Base UI + shadcn
+  css + tw-animate ship no outline rules; `cn` pkg keeps unknown classes; aria-invalid:ring-3 is a
+  box-shadow (independent); focusableWhenDisabled = aria-disabled (ring still shows); no clipping
+  anywhere (sheet px-4/pt-1+, swap clip px-4, more-nutrients exactly 4 px, day-nav ring reaches x=0);
+  only scanner + swipe Delete left on purpose. Raised: inset ring on the BUTTER option in dark mode =
+  1.22:1 (segmented control: Tab always lands on the checked = butter option; kitchen switch current
+  page); neither track clips, p-1 = 4 px fits focus-ring; aria-disabled:opacity-50 fades the ring to
+  ~2.2:1 (Swap "Swapping…", Skip, Back, toast x); segmented copies ring values by hand (suggest
+  focus-ring-within utility); test step 5 "taps show no ring" fails for inputs and script focus after
+  taps (SwapEnd Start over, Skip, duplicate Cancel), now solid not faint; Mac Safari Tab skips buttons.

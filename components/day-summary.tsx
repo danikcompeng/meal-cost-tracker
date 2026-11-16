@@ -76,7 +76,7 @@ export function DaySummary({
         onClick={toggle}
         aria-expanded={open}
         aria-controls="summary-details"
-        className="mx-auto mt-3 flex h-11 items-center gap-1 px-3 text-[13px] font-medium text-muted-foreground"
+        className="focus-ring mx-auto mt-3 flex h-11 items-center gap-1 rounded-md px-3 text-[13px] font-medium text-muted-foreground"
       >
         {open ? "Hide details" : "Show details"}
         <motion.span
@@ -117,7 +117,7 @@ export function DaySummary({
       {!hasAnyTarget(targets) && (
         <Link
           href="/settings"
-          className="-mb-2 flex h-11 items-center justify-center font-medium text-primary hover:underline"
+          className="focus-ring -mb-2 flex h-11 items-center justify-center rounded-md font-medium text-primary hover:underline"
         >
           Set daily targets
         </Link>

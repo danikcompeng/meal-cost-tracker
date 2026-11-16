@@ -23,7 +23,7 @@ export function IngredientRow({
     <button
       type="button"
       onClick={onOpen}
-      className="flex min-h-14 w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-accent"
+      className="focus-ring flex min-h-14 w-full items-start gap-3 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-accent"
     >
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-medium">{food.name}</span>

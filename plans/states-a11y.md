@@ -252,7 +252,16 @@ kitchen switch, switches, More nutrients, text links and the camera
 help.
 - One shared class, `focus-ring`, defined once in `app/globals.css`,
   added to each of them. It only shows for the keyboard
-  (:focus-visible), never on a tap.
+  (:focus-visible), never on a tap. A twin, `focus-ring-inset`, draws
+  it just inside the edge where the outside would be cut off: Today's
+  entry rows (their list hides overflow for its animations). A third,
+  `focus-ring-within`, rings the Meal options' labels around their
+  hidden radio buttons. Options in a track (Meal, Recipes | Foods) keep
+  the outside ring: inside, it would sit on the butter yellow, only
+  1.2:1 in dark mode.
+  Left as they are: the camera's buttons (their own solid light-matcha
+  ring on the dark camera) and the swipe Delete (a white ring inside the
+  red).
 - **The ring itself** (decision A): today's shadcn ring is matcha at
   50% see-through, which is only 2.2:1 against white. A focus ring
   needs 3:1 to be seen. Proposed: solid matcha, 2 px, with a 2 px gap
@@ -375,9 +384,13 @@ Headings (one h1 per screen, no skipped levels; none skip today):
    next to the button, your input still there, the strip at the top.
    Back online, tap the same button: it saves.
 4. A bad address (`/nope`): the 404 page with the tab bar.
-5. Keyboard only on the laptop: Tab through every screen and sheet. A
+5. Keyboard only on the laptop (Chrome, or Safari with "Press Tab to
+   highlight each item" on): Tab through every screen and sheet. A
    solid matcha ring on everything, never Safari's blue. On the
-   iPhone, taps show no ring.
+   iPhone, tapping a button shows no ring; a text box you tap does
+   (that's normal), and so may a button the app moves focus to after a
+   tap (Skip after Back to card 1, Start over, Cancel in the duplicate
+   dialog, Delete after a failed delete).
 6. VoiceOver on the iPhone (Settings, Accessibility, VoiceOver): an
    error in a sheet is read out; a skeleton says "Loading"; the
    headings rotor lists one h1 per screen.

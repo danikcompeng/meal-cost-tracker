@@ -194,7 +194,8 @@ export function EntryRow({
           onClick={onOpen}
           // So focus can come back here after Undo (see TodayView).
           data-entry-open={entry.id}
-          className="flex min-h-14 min-w-0 flex-1 items-start gap-3 rounded-lg px-3 py-2.5 text-left"
+          // Inset: the meal's list hides anything outside a row.
+          className="focus-ring-inset flex min-h-14 min-w-0 flex-1 items-start gap-3 rounded-lg px-3 py-2.5 text-left"
         >
           {/* After a swap the entry stays the same row, so its old name
               slides out and the new one slides in (a fade with reduced
@@ -237,7 +238,7 @@ export function EntryRow({
             aria-label={`Tired of ${entry.name}? Swap it`}
             // So focus can come back here after Undo (see TodayView).
             data-swap-entry={entry.id}
-            className="mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            className="focus-ring-inset mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
           >
             <Shuffle aria-hidden="true" className="size-4" />
           </button>

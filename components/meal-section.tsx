@@ -57,7 +57,7 @@ export function MealSection({
           onClick={onAdd}
           // Where focus goes after deleting this meal's last entry.
           data-add-meal={meal}
-          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="focus-ring flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
         >
           <Plus aria-hidden="true" className="size-4" />
           Add to {label.toLowerCase()}
@@ -101,7 +101,7 @@ export function MealSection({
             aria-label={`Add to ${label.toLowerCase()}`}
             // Where focus goes after deleting one of this meal's entries.
             data-add-meal={meal}
-            className="flex h-11 items-center gap-1.5 px-3 text-sm font-medium text-primary"
+            className="focus-ring flex h-11 items-center gap-1.5 rounded-md px-3 text-sm font-medium text-primary"
           >
             <Plus aria-hidden="true" className="size-4" />
             Add
