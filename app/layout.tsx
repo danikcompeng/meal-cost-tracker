@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree } from "next/font/google";
+import { OfflineStrip } from "@/components/offline-strip";
 import { TimezoneSync } from "@/components/timezone-sync";
 import {
   APP_DESCRIPTION,
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <TimezoneSync />
+        <OfflineStrip />
         {children}
       </body>
     </html>

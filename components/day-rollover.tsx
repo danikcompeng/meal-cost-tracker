@@ -17,15 +17,30 @@ export function DayRollover({ today }: { today: string }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Offline, a refresh can't load anything, and Next then reloads the
+    // whole page, which shows the phone's "no internet" page instead of
+    // the app. So it waits and refreshes once you're back online.
+    let waiting = false;
+    function refresh() {
+      waiting = !navigator.onLine;
+      if (!waiting) router.refresh();
+    }
     function check() {
       if (document.visibilityState !== "visible") return;
       // You might also have travelled to another timezone overnight.
       const tzChanged = saveTimezoneCookie();
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (tzChanged || todayIn(tz) !== today) router.refresh();
+      if (tzChanged || todayIn(tz) !== today) refresh();
+    }
+    function backOnline() {
+      if (waiting) refresh();
     }
     document.addEventListener("visibilitychange", check);
-    return () => document.removeEventListener("visibilitychange", check);
+    window.addEventListener("online", backOnline);
+    return () => {
+      document.removeEventListener("visibilitychange", check);
+      window.removeEventListener("online", backOnline);
+    };
   }, [router, today]);
 
   return null;

@@ -11,7 +11,7 @@
 // It stays in this cookie for now. It moves to user_settings.timezone
 // later, with the week features that need it (daily targets didn't).
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 /** Saves your timezone in the cookie. Returns true if it changed. */
@@ -30,8 +30,25 @@ export function saveTimezoneCookie(): boolean {
 export function TimezoneSync() {
   const router = useRouter();
 
+  // Remembered across runs of the effect: in development React runs it
+  // twice, and the second run would find the cookie already saved.
+  const needsRefresh = useRef(false);
+
   useEffect(() => {
-    if (saveTimezoneCookie()) router.refresh();
+    if (saveTimezoneCookie()) needsRefresh.current = true;
+    if (!needsRefresh.current) return;
+    function refresh() {
+      needsRefresh.current = false;
+      router.refresh();
+    }
+    if (navigator.onLine) {
+      refresh();
+      return;
+    }
+    // Offline, a refresh would show the phone's "no internet" page (see
+    // day-rollover.tsx), so it waits until you're back online.
+    window.addEventListener("online", refresh, { once: true });
+    return () => window.removeEventListener("online", refresh);
   }, [router]);
 
   return null;

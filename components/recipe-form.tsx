@@ -9,7 +9,7 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { keepOnFailure, tapAgain } from "@/lib/action-call";
+import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
 import { createRecipe, updateRecipe } from "@/lib/recipe-actions";
 import type { FormState } from "@/lib/types";
 import { unitWordForTyped } from "@/lib/units";
@@ -38,7 +38,7 @@ export function RecipeForm({
         : await keepOnFailure(
             createRecipe,
             tapAgain("create it", "Create", "Check your recipes"),
-            () => router.refresh(),
+            () => void refreshIfReachable(() => router.refresh()),
           )(prev, formData);
       if (result.ok) onDone(result.id);
       return result;

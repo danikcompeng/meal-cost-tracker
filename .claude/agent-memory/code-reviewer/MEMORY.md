@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 3 (keepOnFailure), Minor issues. Plan: plans/states-a11y.md (commits 4-9 queued:
+  states commits 4 (error/404/offline strip) and 5 (login), both Minor issues. Plan: plans/states-a11y.md (commits 6-9 queued:
   role=alert + edit-sheet message slot are commit 7, so don't raise them as missing earlier).
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
@@ -19,7 +19,10 @@
   documented pattern; revalidatePath in an action purges the whole client router cache.
 - router.refresh() / navigation with no network: Next falls back to a full browser page load
   (render-tree.js "SPA navigation failed" -> MPA) unless experimental.useOffline. Offline = the
-  browser's error page. Never refresh in a "no signal" catch.
+  browser's error page. Never refresh in a "no signal" catch. error.tsx retry() (Next 16.3+) =
+  context.refresh(), so "Try again" offline hits the same trap.
+- MotionConfig reducedMotion="user" exists only on Today and scan-flow: anything in app/layout.tsx
+  gets NO reduced motion from Framer unless it handles useReducedMotion itself.
 - Dark mode: --card == --popover == --muted (#1F1F1F). A bg-card tile inside a BottomSheet
   is invisible in dark mode; it needs a border or bg-accent.
 - Framer (motion-dom): MotionValue.stop()/jump() stop an animate(x) run and its .then NEVER
@@ -46,6 +49,10 @@
   Set-Cookie merged in (action-handler.js getForwardedHeaders), so proxy sees new cookies.
 - React 19 <form action>: after the action returns (even an error state) uncontrolled fields
   are RESET. Any "show error, keep what you typed" form needs defaultValue from state.
+- auth-js errors: AuthRetryableFetchError status 0 (fetch failed) or 500-504/520-530; AuthUnknownError
+  status undefined (non-JSON reply); wrong/expired OTP = 403 AuthApiError. signOut() global keeps the
+  session on error; scope "local" deletes cookies FIRST, then still sends a revoke request.
+- Same text in a role=alert after a retry = no DOM change = not re-announced; hide it while pending.
 - Supabase signInWithOtp for a new/unconfirmed email sends the Confirm signup template, not
   Magic link. Only magic-link.html is in the repo.
 - Email template width: content inside the card = viewport - 98 px (16 outer x2, border, 32 pad x2).
@@ -72,6 +79,7 @@
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
+  Repeated twice: "Framer reduced motion leaves height alone" (it jumps it; see Quick facts).
   Same for "change one, change the other" notes: check the OTHER file has the matching note.
 - Postgres numeric arrives as string: Number()/numberOrNull at every new Supabase read.
 - Null must propagate: no `?? 0` on price or nutrients; guard servings / package_size = 0.

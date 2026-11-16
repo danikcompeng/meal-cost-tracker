@@ -7,7 +7,7 @@ import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { keepOnFailure, tapAgain } from "@/lib/action-call";
+import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
 import { costOfAmount } from "@/lib/cost";
 import { logFood } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
@@ -46,7 +46,7 @@ export function LogFoodForm({
       const result = await keepOnFailure(
         logFood,
         tapAgain("log it", "Log it", "Check Today"),
-        () => router.refresh(),
+        () => void refreshIfReachable(() => router.refresh()),
       )(prev, formData);
       if (result.ok) onDone();
       return result;

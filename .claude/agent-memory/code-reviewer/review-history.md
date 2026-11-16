@@ -268,3 +268,26 @@ metadata:
   .ts:3 and recipe-actions.ts:3 headers still say guarded covers a lost connection; ingredient-form
   state.message hides removeError (commit 7 only names the edit sheet); historyLoaded default true;
   small: duplicate-dialog Keep both offline says "tap Add food again", targets "Saved" + error.
+- 2026-11-16 states commit 4 (uncommitted: error.tsx tab bar + retry, not-found.tsx, offline-strip.tsx
+  in layout, day-rollover/timezone-sync wait for "online"): Minor issues. Verified: retry stable since
+  16.3 (installed 16.4.5) = startTransition(context.refresh + reset); usePathname fine in error.tsx;
+  root not-found renders in root layout, metadata export supported, proxy sends logged-out to /login
+  first; uSES server snapshot true = no mismatch; scanner fixed inset-0 paints over the strip; only
+  fixed full-screen element. Raised: "Try again" offline = router.refresh -> full page load -> phone's
+  no-internet page (guard with the online store); keepOnFailure afterDrop (commit 3, committed)
+  refreshes exactly when the signal is gone, same trap; strip is in flow so it scrolls away / shifts
+  content (plan says "under the status bar"); comment "height can't be skipped by reduced motion" wrong
+  (2nd time; real reason: no MotionConfig at root); TimezoneSync offline branch skipped under dev
+  StrictMode (cookie already saved on 2nd run); wording "until you're back" + loading also fails;
+  not-found shows tabs on /login/x; `loggedIn` name.
+- 2026-11-16 states commit 5 (login: auth-actions verify 0/5xx message + signOut local fallback,
+  log-out-button.tsx, login wording/enterKeyHint, login metadata): Minor issues, no blocking bugs.
+  Verified: wrong/expired code = 403 AuthApiError, never 0/5xx; local fallback removes cookies via
+  SIGNED_OUT -> ssr setAll, redirect after OK; keepOnFailure rethrows the redirect (reducer rejects
+  with getRedirectError); header server->client import fine; label/hint clear; alerts never coexist.
+  Raised: log-out error box (absolute, ~3 lines, w-56, no border, no dismiss) covers DayNav next
+  arrow / "Back to today" / KitchenSwitch right tab and stays after reconnect; identical repeat
+  message not re-announced or visibly changed (hide while pending); native disabled on Log out drops
+  focus on failure; sendMagicLink/verify drop could use checkFirst; 0/5xx comment "never checked"
+  not guaranteed (504/timeout); local fallback re-sends a revoke (2x wait); plan wording differs
+  (code's is better); question: global sign-out logs the iPhone app out from the laptop.

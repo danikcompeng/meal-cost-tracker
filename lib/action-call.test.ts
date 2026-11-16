@@ -1,7 +1,13 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { redirect } from "next/navigation";
 import { UnrecognizedActionError } from "next/dist/client/components/unrecognized-action-error";
-import { UPDATED_MESSAGE, failureMessage, keepOnFailure, tapAgain } from "./action-call";
+import {
+  UPDATED_MESSAGE,
+  failureMessage,
+  keepOnFailure,
+  refreshIfReachable,
+  tapAgain,
+} from "./action-call";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -31,6 +37,34 @@ describe("failureMessage", () => {
     expect(failureMessage(logIt, true)).toBe(
       "The connection dropped, so it may have worked anyway. Check Today before you tap Log it again.",
     );
+  });
+});
+
+describe("refreshIfReachable", () => {
+  it("refreshes once the server answers", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 200 })));
+    const refresh = vi.fn();
+    await refreshIfReachable(refresh);
+    expect(refresh).toHaveBeenCalledOnce();
+  });
+
+  it("leaves the page alone while the connection is still dead", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => {
+        throw new TypeError("Failed to fetch");
+      }),
+    );
+    const refresh = vi.fn();
+    await refreshIfReachable(refresh);
+    expect(refresh).not.toHaveBeenCalled();
+  });
+
+  it("leaves the page alone when the server answers with an error", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 503 })));
+    const refresh = vi.fn();
+    await refreshIfReachable(refresh);
+    expect(refresh).not.toHaveBeenCalled();
   });
 });
 

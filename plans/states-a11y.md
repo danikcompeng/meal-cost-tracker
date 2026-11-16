@@ -186,6 +186,12 @@ arrives. No spinners, no numbers.
 
 ## Commit 4: the error page, a 404 page, and an offline strip
 
+- **Error page** "Try again" waits while offline (focusable, does
+  nothing, the strip says why): it reloads the page, and offline that
+  would open the phone's "no internet" page.
+- After a dropped save, Today (or the recipe list) reloads only once a
+  tiny request reaches the server (`refreshIfReachable`), for the same
+  reason.
 - **Error page** keeps the tab bar, so you can leave (not on the login
   screen, where the tabs would only lead back to it). Its words stay
   ("Couldn't load this. Check your connection, then try again. Nothing
@@ -195,9 +201,10 @@ arrives. No spinners, no numbers.
   exist", "Go to Today", tab bar.
 - **Offline strip** (new `components/offline-strip.tsx`, in the
   layout): while the phone is offline, a thin grey tile at the top, under
-  the status bar: "You're offline. Nothing can be saved until you're
-  back." (Saves aren't queued, so it can't promise they'll happen
-  later.) Muted grey text, no colour, announced once (role="status").
+  the status bar, staying there as you scroll: "You're offline. Nothing
+  can be saved or loaded until you're back online." (Saves aren't
+  queued, so it can't promise they'll happen later.) Muted grey text,
+  no colour, announced once (role="status").
   It slides away when you're back online (fade only with reduced
   motion).
 - `day-rollover.tsx` and `timezone-sync.tsx` don't refresh the page
@@ -215,14 +222,20 @@ arrives. No spinners, no numbers.
   code" (was "link"), the line after sending "Check
   you@example.com for your login code." and the label "Code from the
   email".
-- A code check that fails because Supabase can't be reached says
-  "Couldn't check the code. Check your connection, then tap Log in
-  again." instead of "That code didn't work". The form now shows that
-  kind of message (today only the code-box error shows).
+- A code check that fails because our server can't reach Supabase says
+  "Couldn't check the code just now. Tap Log in again in a minute."
+  instead of "That code didn't work". The form now shows that kind of
+  message (today only the code-box error shows). Messages hide while
+  you try again, so a second identical failure is still seen and read
+  out.
+- A dropped connection while sending or logging in says to check first
+  ("Check your inbox", "Reload the page (or reopen the app)"): the
+  email may be sent, or you may be logged in, already.
 - Sending, logging in and logging out offline: a message on the form,
   not the error page (with commit 3's helper). Log out becomes a small
   browser component (`components/log-out-button.tsx`) so it can show
-  "Couldn't reach the server… log out again" under itself.
+  "Couldn't log out: no connection…" in a small bordered box under
+  itself, with a × to close it; it also closes when you're back online.
 - Log out: if Supabase refuses, it logs why and logs this phone out
   anyway (deletes the login cookie, Supabase's own suggested fallback).
   Today the error is ignored and you could stay logged in.

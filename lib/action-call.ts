@@ -52,6 +52,22 @@ export function tapAgain(verb: string, button: string, checkFirst?: string): Fai
   return { verb, retry: `tap ${button} again`, checkFirst };
 }
 
+/**
+ * Reloads the page's data, but only once a tiny request to our own server
+ * gets an answer. Why: right after a dropped connection it's often still
+ * dead, and a refresh that fails makes Next reload the whole page, which
+ * shows the phone's "no internet" page instead of the sheet and what you
+ * typed. The manifest is used because it's small and open without a login.
+ */
+export async function refreshIfReachable(refresh: () => void): Promise<void> {
+  try {
+    const response = await fetch("/manifest.webmanifest", { method: "HEAD", cache: "no-store" });
+    if (response.ok) refresh();
+  } catch {
+    // Still no connection: leave the page as it is.
+  }
+}
+
 /** The answer every wrapped action gives: did it work, and why not. */
 type ActionResult = { ok: boolean; message?: string };
 type Failure = { ok: false; message: string };
@@ -70,8 +86,8 @@ type Failure = { ok: false; message: string };
  *   them. Tapping again would fail the same way forever, and it isn't the
  *   connection, so it says to reopen the app instead.
  * - `afterDrop` runs when the connection dropped on the way (not when
- *   offline): e.g. reload Today, so if the entry did save, you see it
- *   behind the sheet before tapping again.
+ *   offline): e.g. reload Today with refreshIfReachable, so if the entry
+ *   did save, you see it behind the sheet before tapping again.
  */
 export function keepOnFailure<Args extends unknown[], Result extends ActionResult>(
   action: (...args: Args) => Promise<Result>,
