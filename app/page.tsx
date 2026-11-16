@@ -47,6 +47,27 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
       ? requested
       : today;
 
+  // Which day it is only needs the address and the timezone cookie, so the
+  // header shows straight away. The day's food streams in after it, behind
+  // a skeleton that knows whether it's a past day (no rings then).
+  return (
+    <>
+      <DayRollover today={today} />
+      <AppHeader title={dayTitle(day, today)}>
+        <DayNav day={day} today={today} />
+      </AppHeader>
+      <Suspense fallback={<TodaySkeleton past={day !== today} withHeader={false} />}>
+        <DayContent day={day} today={today} searchParams={searchParams} />
+      </Suspense>
+    </>
+  );
+}
+
+async function DayContent({
+  day,
+  today,
+  searchParams,
+}: { day: string; today: string } & Pick<PageProps<"/">, "searchParams">) {
   const [entries, foods, recentIds, recipes, recentRecipeIds, history, targets, hour, cookieStore] =
     await Promise.all([
       getEntriesForDay(day),
@@ -69,35 +90,29 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   const logFood = typeof logId === "string" ? (foods.find((f) => f.id === logId) ?? null) : null;
 
   return (
-    <>
-      <DayRollover today={today} />
-      <AppHeader title={dayTitle(day, today)}>
-        <DayNav day={day} today={today} />
-      </AppHeader>
-      <TodayView
-        // A fresh view per day, so an open sheet doesn't follow you to
-        // another day. The scanned food is part of the key too, so arriving
-        // from the scanner always opens its sheet.
-        key={`${day}:${logFood?.id ?? ""}`}
-        day={day}
-        today={today}
-        isToday={day === today}
-        entries={entries}
-        foods={orderByRecent(foods, recentIds)}
-        recipes={orderByRecent(loggable, recentRecipeIds)}
-        // All of them: the swap leaves out empty ones itself, and still
-        // needs to know they exist ("none has ingredients yet").
-        swapRecipes={recipes}
-        history={history}
-        targets={targets}
-        logFood={logFood}
-        // Worked out on the server from your timezone, so the page and the
-        // browser agree on it (no flicker when the page comes alive).
-        suggestedMeal={mealForHour(hour)}
-        // Read on the server, so the summary is drawn open or closed
-        // straight away instead of jumping after the page loads.
-        detailsOpen={cookieStore.get(DETAILS_COOKIE)?.value === "1"}
-      />
-    </>
+    <TodayView
+      // A fresh view per day, so an open sheet doesn't follow you to
+      // another day. The scanned food is part of the key too, so arriving
+      // from the scanner always opens its sheet.
+      key={`${day}:${logFood?.id ?? ""}`}
+      day={day}
+      today={today}
+      isToday={day === today}
+      entries={entries}
+      foods={orderByRecent(foods, recentIds)}
+      recipes={orderByRecent(loggable, recentRecipeIds)}
+      // All of them: the swap leaves out empty ones itself, and still
+      // needs to know they exist ("none has ingredients yet").
+      swapRecipes={recipes}
+      history={history}
+      targets={targets}
+      logFood={logFood}
+      // Worked out on the server from your timezone, so the page and the
+      // browser agree on it (no flicker when the page comes alive).
+      suggestedMeal={mealForHour(hour)}
+      // Read on the server, so the summary is drawn open or closed
+      // straight away instead of jumping after the page loads.
+      detailsOpen={cookieStore.get(DETAILS_COOKIE)?.value === "1"}
+    />
   );
 }

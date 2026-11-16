@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
 import { TabBar } from "@/components/tab-bar";
 import { FoodManager } from "@/components/food-manager";
+import { FoodsSkeleton } from "@/components/foods-skeleton";
 import { KitchenSwitch } from "@/components/kitchen-switch";
 import { getFoods } from "@/lib/foods";
 
@@ -21,7 +22,7 @@ export default function FoodsPage() {
         {/* Loading your foods needs your login cookie, which is only
             known per request, so that part streams in behind Suspense while
             the header shows instantly. */}
-        <Suspense fallback={<p className="text-muted-foreground">Loading…</p>}>
+        <Suspense fallback={<FoodsSkeleton />}>
           <Foods />
         </Suspense>
       </main>

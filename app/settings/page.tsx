@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
+import { SettingsSkeleton } from "@/components/settings-skeleton";
 import { TabBar } from "@/components/tab-bar";
 import { TargetsForm } from "@/components/targets-form";
 import { getTargets } from "@/lib/settings";
@@ -15,15 +16,7 @@ export default function SettingsPage() {
           (pb-above-tab-bar, in globals.css). */}
       <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-above-tab-bar">
         <AppHeader title="Settings" showSettingsLink={false} />
-        <Suspense
-          fallback={
-            <div
-              aria-busy="true"
-              aria-label="Loading your targets"
-              className="h-80 rounded-2xl bg-card motion-safe:animate-pulse"
-            />
-          }
-        >
+        <Suspense fallback={<SettingsSkeleton />}>
           <TargetsTile />
         </Suspense>
       </main>

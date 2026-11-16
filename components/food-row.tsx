@@ -72,15 +72,27 @@ export function FoodRow({
       </button>
 
       <div className="flex min-h-16 items-center">
-        {confirming ? (
+        {confirming || deleting ? (
           <div className="flex items-center gap-1">
-            <span className="mr-1 text-sm">Delete?</span>
-            <Button size="sm" variant="destructive" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "…" : "Yes"}
+            {/* While it works, "Delete?" becomes "Deleting…" and Cancel goes
+                (it couldn't stop it anyway), so the name keeps its room.
+                Yes stays, focusable but waiting, so keyboard focus isn't
+                dropped to the page. */}
+            <span className="mr-1 text-sm">{deleting ? "Deleting…" : "Delete?"}</span>
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deleting}
+              focusableWhenDisabled
+            >
+              Yes
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
-              Cancel
-            </Button>
+            {!deleting && (
+              <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+                Cancel
+              </Button>
+            )}
           </div>
         ) : (
           <Button

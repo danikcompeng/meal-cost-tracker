@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 1 (login email code-first), Minor issues. Plan: plans/states-a11y.md.
+  states commit 2 (skeletons), Minor issues. Plan: plans/states-a11y.md.
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
@@ -57,6 +57,12 @@
   Every .focus() after a tap (toast focusAfter, opener on close, Skip, Start over) can ring.
   BottomSheet: React autoFocus / child useEffect focus at open is a no-op (dialog still shut).
   showModal's pick = first focusable incl. tabIndex -1 (sheet title), or an HTML autofocus attr.
+
+- Height maths (Tailwind v4, body 16px/1.5): text-[13px] inherits lh 1.5 = 19.5 px; text-sm 20;
+  text-xl 28; text-5xl lh 1; Label leading-none 14 -> Field = 14+6+44 = 64. AppHeader title row is
+  items-baseline (h1 37.5 + h-11 links) ~46 px, not 44. Skeletons: check per-state lines (min-h-5
+  hints, empty-day text) and phone-width wrapping, not only desktop.
+- aria-busy="true" on a live region (role=status) asks screen readers to hold its announcements.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.

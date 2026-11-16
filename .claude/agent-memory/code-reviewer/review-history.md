@@ -243,3 +243,14 @@ metadata:
   "Use the button or the code... Each works once" order + implies two uses; app login screen still
   link-first ("Check ... for a login link", "Email me a login link"); login-code.ts:1 quotes stale
   "Or type this code in the app".
+- 2026-11-16 states commit 2 (uncommitted: skeleton.tsx Skeleton/TextLine/FieldShape, Today/Recipe/
+  Foods/Settings/Login skeletons, "Deleting…"): Minor issues, no code bugs. Verified heights: Settings
+  556 vs 555, Login 184 exact, Today folded tile 452 vs 450.5, field 64, segmented 80, v4 classes
+  (size-13, h-15, h-3.5) valid, no digits while loading. Raised: aria-busy="true" on the role=status
+  tells screen readers to hold its announcements (drop it); past days (?day=) have NO rings at all ->
+  skeleton ~197 px too tall (comment says "a little"); Foods skeleton lacks the two min-h-5 hint lines
+  (nutrition hint, "= $/100 g") -> ~63 px short; empty day's "Nothing logged yet" line (2 lines on
+  phones) missing; recipe extras line wraps to 2 on 375-393 px; ingredient row 63.5 not 56+4; food
+  row ~120 on phones (macro line wraps), not 96; AppHeader row ~46 px not 44 (baseline, estimate);
+  recipe tile 91 vs 88; "Deleting…" widens the confirm group (name column ~52 px at 320), Cancel
+  during a delete cancels nothing; commit 9's h-11 buttons will widen it more.
