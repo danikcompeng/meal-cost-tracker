@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  PWA step 3 (login code), Minor issues.
+  PWA step 4 (Android home-screen camera help), Minor issues.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -71,4 +71,6 @@
 - Every "—" on screen needs a "who's missing it" line, not only the ones that rank (kcal).
 - Supabase returns max 1,000 rows by default: any read without .limit() that feeds "never" /
   "60+ days" claims can silently truncate.
+- Help text naming screen positions ("top right") or things the user can't see (the web
+  address inside an installed app): Chrome Android can put its address bar at the bottom.
 - Developer responds well to concrete worked examples (rice test); keep using them.

@@ -143,3 +143,10 @@ metadata:
   over, autoFocus, describedby, role=alert, auth-log.ts). Left: 429 on send also covers the
   hourly/IP caps, so "We just sent you one" can be untrue; server email error not cleared by
   typing; pwa.md:158 "I'll check yours says 6". OK to commit.
+- 2026-11-15 PWA step 4 (uncommitted: android_home_screen Platform + STEPS entry): Minor issues, no
+  code bugs. Verified: display-mode standalone matches a WebAPK (manifest display "standalone"),
+  test covers both, Other list = 4 entries in phone order. Raised: step 3 asks for "this app's web
+  address" in the one mode with no address bar (show location.host); "(top right)" wrong when
+  Chrome's address bar is at the bottom; Samsung Internet / Firefox installs told "Open Chrome";
+  site page may be a Camera switch not "Allow" (unsure, check on a phone); global Camera switch off
+  = nothing under Blocked; "Other phone?" label now also lists your phone's other mode.

@@ -43,8 +43,12 @@ describe("platformFrom", () => {
     expect(platformFrom(IPAD, 0, false)).toBe("other"); // a real Mac
   });
 
-  it("knows Android and everything else", () => {
+  it("tells Android in Chrome from the installed Android app", () => {
     expect(platformFrom(ANDROID, 5, false)).toBe("android");
+    expect(platformFrom(ANDROID, 5, true)).toBe("android_home_screen");
+  });
+
+  it("knows everything else", () => {
     expect(platformFrom(WINDOWS, 0, false)).toBe("other");
   });
 });

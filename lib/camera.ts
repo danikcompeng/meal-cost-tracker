@@ -35,17 +35,20 @@ export function cameraProblemFrom(error: unknown): CameraProblem {
   }
 }
 
-export type Platform = "ios" | "ios_home_screen" | "android" | "other";
+export type Platform = "ios" | "ios_home_screen" | "android" | "android_home_screen" | "other";
 
 /**
  * Which phone you're on, so the "camera is blocked" screen shows only the
  * steps for yours. iPads report themselves as Macs, but Macs have no touch
  * screen, so a "Mac" with touch points is an iPad.
+ *
+ * `standalone`: opened from the home screen (its own window, no address
+ * bar), where the browser's "tap by the address" steps can't work.
  */
 export function platformFrom(userAgent: string, maxTouchPoints: number, standalone: boolean): Platform {
   const ios = /iPhone|iPad|iPod/.test(userAgent) || (/Macintosh/.test(userAgent) && maxTouchPoints > 1);
   if (ios) return standalone ? "ios_home_screen" : "ios";
-  if (/Android/.test(userAgent)) return "android";
+  if (/Android/.test(userAgent)) return standalone ? "android_home_screen" : "android";
   return "other";
 }
 

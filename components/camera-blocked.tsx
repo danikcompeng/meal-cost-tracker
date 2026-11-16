@@ -35,7 +35,34 @@ const STEPS: Record<Exclude<Platform, "other">, { name: string; steps: string[] 
       "Choose Allow, then tap Try again.",
     ],
   },
+  // The installed app has no address bar, but it shares the settings of the
+  // browser it was added from (usually Chrome). {site} becomes this app's
+  // address, which you never see in the installed app.
+  android_home_screen: {
+    name: "Android (home-screen app)",
+    steps: [
+      "Open Chrome (or the browser you added this app from), tap the ⋮ menu, then Settings.",
+      "Scroll down to Site settings, then tap Camera. If the switch at the top is off, turn it on.",
+      "Under Blocked, tap {site}, then set Camera to Allow.",
+      "Come back here and tap Try again.",
+    ],
+  },
 };
+
+/** Puts this app's address into a step ("Under Blocked, tap {site}..."). */
+function withSite(step: string, site: string | null) {
+  return step.replace("{site}", site ?? "this app's web address");
+}
+
+// This app's address (e.g. meal-cost-tracker.vercel.app). Like the
+// platform, only the browser knows it, so the server paint gets null.
+function useSite(): string | null {
+  return useSyncExternalStore(
+    () => () => {},
+    () => location.host,
+    () => null,
+  );
+}
 
 const OTHER_STEPS = {
   name: "Other browsers",
@@ -92,6 +119,7 @@ export function CameraBlocked({
   onClose: () => void;
 }) {
   const platform = usePlatform();
+  const site = useSite();
   const mine = platform === "other" ? OTHER_STEPS : STEPS[platform];
   const others = [
     ...Object.entries(STEPS)
@@ -128,13 +156,13 @@ export function CameraBlocked({
             <h2 className="text-[13px] font-medium text-muted-foreground">{mine.name}</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5">
               {mine.steps.map((step) => (
-                <li key={step}>{step}</li>
+                <li key={step}>{withSite(step, site)}</li>
               ))}
             </ol>
           </section>
           <details className="mt-3 rounded-2xl px-4 py-2">
             <summary className="flex h-11 cursor-pointer items-center text-sm font-medium text-muted-foreground">
-              Other phone?
+              Other phone or app?
             </summary>
             <div className="space-y-4 pb-2">
               {others.map((other) => (
@@ -142,7 +170,7 @@ export function CameraBlocked({
                   <h3 className="text-[13px] font-medium text-muted-foreground">{other.name}</h3>
                   <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm">
                     {other.steps.map((step) => (
-                      <li key={step}>{step}</li>
+                      <li key={step}>{withSite(step, site)}</li>
                     ))}
                   </ol>
                 </div>
