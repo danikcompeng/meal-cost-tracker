@@ -149,6 +149,44 @@ you approve.
   was deleted in between, Undo says "Couldn't put it back: that food was
   deleted." and the Undo button goes.
 
+### 4b. Changed after the first phone test: swipe to reveal (2026-11-15)
+
+Replaces the full-swipe delete above, like iPhone Mail. A swipe only
+opens the row; deleting always takes a tap on its button.
+
+- **Swipe left:** the row slides with your finger and uncovers a red
+  "Delete" button, 88 px wide, at its right edge. Let go with the row
+  past a third of the button's width (about 30 px) and it stays open, at
+  exactly the button's width; less than that and it snaps closed. A
+  quick flick opens or closes it whichever way you flicked. It can't be
+  pulled much further than the button (a little give, no full swipe).
+- **Closing:** swipe it back, tap the open row itself (that closes it and
+  doesn't open the edit sheet; same for its swap icon), tap anywhere else
+  (that tap still does its own job, like opening another row), scroll,
+  or press Escape.
+- **One open at a time:** Today keeps which row is open (`openRow`), so
+  opening one closes the other.
+- **Tap Delete:** the whole row, button included, slides off to the left
+  as it fades and the rows below close up, then the same "… deleted from
+  … Undo ×" message. Same delete and restore as before.
+- **Scroll protection kept:** only a gesture Framer locked sideways can
+  open or close a row, never a cancelled touch.
+- **Reduce Motion:** the row still follows your finger (that's you moving
+  it), but everything the app moves happens at once: the row jumps open
+  or shut on release, closes at once when another opens, and a deleted
+  row only fades.
+- **Screen readers and keyboards:** the revealed button is hidden from
+  them and can't be focused while the row is shut (`inert`). It's a real
+  button labelled "Delete Beef and rice" when open. VoiceOver and
+  keyboard users keep using Delete in the edit sheet.
+- **Colours:** solid `bg-destructive` with `text-primary-foreground`:
+  white on the light red (about 6:1), near-black on dark mode's lighter
+  red (about 6.7:1). Both pass 4.5:1.
+- Files: lib/swipe.ts (pure `restsOpen()`: stay open or snap shut, with
+  unit tests), entry-row.tsx (the gesture and the button), meal-section.tsx
+  (passes which row is open), today-view.tsx (`openRow`, closing on taps
+  elsewhere, scroll and Escape).
+
 ## 5. Remove the twelve `md:text-base` classes
 
 `components/ui/input.tsx` is now `text-base` (16 px) at every width, so
@@ -167,6 +205,8 @@ true. Remove all twelve: amount-field (1), barcode-entry (1), food-form
 3. `Undo stays until you dismiss it`
 4. `Swipe left on a Today entry to delete it, with Undo`
 5. `Remove twelve md:text-base classes that did nothing`
+6. (after the first phone test) `Swipe a Today entry to reveal Delete,
+   like iPhone Mail` (section 4b)
 
 For each one: build it with Edit/Write → `npm test` → code-reviewer →
 fix what we agree to → `npm run build` → commit only the files it changed
@@ -180,18 +220,27 @@ fix what we agree to → `npm run build` → commit only the files it changed
   Tab on a laptop): matcha ring on the ×.
 - Swap a meal: the message stays until you tap ×. With VoiceOver on: hear
   it, swipe to Undo, double-tap: it works.
-- Swipe an entry left halfway and let go: it springs back. All the way:
-  gone, totals drop, Undo brings it back in the same spot. Scroll the day
-  with your finger on a row, including a quick scroll that drifts a bit
-  sideways: it scrolls, nothing is deleted. A slightly wobbly tap still
-  opens the edit sheet.
+- Swipe an entry left a little (under ~30 px) and let go: it snaps shut.
+  Further: it stays open with a red "Delete". Swipe as far as you can:
+  nothing is deleted, it just stays open. Tap Delete: the row slides
+  away, totals drop, Undo brings it back in the same spot.
+- With a row open: tap it (closes, no edit sheet), tap its swap icon
+  (closes), swipe it back (closes), scroll (closes), tap another row
+  (that row's edit sheet opens, the first closes), swipe another row
+  open (the first closes). Swipe right starting on the red button itself:
+  nothing is deleted (it may not move the row; say if that feels wrong).
+- Scroll the day with your finger on a row, including a quick scroll
+  that drifts a bit sideways: it scrolls, no row opens. A slightly
+  wobbly tap still opens the edit sheet.
 - Edit sheet → Delete → Yes, delete: the sheet closes and the same
   "… deleted from …   Undo  ×" message shows.
-- Airplane mode, swipe a row: it comes back at full height with "Couldn't
-  delete. Please try again."
+- Airplane mode, swipe a row open and tap Delete: it comes back at full
+  height, shut, with "Couldn't delete. Please try again."
 - VoiceOver on: double-tap × on the message, and on an entry's Delete in
   the edit sheet. Note where VoiceOver lands (it should be the row, or the
   meal's "+ Add", not the top of the page).
 - After tapping Undo or × (no VoiceOver), no ring appears on the row.
-- Settings → Accessibility → Reduce Motion on: the swipe fades out
-  instead of sliding.
+- Settings → Accessibility → Reduce Motion on: the row follows your
+  finger, then jumps open or shut (no slide), and Delete only fades the
+  row out.
+- Dark mode: the Delete button's text is readable (dark on light red).

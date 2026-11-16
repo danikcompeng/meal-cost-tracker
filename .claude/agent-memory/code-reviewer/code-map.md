@@ -62,8 +62,10 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
 - Delete + Undo (polish item 4, no migration): deleteEntry returns the row (.delete().select
   DELETED_ENTRY_COLUMNS, toDeletedEntry in entries.ts); restoreEntry inserts it back (same id +
   created_at, 23505 = already back) after validateRestoredEntry (entry-validation.ts). today-view.tsx
-  `hidden` id set -> `visible`, swipeDelete / deleteFromSheet / showDeleted / restore, focusLater
-  slot; entry-row.tsx drag + red strip + useIsPresent reset; meal-section data-add-meal targets.
+  `hidden` id set -> `visible`, rowDelete / deleteFromSheet / showDeleteUndo / restore, focusLater
+  slot; meal-section data-add-meal targets. Item 4b (swipe to reveal): lib/swipe.ts (REVEAL 88,
+  restsOpen), entry-row.tsx (open prop, settle(), `away` slide-off, inert Delete with
+  data-row-delete), today-view.tsx openRow + openOrShutRow + capture pointerdown/scroll/Escape effect.
 - PWA (plans/pwa.md, no migration): lib/app-identity.ts (names, PAGE_BACKGROUND, ICON_GREEN,
   APP_ICONS, appManifest), components/app-icon.tsx (Satori, inline styles), app/icons/[file]/
   route.tsx, app/manifest.ts, layout.tsx metadata/viewport, proxy.ts matcher + proxy.test.ts.

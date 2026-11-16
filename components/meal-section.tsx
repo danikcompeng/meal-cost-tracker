@@ -15,6 +15,8 @@ export function MealSection({
   onAdd,
   onOpen,
   onSwap,
+  openRow,
+  onOpenRow,
   onDelete,
 }: {
   meal: Meal;
@@ -23,7 +25,11 @@ export function MealSection({
   onOpen: (entry: MealEntry) => void;
   /** "Tired of this?" on a recipe entry. */
   onSwap: (entry: MealEntry) => void;
-  /** Swiped left on an entry. */
+  /** The entry swiped open to show its Delete button, on any meal. */
+  openRow: string | null;
+  /** You swiped (or tapped) this entry open or shut. */
+  onOpenRow: (entryId: string, open: boolean) => void;
+  /** Delete tapped on a swiped-open entry. */
   onDelete: (entry: MealEntry) => void;
 }) {
   const reduceMotion = useReducedMotion();
@@ -77,6 +83,8 @@ export function MealSection({
                 >
                   <EntryRow
                     entry={entry}
+                    open={openRow === entry.id}
+                    onOpenChange={(open) => onOpenRow(entry.id, open)}
                     onOpen={() => onOpen(entry)}
                     // Swaps are recipe to recipe; a recipe entry is in
                     // servings (even if the recipe was deleted since).

@@ -211,3 +211,23 @@ metadata:
   components/app; the 12 lines read clean; food-form unit <select> text-base; login code Input
   text-lg; no textarea / custom select / font-size in globals.css; ui/ is only button/label/input.
   Couldn't diff (no Bash), so "nothing else touched" = current lines look right, not a diff check.
+- 2026-11-16 polish item 4b (uncommitted: swipe-to-REVEAL like iPhone Mail; lib/swipe.ts restsOpen,
+  entry-row open/settle/inert Delete, meal-section openRow, today-view openRow + capture pointerdown /
+  scroll / Escape, rowDelete): Minor issues, no blocking bugs. Verified in motion-dom: object
+  constraints rebased to [-88, 0], elastic {left .1, right 0}; release = inertia v0 (momentum off)
+  then postRender onDragEnd -> our animate replaces it; double settle (onDragEnd + open effect) always
+  agrees; window-capture PanSession pointerup (resumeAnimation) runs before React onPointerUp, so the
+  tap settle wins; drag release ignores MotionConfig reducedMotion (animateMotionValue) but settle
+  jumps anyway; exiting row keeps stale open=true (AnimatePresence old element) so no snap-back while
+  sliding off; inert boolean OK in React 19.3; contrast 5.98 / 6.76 confirmed vs globals.css; scroll
+  listener only exists while a row is open (not during the opening swipe), window is the scroller.
+  Raised: press during a settle then pointercancel before 3 px (long-press, Chrome slop) -> no
+  onDragEnd/onPointerUp -> row stuck mid (add onPointerCancel settle); matcha ring/50 on red ~1.1:1
+  (invisible focus on Delete; use ring-primary-foreground); Escape (or Tab away) with focus on Delete
+  -> inert drops focus to body / row stays open for keyboard; swipe starting on the red button
+  doesn't move the row (unsure if a click can fire: phone test); today-view:257 comment says swipe;
+  plan "Order and commits" has no 4b commit line.
+  Re-check same day: all fixed (onPointerCancel settle, focusin + Escape focus-to-row, white/near-black
+  ring, phone-test line, comment, commit line). focusin can't fight a mouse open (listener only exists
+  after release; mousedown focus lands inside), focusLater/sheet title (setOpenRow(null) is batched
+  with them, cleanup runs first; a sheet's title focus only closes, which is right). OK to commit.

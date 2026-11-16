@@ -254,9 +254,9 @@ export function TodayView({
   }
 
   // ----- Deleting, with Undo -----
-  // A deleted entry leaves the screen straight away (a swipe doesn't wait
-  // for the server), so it's kept in this list of hidden ids until the
-  // server's own list catches up.
+  // A deleted entry leaves the screen straight away (a row's Delete button
+  // doesn't wait for the server), so it's kept in this list of hidden ids
+  // until the server's own list catches up.
   const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
   // Each time the server sends the day again, forget hidden ids it no
   // longer has: they've done their job. So an entry that comes back later
@@ -326,8 +326,60 @@ export function TodayView({
     });
   }
 
-  /** Swiped left: gone at once; back with a message if the server says no. */
-  async function swipeDelete(entry: MealEntry) {
+  // The entry swiped open to show its Delete button: one at a time, so
+  // opening one shuts the other.
+  const [openRow, setOpenRow] = useState<string | null>(null);
+  function openOrShutRow(entryId: string, open: boolean) {
+    // Shutting only shuts that row, never one opened since.
+    setOpenRow((current) => (open ? entryId : current === entryId ? null : current));
+  }
+  // While one is open: a press anywhere outside it, a scroll, Escape, or
+  // keyboard focus moving out of it shuts it. The press still does its
+  // own job (opening another row's sheet, say). Presses inside the open
+  // row are the row's: its Delete button, or a tap that shuts it.
+  useEffect(() => {
+    if (openRow === null) return;
+    const shut = () => setOpenRow(null);
+    const row = () => document.querySelector<HTMLElement>(`[data-entry-row="${openRow}"]`);
+    const isInside = (target: EventTarget | null) =>
+      target instanceof Node && (row()?.contains(target) ?? false);
+    function onPointerDown(e: PointerEvent) {
+      if (!isInside(e.target)) shut();
+    }
+    function onFocusIn(e: FocusEvent) {
+      if (!isInside(e.target)) shut();
+    }
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      // Shutting hides the Delete button (inert); if it had focus, focus
+      // would fall to the top of the page, so move it to the row first.
+      if (isInside(document.activeElement)) {
+        row()?.querySelector<HTMLElement>("[data-entry-open]")?.focus();
+      }
+      shut();
+    }
+    // Capture: before anything on the page can stop the press reaching us.
+    document.addEventListener("pointerdown", onPointerDown, true);
+    document.addEventListener("focusin", onFocusIn);
+    window.addEventListener("scroll", shut, { passive: true });
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", onPointerDown, true);
+      document.removeEventListener("focusin", onFocusIn);
+      window.removeEventListener("scroll", shut);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [openRow]);
+
+  /** Delete tapped on an open row: gone at once; back with a message if the server says no. */
+  async function rowDelete(entry: MealEntry) {
+    setOpenRow(null);
+    // Clicked with a mouse or keyboard (a tap on iPhone never focuses a
+    // button)? The button is going, so focus moves on to the meal's
+    // "+ Add" instead of falling to the top of the page.
+    if (document.activeElement?.matches("[data-row-delete]")) {
+      focusLater.current = addSelector(entry.meal);
+    }
     setHiddenFor(entry.id, true);
     const result = await removeEntry(entry);
     if (!result.ok) {
@@ -495,7 +547,9 @@ export function TodayView({
             onAdd={() => setSheet({ mode: "add", meal, food: null, recipe: null })}
             onOpen={(entry) => setSheet({ mode: "edit", entry })}
             onSwap={openSwap}
-            onDelete={(entry) => void swipeDelete(entry)}
+            openRow={openRow}
+            onOpenRow={openOrShutRow}
+            onDelete={(entry) => void rowDelete(entry)}
           />
         ))}
       </div>

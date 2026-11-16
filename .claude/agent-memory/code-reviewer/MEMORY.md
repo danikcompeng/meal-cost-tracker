@@ -4,9 +4,8 @@
 - [Code map](code-map.md) — where each feature's code + migration lives (cost, log, recipes...)
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
-- [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  polish item 5 (md:text-base removed), Looks good. Item 4 (swipe delete): re-checked, OK to
-  commit. Plan: plans/polish.md. notes.md had no "Polish later" section on 2026-11-15.
+- [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
+  polish item 4b (swipe to REVEAL, replaces full-swipe delete), Minor issues. Plan: plans/polish.md.
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
@@ -30,6 +29,12 @@
   POINTER's, not the element's. Any "flick = commit" rule needs a lock-"x" check. onDragStart fires
   at 3 px (tap wobble). onDragEnd runs in postRender AFTER the snap-back started (and after a
   mouse click). MotionConfig reducedMotion jumps positionalKeys: x/y AND width/height.
+- Framer press-to-stop: pointerdown on a drag element stops its x animation at once. If that touch
+  ends in pointercancel before 3 px, NEITHER onDragEnd NOR React onPointerUp fires -> x stuck where
+  it stopped. Any "settle on release" design needs onPointerCancel too. Drag's own release
+  animation (animateMotionValue) ignores MotionConfig reducedMotion.
+- Focus rings on coloured fills: ring-ring/50 (matcha) on bg-destructive is ~1.1:1, invisible.
+  Check every new solid-colour button's focus-visible ring against its own fill.
 
 - Server action redirect("/") in Next 16: Next does an internal GET to "/" with the action's
   Set-Cookie merged in (action-handler.js getForwardedHeaders), so proxy sees new cookies.

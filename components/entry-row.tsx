@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   animate,
   AnimatePresence,
@@ -11,15 +11,14 @@ import {
   useTransform,
   type PanInfo,
 } from "framer-motion";
-import { Shuffle, Trash2 } from "lucide-react";
+import { Shuffle } from "lucide-react";
 import { macroText } from "@/lib/macros";
+import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
 import { amountText } from "@/lib/units";
 
-/** Drag left past this share of the row's width, then let go, to delete. */
-const DELETE_SHARE = 0.4;
-/** Or a flick left this fast (px per second), like the swap stack. */
-const DELETE_SPEED = 600;
+/** Quick, with no bounce past the button. */
+const SNAP = { type: "spring", stiffness: 500, damping: 42 } as const;
 
 // One thing you ate. Tap it to change the amount, move it or delete it.
 //   Rolled oats                       568.5 kcal
@@ -31,114 +30,164 @@ const DELETE_SPEED = 600;
 // That's two buttons side by side, not one inside the other: a button
 // can't hold another button (screen readers and taps get confused).
 //
-// Swipe left to delete: the row follows your finger and a red "Delete"
-// shows behind it. Let go far enough (or flick) and it's deleted, with
-// Undo in the message above the tab bar; otherwise it goes back. Swiping
-// is a shortcut: Delete in the edit sheet does the same for keyboards and
-// screen readers, so the red strip is hidden from them.
+// Swipe left to open it, like iPhone Mail: the row slides over and uncovers
+// a red Delete button at its right end. Deleting always takes a tap on
+// that button (no full-swipe delete); Undo then shows above the tab bar.
+// Swipe back, tap the row, or tap anywhere else to shut it (TodayView keeps
+// which row is open, so only one is). Swiping is a shortcut: keyboards and
+// screen readers use Delete in the edit sheet, so the button is hidden
+// from them while the row is shut.
 export function EntryRow({
   entry,
+  open,
+  onOpenChange,
   onOpen,
   onSwap,
   onDelete,
 }: {
   entry: MealEntry;
+  /** Slid open, showing its Delete button. */
+  open: boolean;
+  /** You opened or shut it yourself (a swipe, or a tap on the open row). */
+  onOpenChange: (open: boolean) => void;
   onOpen: () => void;
   /** Only for recipe entries: opens the swap stack. */
   onSwap?: () => void;
-  /** Swiped away. The page hides the row at once and deletes it. */
+  /** Delete tapped. The page hides the row at once and deletes it. */
   onDelete: () => void;
 }) {
   const reduceMotion = useReducedMotion();
-  // The row's sideways position, following your finger. The red strip
-  // fades in from it on every frame without React redrawing.
+  // The row's sideways position: follows your finger, rests at 0 (shut)
+  // or -REVEAL (open).
   const x = useMotionValue(0);
-  const stripOpacity = useTransform(x, [-64, -8], [1, 0]);
-  const rowRef = useRef<HTMLDivElement>(null);
-  // Can't be deleted twice (a swipe, then another before it's gone).
+  // The row and its button together, sliding off after Delete.
+  const away = useMotionValue(0);
+  // The button is invisible while the row is shut, so no red shows at the
+  // row's rounded corners; it appears as soon as the row moves.
+  const buttonOpacity = useTransform(x, [-4, 0], [1, 0]);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  // Can't be deleted twice (two quick taps on Delete).
   const leaving = useRef(false);
   // Did this touch become a sideways swipe? Framer decides after about
   // 10 px (dragDirectionLock). Until then it may still be a tap or a
-  // scroll, and only a sideways one may delete the row or cancel the tap.
-  // (Framer reports the finger's speed even for a scroll, so a quick
+  // scroll, and only a sideways one may open or shut the row or cancel the
+  // tap. (Framer reports the finger's speed even for a scroll, so a quick
   // scroll that drifts a little left would otherwise look like a flick.)
   const sideways = useRef(false);
+  // The latest `open`, for handlers that run before the next redraw.
+  const openRef = useRef(open);
+  useEffect(() => {
+    openRef.current = open;
+  });
+
+  /** Slide to open or shut; with reduced motion, jump there. */
+  const settle = useCallback(
+    (toOpen: boolean) => {
+      const target = toOpen ? -REVEAL : 0;
+      if (reduceMotion) x.jump(target);
+      else animate(x, target, SNAP);
+    },
+    [reduceMotion, x],
+  );
+
+  // Opened or shut by the page (another row opened, a tap elsewhere, a
+  // scroll) or by your own swipe: move there.
+  useEffect(() => {
+    settle(open);
+  }, [open, settle]);
 
   // false while the row fades out after a delete. If it comes back before
   // it's gone (the delete failed, or a quick Undo), it's the same row, so
-  // put it back in place.
+  // put it back in place, shut.
   const isPresent = useIsPresent();
   useEffect(() => {
     if (!isPresent) return;
     x.jump(0);
+    away.jump(0);
     leaving.current = false;
-  }, [isPresent, x]);
+  }, [isPresent, x, away]);
 
-  function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) {
-    const width = rowRef.current?.offsetWidth ?? 320;
-    // A fast flick only counts while the row is left of where it started:
-    // pulling back quickly to the right means "never mind". Never when the
-    // browser took the touch over to scroll ("pointercancel").
-    const deleting =
-      sideways.current &&
-      event.type !== "pointercancel" &&
-      (offset.x < -width * DELETE_SHARE || (offset.x < 0 && velocity.x < -DELETE_SPEED));
-    if (!deleting) {
-      // dragConstraints springs it back; with reduced motion it jumps.
-      if (reduceMotion) x.jump(0);
+  function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { velocity }: PanInfo) {
+    // Only a gesture locked sideways decides, never one the browser took
+    // over to scroll ("pointercancel"): then the row just goes back.
+    if (!sideways.current || event.type === "pointercancel") {
+      settle(openRef.current);
       return;
     }
+    const toOpen = restsOpen(x.get(), velocity.x);
+    settle(toOpen);
+    if (toOpen !== openRef.current) onOpenChange(toOpen);
+  }
+
+  function handleDelete() {
     if (leaving.current) return;
     leaving.current = true;
-    if (reduceMotion) {
-      // Stays where you let go and just fades out (MealSection).
-      x.stop();
-    } else {
-      // Slides off to the left while the row fades and closes up.
-      animate(x, -(width + 32), { duration: 0.2, ease: "easeIn" });
+    // Row and button slide off to the left while the row fades and the
+    // rows below close up (MealSection). With reduced motion: only the fade.
+    if (!reduceMotion) {
+      const width = wrapperRef.current?.offsetWidth ?? 320;
+      animate(away, -(width + 32), { duration: 0.2, ease: "easeIn" });
     }
     onDelete();
   }
 
   return (
-    <div className="relative overflow-hidden rounded-lg">
+    <motion.div
+      ref={wrapperRef}
+      // TodayView: a tap inside the open row isn't a "tap elsewhere".
+      data-entry-row={entry.id}
+      style={{ x: away }}
+      className="relative overflow-hidden rounded-lg"
+    >
       <motion.div
-        aria-hidden="true"
-        style={{ opacity: stripOpacity }}
-        className="absolute inset-0 flex items-center justify-end gap-1.5 bg-destructive/15 pr-4 font-medium text-destructive"
-      >
-        <Trash2 className="size-4" />
-        Delete
-      </motion.div>
-      <motion.div
-        ref={rowRef}
         // Not while it's leaving: a touch would stop it halfway.
         drag={isPresent ? "x" : false}
         // Framer sets touch-action: pan-y for a sideways drag, so the day
         // still scrolls with your finger on a row; this decides which way
         // you meant after a few pixels.
         dragDirectionLock
-        dragConstraints={{ left: 0, right: 0 }}
-        // Follows your finger to the left, doesn't move to the right.
-        dragElastic={{ left: 1, right: 0 }}
+        // Between shut (0) and open (the button's width), with a little
+        // give past the button and none to the right: no full swipe.
+        dragConstraints={{ left: -REVEAL, right: 0 }}
+        dragElastic={{ left: 0.1, right: 0 }}
+        // No coasting after you let go: settle() decides where it rests.
+        dragMomentum={false}
         onPointerDownCapture={() => {
           sideways.current = false;
         }}
+        // Pressing the row stops a slide that's still running; a tap (no
+        // swipe) would otherwise leave it stuck halfway.
+        onPointerUp={() => {
+          if (!sideways.current) settle(openRef.current);
+        }}
+        // Same when the phone takes the press over (a scroll, a long
+        // press) before it counts as a drag: nothing else would finish it.
+        onPointerCancel={() => settle(openRef.current)}
         onDirectionLock={(axis) => {
           sideways.current = axis === "x";
         }}
         onDragEnd={handleDragEnd}
-        // A swipe isn't also a tap: the browser may still send a click to
-        // the button you started on when you let go. A click from the
-        // keyboard (Enter, detail 0) always goes through.
         onClickCapture={(e) => {
-          if (!sideways.current || e.detail === 0) return;
+          // From the keyboard (Enter, detail 0): always goes through to
+          // the edit sheet, shutting the row on the way.
+          if (e.detail === 0) {
+            if (openRef.current) onOpenChange(false);
+            return;
+          }
+          // A swipe isn't also a tap: the browser may still send a click
+          // to the button you started on when you let go.
+          const swiped = sideways.current;
+          // Tapping the open row (or its swap icon) shuts it instead.
+          const shutting = !swiped && openRef.current;
+          if (!swiped && !shutting) return;
           e.preventDefault();
           e.stopPropagation();
+          if (shutting) onOpenChange(false);
         }}
         style={{ x }}
-        // Solid, so the red strip only shows where the row has moved away.
-        className="relative flex items-center rounded-lg bg-background transition-colors hover:bg-accent"
+        // Solid and on top (z-10), so the button only shows where the row
+        // has moved away.
+        className="relative z-10 flex items-center rounded-lg bg-background transition-colors hover:bg-accent"
       >
         <button
           type="button"
@@ -194,6 +243,26 @@ export function EntryRow({
           </button>
         )}
       </motion.div>
-    </div>
+      {/* Behind the row's right end; after it on the page, so Tab and
+          screen readers reach it after the row, matching where it sits.
+          inert while shut: not focusable and hidden from screen readers
+          (they use Delete in the edit sheet). Open, it's a real button
+          with the food's name in its label. */}
+      <div inert={!open} style={{ width: REVEAL }} className="absolute inset-y-0 right-0 flex">
+        <motion.button
+          type="button"
+          onClick={handleDelete}
+          aria-label={`Delete ${entry.name}`}
+          data-row-delete=""
+          style={{ opacity: buttonOpacity }}
+          // text-primary-foreground: white on the light red, near-black on
+          // dark mode's lighter red (both pass 4.5:1; see plans/polish.md).
+          // The focus ring is the same colour: matcha wouldn't show on red.
+          className="flex-1 bg-destructive font-medium text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-primary-foreground focus-visible:ring-inset"
+        >
+          Delete
+        </motion.button>
+      </div>
+    </motion.div>
   );
 }
