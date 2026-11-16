@@ -67,6 +67,14 @@ export async function verifyLoginCode(_prev: FormState, formData: FormData): Pro
     if (error.status === 429) {
       return { ok: false, fieldErrors: { code: "Too many tries. Wait a minute, then try again." } };
     }
+    // Supabase couldn't be reached (status 0) or broke (5xx): the code
+    // probably wasn't checked, so "That code didn't work" would be wrong
+    // and would send you off for a new email you don't need. (If it was
+    // used up after all, the next try says "didn't work", and Start over
+    // still gets you in.)
+    if (!error.status || error.status >= 500) {
+      return { ok: false, message: "Couldn't check the code just now. Tap Log in again in a minute." };
+    }
     // Wrong, expired (after 1 hour), already used (e.g. you tapped the
     // link first) or replaced by a newer email: Supabase doesn't say which
     // in a way worth showing.
@@ -83,6 +91,14 @@ export async function verifyLoginCode(_prev: FormState, formData: FormData): Pro
 
 export async function signOut() {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    logAuthError("signOut", error);
+    // Supabase couldn't end the session on its side, and then it keeps the
+    // login cookie too, so you'd still be logged in. "local" only deletes
+    // this device's cookie, which always works: logging out of this phone
+    // is what you asked for. (Supabase's docs suggest the same fallback.)
+    await supabase.auth.signOut({ scope: "local" });
+  }
   redirect("/login");
 }

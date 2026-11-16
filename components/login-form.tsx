@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginCodeForm } from "@/components/login-code-form";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { sendMagicLink } from "@/lib/auth-actions";
 
 // Two steps: your email, then "check your email", where you can tap the
@@ -24,7 +25,13 @@ export function LoginForm() {
 }
 
 function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStartOver: () => void }) {
-  const [state, formAction, pending] = useActionState(sendMagicLink, { ok: false });
+  const [state, formAction, pending] = useActionState(
+    // Offline: a message on the form instead of the error page.
+    // A dropped connection may have sent it already, and a second email
+    // makes the first one's code stop working, so: check first.
+    keepOnFailure(sendMagicLink, tapAgain("send the email", "Email me a login code", "Check your inbox")),
+    { ok: false },
+  );
   // Kept here (not only in the form) so a failed send doesn't wipe what you
   // typed: React empties a form's fields after its action runs.
   const [email, setEmail] = useState("");
@@ -74,6 +81,8 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
           name="email"
           type="email"
           autoComplete="email"
+          // The keyboard's Return key says "send", like the button.
+          enterKeyHint="send"
           placeholder="you@example.com"
           value={email}
           onChange={(e) => {
@@ -94,13 +103,15 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
           </p>
         )}
       </div>
-      {state.message && (
+      {/* Hidden while trying again, so a second failure with the same
+          words still shows up and is read out. */}
+      {!pending && state.message && (
         <p role="alert" className="text-sm text-destructive">
           {state.message}
         </p>
       )}
       <Button type="submit" disabled={pending} className="h-11 w-full">
-        {pending ? "Sending…" : "Email me a login link"}
+        {pending ? "Sending…" : "Email me a login code"}
       </Button>
       <Button type="button" variant="ghost" onClick={openCodeStep} className="h-11 w-full">
         I already have a code

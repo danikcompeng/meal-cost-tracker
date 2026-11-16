@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { signOut } from "@/lib/auth-actions";
+import { LogOutButton } from "./log-out-button";
 
 // Settings is a quiet grey link up here rather than a tab: you set your
 // targets once and rarely come back.
@@ -25,11 +25,7 @@ export function AppHeader({
               Settings
             </Link>
           )}
-          <form action={signOut}>
-            <button type="submit" className={quiet}>
-              Log out
-            </button>
-          </form>
+          <LogOutButton className={quiet} />
         </div>
       </div>
       {children}
