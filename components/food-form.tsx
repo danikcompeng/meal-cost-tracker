@@ -4,12 +4,13 @@ import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field } from "./form-field";
+import { Field, errorId } from "./form-field";
 import { DuplicateDialog } from "./duplicate-dialog";
 import { HydrationSwitch } from "./hydration-switch";
 import { MoreNutrients } from "./more-nutrients";
 import { NutrientInput } from "./nutrient-input";
 import { SegmentedControl } from "./segmented-control";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { saveFood } from "@/lib/food-actions";
 import { FIELD_COLUMNS, validateFood, validateMacros } from "@/lib/food-validation";
@@ -231,9 +232,11 @@ export function FoodForm({
   // After a scan, a blank box means "they didn't have it", not "you can
   // skip this".
   const placeholder = fromOpenFoodFacts ? "not listed" : "optional";
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   return (
-    <form action={formAction} className="space-y-6 rounded-2xl bg-card p-4" noValidate>
+    <form ref={formRef} action={formAction} className="space-y-6 rounded-2xl bg-card p-4" noValidate>
       {editing && <input type="hidden" name="id" value={editing.id} />}
       {/* The package unit select below is the one the server reads. */}
       <input type="hidden" name="unit" value={fields.unit} />
@@ -251,6 +254,7 @@ export function FoodForm({
           autoComplete="off"
           className="h-11 bg-background"
           aria-invalid={Boolean(errors.name)}
+          aria-describedby={errors.name ? errorId("name") : undefined}
         />
       </Field>
 
@@ -264,13 +268,20 @@ export function FoodForm({
           autoComplete="off"
           className="h-11 bg-background"
           aria-invalid={Boolean(errors.brand)}
+          aria-describedby={errors.brand ? errorId("brand") : undefined}
         />
       </Field>
 
       {barcode && (
         <p className="-mt-3 text-[13px] text-muted-foreground tabular-nums">Barcode {barcode}</p>
       )}
-      {errors.barcode && <p className="-mt-3 text-sm text-destructive">{errors.barcode}</p>}
+      {/* Errors that belong to no single box are read out when they
+          appear, and hidden while saving again so a repeat is read too. */}
+      {!pending && errors.barcode && (
+        <p role="alert" className="-mt-3 text-sm text-destructive">
+          {errors.barcode}
+        </p>
+      )}
 
       <SegmentedControl
         name="measuredBy"
@@ -281,8 +292,10 @@ export function FoodForm({
       />
       {/* "It's in Overnight oats, so its unit can't change." Hidden again
           once you switch back to the unit it's saved with. */}
-      {errors.measuredBy && measuredBy !== editing?.unit && (
-        <p className="-mt-3 text-sm text-destructive">{errors.measuredBy}</p>
+      {!pending && errors.measuredBy && measuredBy !== editing?.unit && (
+        <p role="alert" className="-mt-3 text-sm text-destructive">
+          {errors.measuredBy}
+        </p>
       )}
 
       {/* Only ml foods can count: their amount IS the water. For g or each
@@ -335,7 +348,14 @@ export function FoodForm({
           ))}
         </div>
 
-        {errors.macros && <p className="text-sm text-destructive">{errors.macros}</p>}
+        {/* An alert only for the server's answer after Save. After a scan
+            the same check also runs live as you type, and an alert then
+            would interrupt your typing every time the total crossed 100 g. */}
+        {!pending && errors.macros && (
+          <p role={state.fieldErrors?.macros ? "alert" : undefined} className="text-sm text-destructive">
+            {errors.macros}
+          </p>
+        )}
 
         <MoreNutrients
           values={fields}
@@ -371,6 +391,7 @@ export function FoodForm({
                 placeholder="3.49"
                 className="h-11 bg-background pl-7 tabular-nums"
                 aria-invalid={Boolean(errors.price)}
+                aria-describedby={errors.price ? errorId("price") : undefined}
                 // After a scan the rest is filled in; the price is what's left.
                 autoFocus={fromOpenFoodFacts}
               />
@@ -395,6 +416,7 @@ export function FoodForm({
                   measuredBy !== "each" && "rounded-r-none",
                 )}
                 aria-invalid={Boolean(errors.packageSize)}
+                aria-describedby={errors.packageSize || errors.unit ? errorId("packageSize") : undefined}
               />
               {measuredBy === "each" ? null : (
                 <select
@@ -419,8 +441,10 @@ export function FoodForm({
         </p>
       </fieldset>
 
-      {state.message && (
-        <p className="text-sm text-destructive">
+      {/* Read out as soon as it appears; hidden while trying again so a
+          second failure with the same words still shows. */}
+      {!pending && state.message && (
+        <p role="alert" className="text-sm text-destructive">
           {state.message}{" "}
           {state.existingId && (
             <Link href={`/?log=${state.existingId}`} className="focus-ring rounded-sm font-medium text-primary">
@@ -435,6 +459,8 @@ export function FoodForm({
           ref={saveRef}
           type="submit"
           disabled={pending}
+          // Keeps keyboard focus while it works.
+          focusableWhenDisabled
           className="h-11 flex-1 text-base"
         >
           {pending ? "Saving…" : saveLabel}

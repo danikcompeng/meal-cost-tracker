@@ -4,7 +4,7 @@
 // single serving is one tap), and which meal. The preview is only a guide;
 // the server works out the real snapshot from the saved recipe and foods.
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import type { FormState, Recipe } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LogRecipeForm({
   recipe,
@@ -51,6 +52,9 @@ export function LogRecipeForm({
     { ok: false },
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
+
   // Same rules as the server: above 0, at most 20 servings.
   const parsed = validateEntryChange({ meal, amount, unit: "serving" });
   const preview = parsed.ok ? recipeSnapshotFor(recipe, parsed.value.amount) : null;
@@ -58,7 +62,7 @@ export function LogRecipeForm({
   const message = state.message ?? errors.day ?? errors.recipeId ?? errors.meal;
 
   return (
-    <form action={formAction} className="space-y-5 pt-1" noValidate>
+    <form ref={formRef} action={formAction} className="space-y-5 pt-1" noValidate>
       <input type="hidden" name="recipeId" value={recipe.id} />
       <input type="hidden" name="day" value={day} />
 
@@ -85,13 +89,26 @@ export function LogRecipeForm({
         onChange={setMeal}
       />
 
-      {message && <p className="text-sm text-destructive">{message}</p>}
+      {/* Read out as soon as it appears; hidden while trying again so a
+          second failure with the same words still shows. */}
+      {!pending && message && (
+        <p role="alert" className="text-sm text-destructive">
+          {message}
+        </p>
+      )}
 
       {/* Focus starts here, not in the Servings box: it's already 1, and
           focusing a box would pop up the phone keyboard and get in the way
           of the one-tap "Log it". Without any autofocus, keyboard and
           screen-reader users would land on the page itself, lost. */}
-      <Button type="submit" disabled={pending} autoFocus className="h-11 w-full text-base">
+      {/* focusableWhenDisabled: keeps keyboard focus while it works. */}
+      <Button
+        type="submit"
+        disabled={pending}
+        focusableWhenDisabled
+        autoFocus
+        className="h-11 w-full text-base"
+      >
         {pending ? "Logging…" : "Log it"}
       </Button>
     </form>

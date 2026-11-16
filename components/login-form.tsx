@@ -1,11 +1,13 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginCodeForm } from "@/components/login-code-form";
+import { errorId } from "./form-field";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { sendMagicLink } from "@/lib/auth-actions";
 
@@ -44,6 +46,15 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
   const [edited, setEdited] = useState(false);
   // An old "?error=link" in the address only applies to the first try.
   const linkFailed = useSearchParams().get("error") === "link" && !restarted;
+  // That message is already on the page when it loads, and screen readers
+  // don't read out an alert that was there from the start. Moving focus to
+  // it once makes them read it.
+  const linkRef = useRef<HTMLParagraphElement>(null);
+  useEffect(() => {
+    if (linkFailed) linkRef.current?.focus();
+  }, [linkFailed]);
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   if (state.ok && state.email) {
     return <LoginCodeForm email={state.email} sent onStartOver={onStartOver} />;
@@ -63,6 +74,7 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
   const error = emailError ?? (edited ? undefined : state.fieldErrors?.email);
   return (
     <form
+      ref={formRef}
       action={formAction}
       onSubmit={() => {
         setEmailError(null);
@@ -72,7 +84,9 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
       noValidate
     >
       {linkFailed && (
-        <p className="text-sm text-destructive">That link expired or was already used. Get a new one.</p>
+        <p ref={linkRef} tabIndex={-1} role="alert" className="text-sm text-destructive outline-none">
+          That link expired or was already used. Get a new one.
+        </p>
       )}
       <div className="space-y-1.5">
         <Label htmlFor="email">Email</Label>
@@ -95,10 +109,11 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
           autoFocus={restarted}
           className="h-11"
           aria-invalid={Boolean(error)}
-          aria-describedby={error ? "email-error" : undefined}
+          aria-describedby={!pending && error ? errorId("email") : undefined}
         />
-        {error && (
-          <p id="email-error" role="alert" className="text-sm text-destructive">
+        {/* Hidden while sending again, so a repeat is read out too. */}
+        {!pending && error && (
+          <p id={errorId("email")} role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}
@@ -110,7 +125,8 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
           {state.message}
         </p>
       )}
-      <Button type="submit" disabled={pending} className="h-11 w-full">
+      {/* Keeps keyboard focus while it works. */}
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full">
         {pending ? "Sending…" : "Email me a login code"}
       </Button>
       <Button type="button" variant="ghost" onClick={openCodeStep} className="h-11 w-full">

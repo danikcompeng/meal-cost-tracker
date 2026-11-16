@@ -3,7 +3,7 @@
 // Step 2 of logging: how much, and which meal. The preview is only a guide;
 // the server works out the real snapshot from the saved food.
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,6 +17,7 @@ import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LogFoodForm({
   food,
@@ -54,6 +55,9 @@ export function LogFoodForm({
     { ok: false },
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
+
   const parsed = validateEntryChange({ meal, amount });
   const preview = parsed.ok
     ? {
@@ -64,7 +68,7 @@ export function LogFoodForm({
   const errors = state.fieldErrors ?? {};
 
   return (
-    <form action={formAction} className="space-y-5 pt-1" noValidate>
+    <form ref={formRef} action={formAction} className="space-y-5 pt-1" noValidate>
       <input type="hidden" name="foodId" value={food.id} />
       <input type="hidden" name="day" value={day} />
 
@@ -97,13 +101,16 @@ export function LogFoodForm({
         onChange={setMeal}
       />
 
-      {(state.message ?? errors.day ?? errors.foodId ?? errors.meal) && (
-        <p className="text-sm text-destructive">
+      {/* Read out as soon as it appears; hidden while trying again so a
+          second failure with the same words still shows. */}
+      {!pending && (state.message ?? errors.day ?? errors.foodId ?? errors.meal) && (
+        <p role="alert" className="text-sm text-destructive">
           {state.message ?? errors.day ?? errors.foodId ?? errors.meal}
         </p>
       )}
 
-      <Button type="submit" disabled={pending} className="h-11 w-full text-base">
+      {/* Keeps keyboard focus while it works. */}
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
         {pending ? "Logging…" : "Log it"}
       </Button>
     </form>

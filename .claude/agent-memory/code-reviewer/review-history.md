@@ -302,3 +302,16 @@ metadata:
   ~2.2:1 (Swap "Swapping…", Skip, Back, toast x); segmented copies ring values by hand (suggest
   focus-ring-within utility); test step 5 "taps show no ring" fails for inputs and script focus after
   taps (SwapEnd Start over, Skip, duplicate Cancel), now solid not faint; Mac Safari Tab skips buttons.
+- 2026-11-16 states commit 7 (role=alert on every form message, errorId + aria-describedby, setAside
+  one-slot in edit-entry + ingredient-form, focusableWhenDisabled on busy buttons, focus restore after
+  failed delete): Minor issues. Verified: setAside walk-through (save err, delete err, save, delete
+  same err) right every time (results are fresh objects, keepOnFailure too); onSubmit runs before the
+  action (SimpleEventPlugin before FormActionEventPlugin) and on Enter; Base UI onClick preventDefault
+  blocks click + implicit submit while busy; nothing else uses disabled:/data-disabled. Raised:
+  food-row focus restore never fires (Yes stays mounted while deleting; error set in an urgent commit
+  BEFORE isPending flips; deps need `deleting`); field-error-only failures announce nothing (no
+  message); food-form barcode/measuredBy/macros + login email alerts not hidden while pending;
+  OFF macros alert live while typing; duplicate dialog buttons still native disabled; ?error=link
+  alert present at load (likely not read); "can't use" buttons (Remove while saving, Save while
+  deleting) now full colour (commit 9); edit-entry Delete not blocked while saving; Edit recipe sheet
+  has 2 message lines; nits: setSetAside name, duplicated block, hard-coded email-error/code-error.

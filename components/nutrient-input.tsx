@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Field } from "./form-field";
+import { Field, errorId } from "./form-field";
 
 // One number box with its unit inside on the right: "13   g".
 // Used for the main four and for "More nutrients".
@@ -40,6 +40,7 @@ export function NutrientInput({
           placeholder={placeholder}
           className="h-11 bg-background pr-12 tabular-nums"
           aria-invalid={Boolean(error) || invalid}
+          aria-describedby={error ? errorId(name) : undefined}
         />
         <span
           aria-hidden="true"

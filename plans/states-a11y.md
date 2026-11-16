@@ -285,6 +285,25 @@ help.
 - Foods: the delete error moves out of the row button (today it's read
   as part of the button's name) and "Yes" becomes "Yes, delete Oats" to
   screen readers.
+- Messages hide while you try again, so a second failure with the same
+  words is seen and read out again.
+- Buttons that wait while they work (Save, Log it, Yes delete, Yes
+  remove, Email me a login code, Log in…) keep keyboard focus
+  (`focusableWhenDisabled`). After a failed delete or remove, focus goes
+  back to the Delete / Remove / ✕ button that reappears.
+- Errors that belong to no single box (the macros don't add up, barcode,
+  unit, the expired link) are read out when they appear.
+- A save that comes back with a box to fix ("Type an amount") moves
+  focus to the first red box (`use-focus-first-invalid.ts`), so a
+  screen reader reads its label, "invalid" and the error. Before, it
+  said nothing.
+- The duplicate-food dialog's buttons keep focus while saving and say
+  "Updating…" / "Saving…". The edit sheet's Delete waits while a save
+  runs (like Remove in the ingredient sheet).
+- The expired-link line on Login is focused once when the page opens,
+  so it's read out (an alert already there at load isn't).
+- Left as is: the Edit recipe sheet has two message lines (the recipe's
+  and Delete recipe's), each next to its own button.
 
 ## Commit 8: swap flick, Undo on first use, autoFocus
 
@@ -298,8 +317,9 @@ help.
 - **autoFocus** (decision C): `BottomSheet` looks for a
   `data-autofocus` box inside it after it opens and focuses that,
   otherwise its title as now. Used for "New recipe"'s name box and the
-  amount box when Today opens straight to a food after a scan. The
-  autoFocus props that never work go.
+  amount box when Today opens straight to a food after a scan. Those
+  boxes keep their autoFocus too: it does work when the box appears in
+  a sheet that's already open (picking a food from the list).
 
 ## Commit 9: tap targets, contrast and headings
 
@@ -321,7 +341,10 @@ Contrast (text at least 4.5:1, light and dark), measured:
 - "Saving…", "Logging…", "Swapping…", "Undoing…" and similar are shown
   dimmed to 50% (about 2.2:1), but they're the only sign something is
   happening. Busy buttons stay full colour; only buttons that truly
-  can't be used are dimmed (decision D).
+  can't be used are dimmed (decision D): Save while a delete or remove
+  runs, Remove while a save runs, Skip and Back while a swap saves.
+  Dimmed with a grey colour, not opacity, so the focus ring on them
+  stays solid.
 - The scanner's hint over the camera can drop to 4.1:1 over a white
   box: it gets a dark pill behind it (8.4:1).
 - Not text, so a decision (E): input borders are 1.3:1 on white, and

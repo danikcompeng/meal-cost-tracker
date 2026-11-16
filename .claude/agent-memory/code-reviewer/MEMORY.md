@@ -5,8 +5,16 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 6 (matcha focus rings), Minor issues. Plan: plans/states-a11y.md (commits 7-9 queued:
-  role=alert + edit-sheet message slot are commit 7, busy-button colour/contrast/tap targets commit 9).
+  states commit 7 (role=alert, describedby, one message slot), Minor issues. Plan: plans/states-a11y.md
+  (commit 8 swap flick/autoFocus, commit 9 busy-button colour/contrast/tap targets/headings).
+- React 19.3 async transitions: setState AFTER an await is an urgent (Default lane) update and commits
+  BEFORE isPending flips false (two commits). An effect keyed only on the error sees the busy UI still
+  mounted. Form onSubmit runs before a function `action` (and on Enter); preventDefault there skips it.
+- Base UI focusableWhenDisabled: aria-disabled, onClick preventDefault (blocks click AND Enter implicit
+  submit), keydown preventDefault on every key but Tab (also stops Esc closing a dialog from it).
+  buttonVariants `disabled:` classes stop applying: style "can't use" vs "busy" by hand.
+- Errors: validation failures return fieldErrors only (no message), so nothing is announced unless
+  the form moves focus or adds an alert. role=alert present in the first HTML is usually not read.
 - Focus rings (since commit 6): `focus-ring` / `focus-ring-inset` @utility in globals.css (solid 2 px
   var(--ring) outline). New buttons/links need one. Dark matcha ring on butter = 1.22:1 (never inset
   on a highlight fill); opacity on an element fades its outline too. `cn` here is shadcn's compiled

@@ -5,7 +5,7 @@
 // mistake doesn't wipe what you typed: React clears uncontrolled boxes
 // after a form action runs.
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,8 @@ import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
 import { createRecipe, updateRecipe } from "@/lib/recipe-actions";
 import type { FormState } from "@/lib/types";
 import { unitWordForTyped } from "@/lib/units";
-import { Field } from "./form-field";
+import { Field, errorId } from "./form-field";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function RecipeForm({
   recipe,
@@ -46,9 +47,11 @@ export function RecipeForm({
     { ok: false },
   );
   const errors = state.fieldErrors ?? {};
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   return (
-    <form action={formAction} className="space-y-5 pt-2" noValidate>
+    <form ref={formRef} action={formAction} className="space-y-5 pt-2" noValidate>
       {recipe && <input type="hidden" name="id" value={recipe.id} />}
 
       <Field label="Name" htmlFor="recipe-name" error={errors.name}>
@@ -62,6 +65,7 @@ export function RecipeForm({
           autoFocus={!recipe}
           className="h-11"
           aria-invalid={Boolean(errors.name)}
+          aria-describedby={errors.name ? errorId("recipe-name") : undefined}
         />
       </Field>
 
@@ -76,6 +80,7 @@ export function RecipeForm({
             autoComplete="off"
             className="h-11 pr-24 tabular-nums"
             aria-invalid={Boolean(errors.servings)}
+            aria-describedby={errors.servings ? errorId("recipe-servings") : undefined}
           />
           <span
             aria-hidden="true"
@@ -87,9 +92,16 @@ export function RecipeForm({
         </div>
       </Field>
 
-      {state.message && <p className="text-sm text-destructive">{state.message}</p>}
+      {/* Read out as soon as it appears; hidden while trying again so a
+          second failure with the same words still shows. */}
+      {!pending && state.message && (
+        <p role="alert" className="text-sm text-destructive">
+          {state.message}
+        </p>
+      )}
 
-      <Button type="submit" disabled={pending} className="h-11 w-full text-base">
+      {/* Keeps keyboard focus while it works. */}
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
         {recipe ? (pending ? "Saving…" : "Save changes") : pending ? "Creating…" : "Create"}
       </Button>
     </form>

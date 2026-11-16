@@ -4,7 +4,7 @@
 // The preview scales the entry's own snapshot, exactly like the server
 // will, so it matches what you'll see after saving.
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { updateEntry } from "@/lib/entry-actions";
@@ -16,6 +16,7 @@ import { AmountField } from "./amount-field";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
 import { SwapButton } from "./swap-button";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function EditEntryForm({
   entry,
@@ -50,7 +51,15 @@ export function EditEntryForm({
     { ok: false },
   );
 
+  // One message line for two buttons, and only the newest problem shows.
+  // The Save answer that was up when you tapped Delete is set aside here,
+  // so an old Save error never hides a newer Delete error; and saving
+  // again clears the old Delete error.
+  const [hiddenSaveAnswer, setHiddenSaveAnswer] = useState<FormState | null>(null);
+
   function handleDelete() {
+    setDeleteError(undefined);
+    setHiddenSaveAnswer(state);
     startDelete(async () => {
       const problem = await onDelete();
       if (problem) {
@@ -60,14 +69,34 @@ export function EditEntryForm({
     });
   }
 
+  // A failed delete swaps "Yes, delete" back for "Delete". The button
+  // that had keyboard focus is gone then, so focus goes to Delete instead
+  // of falling out to the page.
+  const deleteRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (deleteError && document.activeElement === document.body) deleteRef.current?.focus();
+  }, [deleteError]);
+
   // The entry's unit picks the rules: servings (at most 20) for a recipe.
   const parsed = validateEntryChange({ meal, amount, unit: entry.unit });
   const preview = parsed.ok ? scaleSnapshot(entry, entry.amount, parsed.value.amount) : null;
   const errors = state.fieldErrors ?? {};
-  const message = state.message ?? deleteError ?? errors.meal;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
+  const saveMessage = state === hiddenSaveAnswer ? undefined : (state.message ?? errors.meal);
+  // Hidden while trying again: a second failure with the same words then
+  // shows up (and is read out) again instead of looking like nothing
+  // happened.
+  const message = pending || deleting ? undefined : (deleteError ?? saveMessage);
 
   return (
-    <form action={formAction} className="space-y-5 pt-2" noValidate>
+    <form
+      ref={formRef}
+      action={formAction}
+      onSubmit={() => setDeleteError(undefined)}
+      className="space-y-5 pt-2"
+      noValidate
+    >
       <input type="hidden" name="id" value={entry.id} />
       <p className="text-lg font-medium">{entry.name}</p>
 
@@ -87,9 +116,21 @@ export function EditEntryForm({
         onChange={setMeal}
       />
 
-      {message && <p className="text-sm text-destructive">{message}</p>}
+      {/* role="alert": read out as soon as it appears. */}
+      {message && (
+        <p role="alert" className="text-sm text-destructive">
+          {message}
+        </p>
+      )}
 
-      <Button type="submit" disabled={pending || deleting} className="h-11 w-full text-base">
+      {/* focusableWhenDisabled: while it works the button waits but keeps
+          keyboard focus (plain disabled would drop it to the page). */}
+      <Button
+        type="submit"
+        disabled={pending || deleting}
+        focusableWhenDisabled
+        className="h-11 w-full text-base"
+      >
         {pending ? "Saving…" : "Save changes"}
       </Button>
 
@@ -101,6 +142,7 @@ export function EditEntryForm({
             variant="destructive"
             onClick={handleDelete}
             disabled={deleting}
+            focusableWhenDisabled
             className="h-11 px-4 text-base"
           >
             {deleting ? "Deleting…" : "Yes, delete"}
@@ -116,9 +158,15 @@ export function EditEntryForm({
         </div>
       ) : (
         <Button
+          ref={deleteRef}
           type="button"
           variant="ghost"
           onClick={() => setConfirming(true)}
+          // Not while a save is still running: the two answers would race
+          // for the one message line, and a save landing after a delete
+          // would find the sheet gone (like Remove in ingredient-form).
+          disabled={pending}
+          focusableWhenDisabled
           className="h-11 w-full text-base text-destructive"
         >
           Delete

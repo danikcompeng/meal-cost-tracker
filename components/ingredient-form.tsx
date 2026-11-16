@@ -4,7 +4,7 @@
 // changing (or removing) one that's already there. The preview line is
 // for this amount in the whole recipe, with the same maths as logging it.
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
@@ -16,6 +16,7 @@ import { validateIngredient } from "@/lib/recipe-validation";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { AmountPreview } from "./amount-preview";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function IngredientForm({
   recipeId,
@@ -52,7 +53,21 @@ export function IngredientForm({
     { ok: false },
   );
 
+  // One message line for two buttons, and only the newest problem shows
+  // (same as the Edit entry sheet): the Save answer that was up when you
+  // tapped Remove is set aside, and saving again clears an old Remove
+  // error.
+  const [hiddenSaveAnswer, setHiddenSaveAnswer] = useState<FormState | null>(null);
+  // A failed remove swaps "Yes, remove" back for "Remove": focus goes
+  // there instead of falling out to the page.
+  const removeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (removeError && document.activeElement === document.body) removeRef.current?.focus();
+  }, [removeError]);
+
   function handleRemove() {
+    setRemoveError(undefined);
+    setHiddenSaveAnswer(state);
     startRemove(async () => {
       const result = await keepOnFailure(
         removeIngredient,
@@ -77,10 +92,21 @@ export function IngredientForm({
         };
   const hydrates = food.unit === "ml" && food.counts_toward_hydration;
   const errors = state.fieldErrors ?? {};
-  const message = state.message ?? removeError ?? errors.foodId;
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
+  const saveMessage = state === hiddenSaveAnswer ? undefined : (state.message ?? errors.foodId);
+  // Hidden while trying again, so a second failure with the same words
+  // still shows (and is read out).
+  const message = pending || removing ? undefined : (removeError ?? saveMessage);
 
   return (
-    <form action={formAction} className="space-y-5 pt-1" noValidate>
+    <form
+      ref={formRef}
+      action={formAction}
+      onSubmit={() => setRemoveError(undefined)}
+      className="space-y-5 pt-1"
+      noValidate
+    >
       <input type="hidden" name="recipeId" value={recipeId} />
       <input type="hidden" name="foodId" value={food.id} />
 
@@ -116,9 +142,20 @@ export function IngredientForm({
         )}
       </div>
 
-      {message && <p className="text-sm text-destructive">{message}</p>}
+      {/* role="alert": read out as soon as it appears. */}
+      {message && (
+        <p role="alert" className="text-sm text-destructive">
+          {message}
+        </p>
+      )}
 
-      <Button type="submit" disabled={pending || removing} className="h-11 w-full text-base">
+      {/* focusableWhenDisabled: keeps keyboard focus while it works. */}
+      <Button
+        type="submit"
+        disabled={pending || removing}
+        focusableWhenDisabled
+        className="h-11 w-full text-base"
+      >
         {isNew ? (pending ? "Adding…" : "Add") : pending ? "Saving…" : "Save changes"}
       </Button>
 
@@ -133,6 +170,7 @@ export function IngredientForm({
               // Not while a save is still running: if the remove landed
               // first, the save would put the ingredient straight back.
               disabled={pending || removing}
+              focusableWhenDisabled
               className="h-11 px-4 text-base"
             >
               {removing ? "Removing…" : "Yes, remove"}
@@ -148,10 +186,12 @@ export function IngredientForm({
           </div>
         ) : (
           <Button
+            ref={removeRef}
             type="button"
             variant="ghost"
             onClick={() => setConfirming(true)}
             disabled={pending || removing}
+            focusableWhenDisabled
             className="h-11 w-full text-base text-destructive"
           >
             Remove

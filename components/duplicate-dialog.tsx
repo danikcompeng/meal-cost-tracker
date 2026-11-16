@@ -13,7 +13,7 @@
 // form again with its value ("update" or "keep") added, so the server
 // knows what you chose and the form keeps everything you typed.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { FormState } from "@/lib/types";
 
@@ -57,6 +57,8 @@ export function DuplicateDialog({
   const cancel = () => {
     if (!pending) onCancel();
   };
+  // Which answer you tapped, so that one can say what it's doing.
+  const [choice, setChoice] = useState<"update" | "keep" | null>(null);
 
   const { name, brand, changes } = duplicate;
   const more = changes.length - SHOWN_CHANGES;
@@ -104,24 +106,30 @@ export function DuplicateDialog({
         </p>
 
         <div className="space-y-2 pt-1">
+          {/* focusableWhenDisabled: while saving they wait but keep keyboard
+              focus (plain disabled would drop it out of the dialog). */}
           <Button
             type="submit"
             name="duplicateChoice"
             value="update"
+            onClick={() => setChoice("update")}
             disabled={pending}
+            focusableWhenDisabled
             className="h-11 w-full text-base"
           >
-            Update existing
+            {pending && choice === "update" ? "Updating…" : "Update existing"}
           </Button>
           <Button
             type="submit"
             name="duplicateChoice"
             value="keep"
             variant="outline"
+            onClick={() => setChoice("keep")}
             disabled={pending}
+            focusableWhenDisabled
             className="h-11 w-full text-base"
           >
-            Keep both
+            {pending && choice === "keep" ? "Saving…" : "Keep both"}
           </Button>
           <Button
             ref={cancelRef}
@@ -129,6 +137,7 @@ export function DuplicateDialog({
             variant="ghost"
             onClick={onCancel}
             disabled={pending}
+            focusableWhenDisabled
             className="h-11 w-full text-base"
           >
             Cancel

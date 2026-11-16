@@ -5,7 +5,7 @@
 // water on Today" switch and the daily goal (2,000 ml to start).
 // Both hints under the boxes are advice only and never stop you saving.
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
@@ -17,8 +17,9 @@ import {
   validateTargets,
   type Targets,
 } from "@/lib/targets";
-import { Field } from "./form-field";
+import { Field, errorId } from "./form-field";
 import { SwitchRow } from "./switch-row";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 /** Whether the goal box holds a goal that would save: 1 to 10,000 ml. */
 function validWater(text: string): boolean {
@@ -109,11 +110,14 @@ export function TargetsForm({ targets }: { targets: Targets }) {
     ? [targetsHint(preview.value), kcalFocused ? null : lowCalorieNote(preview.value.daily_kcal)].filter(Boolean)
     : [];
   const serverErrors = state.fieldErrors ?? {};
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
   const errors =
     waterErrorFixed === state ? { ...serverErrors, water: undefined } : serverErrors;
 
   return (
     <form
+      ref={formRef}
       action={formAction}
       noValidate
       aria-labelledby="targets-label"
@@ -148,6 +152,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
                 autoComplete="off"
                 className="h-11 bg-background pr-12 tabular-nums"
                 aria-invalid={Boolean(errors[key])}
+                aria-describedby={errors[key] ? errorId(key) : undefined}
               />
               <span
                 aria-hidden="true"
@@ -184,6 +189,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
                 autoComplete="off"
                 className="h-11 bg-background pr-12 tabular-nums"
                 aria-invalid={Boolean(errors.water)}
+                aria-describedby={errors.water ? errorId("water") : undefined}
               />
               <span
                 aria-hidden="true"
@@ -203,9 +209,16 @@ export function TargetsForm({ targets }: { targets: Targets }) {
         ))}
       </div>
 
-      {state.message && <p className="text-sm text-destructive">{state.message}</p>}
+      {/* Read out as soon as it appears; hidden while trying again so a
+          second failure with the same words still shows. */}
+      {!pending && state.message && (
+        <p role="alert" className="text-sm text-destructive">
+          {state.message}
+        </p>
+      )}
 
-      <Button type="submit" disabled={pending} className="h-11 w-full text-base">
+      {/* Keeps keyboard focus while it works. */}
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
         {pending ? "Saving…" : "Save targets"}
       </Button>
       <p role="status" className="min-h-5 text-center text-sm text-muted-foreground">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { keepOnFailure } from "@/lib/action-call";
 import { deleteFood } from "@/lib/food-actions";
@@ -24,7 +24,18 @@ export function FoodRow({
   const { name, price, package_size, unit } = food;
   const hasPrice = pricePerUnit(price, package_size) !== null;
 
+  // A failed delete swaps Yes back for ✕: focus goes there instead of
+  // falling out to the page.
+  const deleteRef = useRef<HTMLButtonElement>(null);
+  // Waits for `deleting` to end too: the error is drawn a moment before
+  // Yes goes away (Yes stays while deleting), and only then does focus
+  // fall to the page.
+  useEffect(() => {
+    if (error && !deleting && document.activeElement === document.body) deleteRef.current?.focus();
+  }, [error, deleting]);
+
   function handleDelete() {
+    setError(undefined);
     startDelete(async () => {
       const result = await keepOnFailure(deleteFood, {
         verb: "delete it",
@@ -38,78 +49,84 @@ export function FoodRow({
   }
 
   return (
-    <div
-      className={cn(
-        "flex items-start gap-2 rounded-lg px-3 transition-colors",
-        isEditing && "bg-primary/10",
-      )}
-    >
-      <button
-        type="button"
-        onClick={onEdit}
-        className="focus-ring flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md py-3 text-left"
-      >
-        <span className="font-medium">
-          {name}
-          {food.brand && <span className="font-normal text-muted-foreground"> · {food.brand}</span>}
-        </span>
+    <div className={cn("rounded-lg px-3 transition-colors", isEditing && "bg-primary/10")}>
+      <div className="flex items-start gap-2">
+        <button
+          type="button"
+          onClick={onEdit}
+          className="focus-ring flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md py-3 text-left"
+        >
+          <span className="font-medium">
+            {name}
+            {food.brand && <span className="font-normal text-muted-foreground"> · {food.brand}</span>}
+          </span>
 
-        {hasAnyMacro(food) ? (
-          <MacroLine food={food} />
-        ) : (
-          <span className="text-muted-foreground">No macros yet, tap to add</span>
-        )}
-
-        <span className="text-[13px] text-muted-foreground tabular-nums">
-          {hasPrice ? (
-            unitPriceLabel(price, package_size, unit)
+          {hasAnyMacro(food) ? (
+            <MacroLine food={food} />
           ) : (
-            // A bare "—" may be read as nothing by screen readers,
-            // so give them words instead.
-            <>
-              <span aria-hidden="true">—</span>
-              <span className="sr-only">price unavailable</span>
-            </>
+            <span className="text-muted-foreground">No macros yet, tap to add</span>
           )}
-        </span>
-        {error && <span className="text-sm text-destructive">{error}</span>}
-      </button>
 
-      <div className="flex min-h-16 items-center">
-        {confirming || deleting ? (
-          <div className="flex items-center gap-1">
-            {/* While it works, "Delete?" becomes "Deleting…" and Cancel goes
-                (it couldn't stop it anyway), so the name keeps its room.
-                Yes stays, focusable but waiting, so keyboard focus isn't
-                dropped to the page. */}
-            <span className="mr-1 text-sm">{deleting ? "Deleting…" : "Delete?"}</span>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deleting}
-              focusableWhenDisabled
-            >
-              Yes
-            </Button>
-            {!deleting && (
-              <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
-                Cancel
-              </Button>
+          <span className="text-[13px] text-muted-foreground tabular-nums">
+            {hasPrice ? (
+              unitPriceLabel(price, package_size, unit)
+            ) : (
+              // A bare "—" may be read as nothing by screen readers,
+              // so give them words instead.
+              <>
+                <span aria-hidden="true">—</span>
+                <span className="sr-only">price unavailable</span>
+              </>
             )}
-          </div>
-        ) : (
-          <Button
-            size="sm"
-            variant="ghost"
-            className="text-muted-foreground"
-            onClick={() => setConfirming(true)}
-            aria-label={`Delete ${name}`}
-          >
-            ✕
-          </Button>
-        )}
+          </span>
+        </button>
+
+        <div className="flex min-h-16 items-center">
+          {confirming || deleting ? (
+            <div className="flex items-center gap-1">
+              {/* While it works, "Delete?" becomes "Deleting…" and Cancel goes
+                  (it couldn't stop it anyway), so the name keeps its room.
+                  Yes stays, focusable but waiting, so keyboard focus isn't
+                  dropped to the page. */}
+              <span className="mr-1 text-sm">{deleting ? "Deleting…" : "Delete?"}</span>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleDelete}
+                disabled={deleting}
+                focusableWhenDisabled
+                // "Yes" alone doesn't say to what, for a screen reader.
+                aria-label={`Yes, delete ${name}`}
+              >
+                Yes
+              </Button>
+              {!deleting && (
+                <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
+                  Cancel
+                </Button>
+              )}
+            </div>
+          ) : (
+            <Button
+              ref={deleteRef}
+              size="sm"
+              variant="ghost"
+              className="text-muted-foreground"
+              onClick={() => setConfirming(true)}
+              aria-label={`Delete ${name}`}
+            >
+              ✕
+            </Button>
+          )}
+        </div>
       </div>
+      {/* Outside the row's button (inside, it was read as part of the
+          button's name), and read out as soon as it appears. */}
+      {error && (
+        <p role="alert" className="-mt-2 pb-3 text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

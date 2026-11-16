@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { verifyLoginCode } from "@/lib/auth-actions";
+import { errorId } from "./form-field";
 
 export function LoginCodeForm({
   email,
@@ -68,10 +69,10 @@ export function LoginCodeForm({
           maxLength={16}
           className="h-11 text-lg tracking-widest tabular-nums"
           aria-invalid={Boolean(error)}
-          aria-describedby={!pending && error ? "code-hint code-error" : "code-hint"}
+          aria-describedby={!pending && error ? `code-hint ${errorId("code")}` : "code-hint"}
         />
         {!pending && error && (
-          <p id="code-error" role="alert" className="text-sm text-destructive">
+          <p id={errorId("code")} role="alert" className="text-sm text-destructive">
             {error}
           </p>
         )}
@@ -84,7 +85,8 @@ export function LoginCodeForm({
           {state.message}
         </p>
       )}
-      <Button type="submit" disabled={pending} className="h-11 w-full">
+      {/* Keeps keyboard focus while it works. */}
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full">
         {pending ? "Logging in…" : "Log in"}
       </Button>
       <Button

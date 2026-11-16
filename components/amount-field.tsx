@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { errorId } from "./form-field";
 import { unitWordForTyped, type EntryUnit } from "@/lib/units";
 
 // The amount box with its unit written inside on the right ("150  g").
@@ -34,6 +35,7 @@ export function AmountField({
           autoFocus={autoFocus}
           className={`h-11 tabular-nums ${unit === "serving" ? "pr-24" : "pr-16"}`}
           aria-invalid={Boolean(error)}
+          aria-describedby={error ? errorId("amount") : undefined}
         />
         <span
           aria-hidden="true"
@@ -43,7 +45,11 @@ export function AmountField({
           {unitWordForTyped(value, unit, placeholder)}
         </span>
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && (
+        <p id={errorId("amount")} className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
