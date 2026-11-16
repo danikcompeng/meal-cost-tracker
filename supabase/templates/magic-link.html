@@ -2,24 +2,26 @@
   Supabase "Magic link or OTP" email template.
   Paste this into: Supabase dashboard -> Authentication -> Emails
   -> Templates -> Magic link or OTP -> Body -> Source. Save changes.
-  Subject: Your Meal Cost Tracker login link
+  Subject: Your Meal Cost Tracker login code
 
   Why it looks "old-fashioned": email apps (Gmail, Outlook, Apple Mail)
   ignore most modern CSS. Tables + inline style="" are what reliably work.
   The accent #4F6B2E is the app's matcha --primary, as a hex colour.
 
-  Two ways to log in, from the same email:
-  1. The button. It goes straight to our app with a token_hash:
+  Two ways to log in, from the same email. The code comes first:
+  1. The code, {{ .Token }}, typed into the app (components/login-code-form.tsx,
+     checked by verifyLoginCode in lib/auth-actions.ts). It's the only way
+     in the app on an iPhone's home screen: a link always opens in Safari,
+     which has its own separate login. Its length is the "Email OTP length"
+     setting (Authentication -> Sign In / Providers -> Email); the app
+     accepts 6-10. The hidden preview line starts with it, so it shows on
+     the lock-screen notification without opening the email.
+  2. The button. It goes straight to our app with a token_hash:
        {{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email
      {{ .RedirectTo }} = the emailRedirectTo from lib/auth-actions.ts
      (".../auth/confirm"), so it works on localhost and Vercel.
      app/auth/confirm/route.ts verifies it with verifyOtp(), which works in
      any browser or device (no same-browser cookie needed).
-  2. The code, {{ .Token }}, typed into the app (components/login-code-form.tsx,
-     checked by verifyLoginCode in lib/auth-actions.ts). Needed in the app
-     on an iPhone's home screen: a link always opens in Safari, which has
-     its own separate login. Its length is the "Email OTP length" setting
-     (Authentication -> Sign In / Providers -> Email); the app accepts 6-10.
   They're the same one-time login: using one uses up the other.
 -->
 <!doctype html>
@@ -28,12 +30,19 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light only" />
-    <title>Your login link</title>
+    <!-- iPhones turn long numbers into blue "Call" links. The code isn't a
+         phone number: keep it plain so a long-press selects it to copy. -->
+    <meta name="format-detection" content="telephone=no" />
+    <style>
+      a[x-apple-data-detectors] { color: inherit !important; text-decoration: none !important; font: inherit !important; }
+    </style>
+    <title>Your login code</title>
   </head>
   <body style="margin:0; padding:0; background-color:#f6f7f6;">
-    <!-- Preview text: the grey line Gmail shows next to the subject. -->
-    <div style="display:none; max-height:0; overflow:hidden; opacity:0;">
-      Tap to log in, or type the code in the app. Works once and expires soon.
+    <!-- Preview text: the grey line Gmail shows next to the subject,
+         and the lock-screen notification. Starts with the code. -->
+    <div style="display:none; mso-hide:all; max-height:0; overflow:hidden; opacity:0;">
+      {{ .Token }} is your login code. Or tap the button to log in.
     </div>
 
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
@@ -51,41 +60,55 @@
                   Meal Cost Tracker
                 </p>
 
-                <h1 style="margin:0 0 12px; font-size:24px; line-height:1.3; font-weight:600; color:#1a1a1a;">
-                  Your login link
+                <h1 style="margin:0 0 16px; font-size:24px; line-height:1.3; font-weight:600; color:#1a1a1a;">
+                  Your login code
                 </h1>
 
+                <!-- The code, first: the only way in from the home-screen app.
+                     Big and spaced out so it's easy to read while switching
+                     apps, on a light grey tile (#F0F0F0, like the app's tiles)
+                     so it's easy to long-press and copy.
+                     Sized to fit the narrowest phone (320px): 8 digits at
+                     32px with 4px spacing are about 216px wide with the
+                     tile's padding, and there's 222px inside the card. A digit
+                     string can't wrap, so any wider would push the email
+                     sideways. letter-spacing in px, not em: Outlook ignores em.
+                     The font is repeated here because Outlook doesn't pass it
+                     down into a table inside a table. -->
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 8px;">
+                  <tr>
+                    <td bgcolor="#F0F0F0" style="padding:12px 16px; border-radius:8px;">
+                      <p style="margin:0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:32px; line-height:1.2; font-weight:700; letter-spacing:4px; font-variant-numeric:tabular-nums; color:#1a1a1a;">
+                        {{ .Token }}
+                      </p>
+                    </td>
+                  </tr>
+                </table>
                 <p style="margin:0 0 32px; font-size:16px; line-height:1.6; color:#4a4a4a;">
-                  Tap the button below to log in. No password needed.
+                  Type it in the app.
                 </p>
 
-                <!-- Button. Big tap target (48px tall) for kitchen fingers. -->
+                <!-- The button, second. Big tap target (48px tall) for kitchen fingers. -->
+                <p style="margin:0 0 12px; font-size:16px; line-height:1.6; color:#4a4a4a;">
+                  Or tap the button to log in:
+                </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;">
                   <tr>
                     <td align="center" bgcolor="#4F6B2E" style="border-radius:8px;">
                       <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
-                         style="display:inline-block; padding:14px 32px; font-size:16px; font-weight:600; line-height:20px; color:#ffffff; text-decoration:none; border-radius:8px;">
+                         style="display:inline-block; padding:14px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:16px; font-weight:600; line-height:20px; color:#ffffff; text-decoration:none; border-radius:8px;">
                         Log in
                       </a>
                     </td>
                   </tr>
                 </table>
 
-                <!-- The code, for the app on your home screen. Big and spaced
-                     out so it's easy to read while switching apps. -->
-                <p style="margin:0 0 8px; font-size:16px; line-height:1.6; color:#4a4a4a;">
-                  Or type this code in the app:
-                </p>
-                <p style="margin:0 0 32px; font-size:32px; line-height:1.2; font-weight:700; letter-spacing:0.15em; color:#1a1a1a;">
-                  {{ .Token }}
-                </p>
-
                 <p style="margin:0 0 8px; font-size:14px; line-height:1.6; color:#6b6b6b;">
-                  Use the button or the code, not both. Each works once and expires in an hour.
+                  Use the code or the button: they're the same one-time login, and it expires in an hour.
                 </p>
 
                 <!-- Fallback for email apps that block buttons. -->
-                <p style="margin:24px 0 0; padding-top:24px; border-top:1px solid #eeeeee; font-size:13px; line-height:1.6; color:#8a8a8a;">
+                <p style="margin:24px 0 0; padding-top:24px; border-top:1px solid #eeeeee; font-size:13px; line-height:1.6; color:#6b6b6b;">
                   Button not working? Copy this link into your browser:<br />
                   <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email" style="color:#4F6B2E; word-break:break-all;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email</a>
                 </p>
@@ -94,8 +117,8 @@
             </tr>
           </table>
 
-          <p style="margin:24px 0 0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9a9a9a;">
-            Didn't ask for this? You can ignore this email. Nobody can log in without this link or code.
+          <p style="margin:24px 0 0; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#6b6b6b;">
+            Didn't ask for this? You can ignore this email. Nobody can log in without this code or link.
           </p>
 
         </td>

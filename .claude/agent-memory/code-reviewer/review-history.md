@@ -231,3 +231,15 @@ metadata:
   ring, phone-test line, comment, commit line). focusin can't fight a mouse open (listener only exists
   after release; mousedown focus lands inside), focusLater/sheet title (setOpenRow(null) is batched
   with them, cleanup runs first; a sheet's title focus only closes, which is right). OK to commit.
+- 2026-11-16 states commit 1 (uncommitted magic-link.html: code first, button second; plan
+  plans/states-a11y.md): Minor issues, no bugs. Verified: .Token/.TokenHash/.RedirectTo correct,
+  links unchanged (caller checked bytes), bgcolor on td, cleanLoginCode strips spaces/dashes,
+  contrast of new text fine (#1a1a1a on #F0F0F0, #4a4a4a, white on #4F6B2E 6.0:1). Raised: 8 digits
+  at 36px + 0.15em ~205-216 px + 32 tile pad vs W-98 px space -> overflows at 320 px (fits 360+),
+  10 digits overflows at 375; laptop test shows "{{ .Token }}" so can't confirm width; Apple Mail
+  may turn the 8 digits into a blue phone link (unsure, x-apple-data-detectors); Outlook desktop
+  doesn't inherit td font into nested tables (Times), em letter-spacing unsure, preheader lacks
+  mso-hide:all; #8a8a8a fallback 3.45:1 + #9a9a9a footer 2.6:1 fail (likely pre-existing);
+  "Use the button or the code... Each works once" order + implies two uses; app login screen still
+  link-first ("Check ... for a login link", "Email me a login link"); login-code.ts:1 quotes stale
+  "Or type this code in the app".

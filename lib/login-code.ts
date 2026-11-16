@@ -1,4 +1,5 @@
-// The one-time code in the login email ("Or type this code in the app").
+// The one-time code in the login email (first thing under the heading:
+// "Type it in the app.").
 //
 // Why a code at all: an app added to an iPhone's home screen keeps its own
 // login, separate from Safari's, and a link in an email always opens in

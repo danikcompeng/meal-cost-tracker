@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  polish item 4b (swipe to REVEAL, replaces full-swipe delete), Minor issues. Plan: plans/polish.md.
+  states commit 1 (login email code-first), Minor issues. Plan: plans/states-a11y.md.
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
@@ -42,6 +42,9 @@
   are RESET. Any "show error, keep what you typed" form needs defaultValue from state.
 - Supabase signInWithOtp for a new/unconfirmed email sends the Confirm signup template, not
   Magic link. Only magic-link.html is in the repo.
+- Email template width: content inside the card = viewport - 98 px (16 outer x2, border, 32 pad x2).
+  Outlook desktop: no font inheritance into nested tables, max-width/border-radius ignored.
+  Code text in the app (login-form, login-code-form) should match the email's wording/order.
 - viewport-fit=cover is on (2026-11-15): any new FULL-WIDTH fixed/absolute element needs
   env(safe-area-inset-left/right) too (landscape notch); centred max-w-lg columns are safe.
   Tab bar ~68.5 px, Scan ring top 91.5 px: toast (6rem) and pb-above-tab-bar (7rem) depend on it.
