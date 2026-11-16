@@ -2,6 +2,7 @@
 // in the link for a real login session (stored in a cookie), then go home.
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
+import { logAuthError } from "@/lib/auth-log";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
@@ -16,26 +17,16 @@ export async function GET(request: NextRequest) {
   if (tokenHash && type) {
     // Works even if you open the email on a different browser or device.
     const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type });
-    if (error) logAuthError("verifyOtp", error);
+    if (error) logAuthError("auth/confirm verifyOtp", error);
     ok = !error;
   } else if (code) {
     // Fallback: Supabase's default email link. Only works in the same browser
     // where you asked for the link.
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) logAuthError("exchangeCodeForSession", error);
+    if (error) logAuthError("auth/confirm exchangeCodeForSession", error);
     ok = !error;
   }
 
   const to = ok ? "/" : "/login?error=link";
   return NextResponse.redirect(new URL(to, request.url));
-}
-
-// You only see "that link didn't work", so log the real reason on the
-// server (e.g. "Email link is invalid or has expired").
-function logAuthError(step: string, error: { message: string; status?: number; code?: string }) {
-  console.error(`auth/confirm ${step} failed:`, {
-    message: error.message,
-    status: error.status,
-    code: error.code,
-  });
 }

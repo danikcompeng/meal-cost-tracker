@@ -42,6 +42,8 @@ Per feature (all approved, don't re-raise)
   id "/" forever; short name "Meal Cost". proxy skips /icons/ by path as well as by .png ending:
   the developer asked for that explicitly. Next 16 emits mobile-web-app-capable (not apple-), fine.
   Undo toast bottom 6rem + inset (fix 5a, approved). No maximum-scale=1 (keeps pinch zoom).
+  Login code (step 3): Confirm signup template left without {{ .Token }}, since only the owner
+  uses the app (coordinator to tell them). Code field accepts 6-10 digits; dashboard says 8.
 
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

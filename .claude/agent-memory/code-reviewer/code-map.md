@@ -63,3 +63,7 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   route.tsx, app/manifest.ts, layout.tsx metadata/viewport, proxy.ts matcher + proxy.test.ts.
   Steps: 1 manifest/icons/meta, 2 safe areas + 16 px inputs, 3 login code (verifyOtp), 4 Android
   camera help.
+- Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
+  cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
+  login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,
+  supabase/templates/magic-link.html (pasted by hand into the dashboard; only template in repo).

@@ -14,7 +14,8 @@ My defaults are in brackets. Say "yes" to keep them all, or change any.
 2. **Status bar on iPhone: [opaque, "default"].** The page starts below
    the clock and battery, so nothing can ever sit under the notch or the
    Dynamic Island. Not "black-translucent" (see section 2 for why).
-3. **Login: [add a 6-digit code to the login email].** The simplest fix
+3. **Login: [add a one-time code to the login email].** (Planned as 6
+   digits; your Supabase setting turned out to be 8, see section 3.) The simplest fix
    that works every time on both phones (section 3). The other option is
    no code change at all and one rule to remember: "log in in Safari
    before adding to the home screen".
@@ -48,9 +49,12 @@ My defaults are in brackets. Say "yes" to keep them all, or change any.
     the tab bar.
 - **Login screen** (if you approve 3): after "Check you@example.com for
   a login link" there's now a field: "Or type the code from the email",
-  a "Log in" button, and "Use a different email".
+  a "Log in" button, and "Start over (new email or new code)" (planned
+  as "Use a different email"; renamed after review, since it's also how
+  you get a new code). The email step also gets "I already have a code",
+  for when iPhone reloads the app while you're in Gmail.
 - **Login email:** the "Log in" button stays, and below it a big code
-  ("Or type this code in the app: 123456").
+  ("Or type this code in the app: 12345678").
 - Nothing else changes. In a normal Safari tab, one small difference:
   when Safari's bottom toolbar shrinks as you scroll, the tab bar now
   moves up by the home bar's height instead of sitting on top of it.
@@ -134,7 +138,7 @@ home-screen web app: links always go to Safari (or Gmail's own browser).
 Chrome's cookies, and Gmail opens links in Chrome (or in the app). Tap
 the link, go back to the app, close and reopen it: you're logged in.
 
-**Simplest fix: a 6-digit code in the same email.** Supabase already
+**Simplest fix: a one-time code in the same email.** Supabase already
 makes one with every login email; we only have to show it (`{{ .Token }}`
 in the email template) and add a field to type it into. The app checks
 it with `verifyOtp({ email, token, type: "email" })`, so the login cookie
@@ -151,7 +155,13 @@ Mail app, iPhone offers the code above the keyboard. With Gmail you copy
 it by hand. Wrong or expired code: "That code didn't work. Check the
 email, or get a new one." The code lasts as long as Supabase allows
 (1 hour by default). The field accepts 6 to 10 digits, since Supabase
-lets you change the length; I'll check yours says 6.
+lets you change the length.
+
+Checked 2026-11-15 in the dashboard (Authentication, Sign In / Providers,
+Email): "Email OTP length" is **8**, and "Email OTP expiration" is 3600
+seconds (1 hour). So the code in your emails is 8 digits. Nothing in the
+app or the email says a number of digits, so it works at 8 as it is, and
+keeps working if you ever change it (6 to 10).
 
 ## 4. Service worker: not needed
 
@@ -263,10 +273,11 @@ the app in.
 
 Hand steps for you:
 - Supabase dashboard: paste the new email template (Authentication,
-  Emails, Templates, Magic Link). It applies to the live site at once,
-  so live emails show a code the live app can't use until we merge.
-  Harmless, but it's why I'd paste it when step 3 is on the preview.
-- Same place, the Email provider settings: check "Email OTP Length" is 6.
+  Emails, Templates, "Magic link or OTP", Body, Source). It applies to
+  the live site at once, so live emails show a code the live app can't
+  use until we merge. Harmless, but it's why I'd paste it when step 3 is
+  on the preview.
+- "Email OTP length": checked, it's 8 (see section 3). Nothing to do.
 - After the rename someday: edit `lib/app-identity.ts`, swap
   `components/app-icon.tsx`, update the email's "Meal Cost Tracker"
   line, then delete and re-add the icon on your iPhone.

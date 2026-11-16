@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  PWA step 2 (safe areas, 16 px inputs, toast), Minor issues.
+  PWA step 3 (login code), Minor issues.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -23,6 +23,12 @@
   fires; x.set() does NOT stop it. Pointerdown on a drag element stops its x animation.
   So "commit in .then + a latch" can get stuck; check for it.
 
+- Server action redirect("/") in Next 16: Next does an internal GET to "/" with the action's
+  Set-Cookie merged in (action-handler.js getForwardedHeaders), so proxy sees new cookies.
+- React 19 <form action>: after the action returns (even an error state) uncontrolled fields
+  are RESET. Any "show error, keep what you typed" form needs defaultValue from state.
+- Supabase signInWithOtp for a new/unconfirmed email sends the Confirm signup template, not
+  Magic link. Only magic-link.html is in the repo.
 - viewport-fit=cover is on (2026-11-15): any new FULL-WIDTH fixed/absolute element needs
   env(safe-area-inset-left/right) too (landscape notch); centred max-w-lg columns are safe.
   Tab bar ~68.5 px, Scan ring top 91.5 px: toast (6rem) and pb-above-tab-bar (7rem) depend on it.

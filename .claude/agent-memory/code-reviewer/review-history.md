@@ -127,3 +127,19 @@ metadata:
   (close/torch) is full-width px-4 -> under the notch in landscape (needs inset-left/right);
   plan's "browser tab looks the same" not quite (Safari tab bar lifts when toolbar collapses,
   unsure); 12 dead md:text-base overrides; Scan button size <-> toast 6rem/7rem needs a pointer.
+- 2026-11-15 PWA step 3 (uncommitted: login code, verifyLoginCode, login-code-form, key remount,
+  email template {{ .Token }}): Minor issues, no blocking bugs. Verified: action redirect("/") ->
+  Next's internal GET to "/" with Set-Cookie merged into the cookie header (getForwardedHeaders),
+  so proxy sees the session; cookieStore.set works in actions; key remount resets useActionState;
+  hidden email tamper = same as Supabase's public /verify (8 digits, 1 h, rate limit); template
+  syntax + link unchanged. Raised: code step lives only in React state, so an iOS reload or a
+  60 s resend 429 strands you with a valid code and no field; React 19 resets the form after an
+  error (8-digit code wiped); focus drops to <body> on both step changes, error not announced;
+  ?error=link banner returns after "Use a different email"; Start over not guarded while pending;
+  brand-new emails get Confirm signup template (no code); nits: logAuthError still duplicated in
+  auth/confirm/route.ts, plan heading "6-digit", page subtitle "email you a link", long email
+  overflow at 320 px.
+  Re-check same day: all fixed ("I already have a code", controlled inputs, aria-disabled Start
+  over, autoFocus, describedby, role=alert, auth-log.ts). Left: 429 on send also covers the
+  hourly/IP caps, so "We just sent you one" can be untrue; server email error not cleared by
+  typing; pwa.md:158 "I'll check yours says 6". OK to commit.
