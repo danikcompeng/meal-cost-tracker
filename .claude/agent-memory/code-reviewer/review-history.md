@@ -167,3 +167,20 @@ metadata:
   choice" can't exist at open); dead autoFocus at open: recipe-form.tsx:50 always, log-food-form
   on ?log=; working tree: today-view.tsx:178 focusAfterUndo vs Toast.focusAfter (build fails;
   item 3 WIP, commit bottom-sheet.tsx alone).
+- 2026-11-15 polish item 3 (uncommitted undo-toast.tsx: no timer, × Dismiss, focusAfter only if focus
+  was in the message; today-view h-16 spacer): Minor issues. Verified: lifetime (× / Undo success
+  id-guarded / new id key / TodayView key remount per day), × aria-disabled while undoing, dismiss
+  hadFocus read before setState, DOM order = message after snack, before tab bar; rename complete.
+  Raised: Undo in flight when the message is replaced/unmounted -> failure silent (6th "outlives",
+  likelier with item 4 deletes; report from TodayView.undo like pickSwap's closed-sheet toast);
+  hadFocus read only before the await (re-check focusIsHere() after); final problem sends focus to
+  the row although × + error stay (focus ×); "Couldn't swap" toast has no focusAfter (× drops focus
+  to body); spacer h-16 fine for 1-3 lines, short at 4+ (long name at 320 px, Undoing… narrows text
+  ~30 px), 4rem jump on dismiss at bottom; no back-pointer from undo-toast 6rem to the spacer;
+  plans/swap.md:164 still "10 seconds"; message now persists stale after editing that entry.
+  Re-check same day: 1a-1e, 3a, 3b fixed (shownToast ref + reportLostUndo, focus check after await,
+  final -> × ref, focusSwapButton helper, h-20 fits 4 lines). Not taken (to notes.md Polish later):
+  spacer jump on fade-out, Undoing… reflow, stale text (3c). New, small: lost-undo toast says
+  "Couldn't undo. Please try again." with no Undo and no meal named, no focusAfter; it REPLACES the
+  newer message (and its Undo: matters for item 4 deletes); optional: read focusIsHere() right after
+  the await, before setState. OK to commit after the wording/focusAfter tweak.

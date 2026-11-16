@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  polish item 2 (sheet focus on title), Minor issues. Polish plan: plans/polish.md (5 items).
+  polish item 3 (Undo message stays, × Dismiss), Minor issues. Polish plan: plans/polish.md (5 items).
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -59,6 +59,10 @@
   recipe-view, today-view, swap-stack fly-off): explain with a slow-network walk-through.
   Raised a 5th time 2026-11-15: page-level pending/error state (swapping, swapError) shared by
   every swap sheet, so a closed sheet's late result shows up in the next one. Tie state to `mine`.
+  6th (polish 3): toast Undo in flight when a newer message replaces it -> error lost. Also any
+  "had focus" read BEFORE an await is stale after it; re-check before moving focus.
+- Undo toast now never times out (decision 2026-11-15): every toast needs a focusAfter target
+  and its text can go stale; today-view.tsx spacer h-16 depends on the toast's height.
 - Closures holding an index (onCommit -> goTo(index + 1)) go stale if the user acts mid-await.
 - Base UI Button `disabled` = native disabled: a focused button that turns disabled while
   pending drops keyboard focus to <body>. Use aria-disabled + a guard (undo-toast.tsx does).

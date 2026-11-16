@@ -1,28 +1,29 @@
 "use client";
 
-// "Lunch is now Lentil dal · 1.5 servings   Undo", just above the tab bar.
-// Also, without Undo, "Couldn't swap" when a swap fails after you've
+// "Lunch is now Lentil dal · 1.5 servings   Undo  ×", just above the tab
+// bar. Also, without Undo, "Couldn't swap" when a swap fails after you've
 // already closed its sheet (there's nowhere else to say it).
 //
-// It goes by itself after 10 seconds, but not while your finger, mouse or
-// keyboard focus is on it: you might be about to tap Undo. Moving away
-// starts the 10 seconds again.
+// It never goes by itself: it stays until you tap ×, Undo works, a newer
+// message replaces it, or you leave Today. A timer can't be made fair to
+// VoiceOver users on iPhone: a web page can't tell VoiceOver is on, and
+// after the message is read out you still have to swipe your way to Undo,
+// which can take longer than any timer we'd pick.
 //
 // The outer box is always on the page, even with no message in it. Screen
 // readers only watch a "status" box for changes if it was already there,
 // so a box that appears together with its text may never be read out.
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const SHOW_FOR_MS = 10_000;
 
 /** Why Undo didn't work. `final`: trying again can't help. */
 export type UndoProblem = { message: string; final: boolean };
 
 export type Toast = {
-  /** A new id for every message, so a second swap restarts the timer. */
+  /** A new id for every message, so a second swap shows as a new one. */
   id: number;
   text: string;
   /** Shown in the warning colour ("Couldn't swap"). */
@@ -30,10 +31,11 @@ export type Toast = {
   /** Puts things back: null if it worked. No undo = no Undo button. */
   undo?: () => Promise<UndoProblem | null>;
   /**
-   * Where keyboard focus goes when the Undo button disappears (it worked,
-   * or it never can): otherwise focus would fall out to the page.
+   * Where focus goes when the message goes (Undo worked, or you tapped ×),
+   * so it doesn't fall out to the top of the page. Only used if focus was
+   * in the message: never after a plain tap (see Message).
    */
-  focusAfterUndo?: () => void;
+  focusAfter?: () => void;
 };
 
 export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss: () => void }) {
@@ -44,6 +46,8 @@ export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss
       // about 4.3 rem tall, but the round Scan button (with its ring) sticks
       // up about 1.4 rem above it, so 6 rem clears the button's top.
       // Taps pass through the empty box; only the message takes them.
+      // Today adds an h-20 spacer while a message shows, so the page can
+      // scroll clear of it: change both together.
       className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-lg px-4"
     >
       {/* mode="wait": a second message waits for the first to fade out,
@@ -56,37 +60,43 @@ export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss
 }
 
 function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
-  const [hovered, setHovered] = useState(false);
-  const [focused, setFocused] = useState(false);
   const [undoing, setUndoing] = useState(false);
   const [problem, setProblem] = useState<UndoProblem | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const dismissButton = useRef<HTMLButtonElement>(null);
 
-  // The ref holds the latest onDismiss, so a redraw of the page doesn't
-  // restart the 10 seconds.
-  const dismissRef = useRef(onDismiss);
-  useEffect(() => {
-    dismissRef.current = onDismiss;
-  });
-  const waiting = hovered || focused || undoing;
-  useEffect(() => {
-    if (waiting) return;
-    const timer = setTimeout(() => dismissRef.current(), SHOW_FOR_MS);
-    return () => clearTimeout(timer);
-  }, [waiting]);
+  // When a button you used goes away (× or a finished Undo), focus would
+  // fall out to the page, so it goes back to the row. But only if focus
+  // was in this message: a keyboard puts it there, and VoiceOver on iPhone
+  // usually does too. A plain tap on iPhone never focuses the button, and
+  // focusing the row by code after a tap would make Safari draw its ring
+  // there (the same reason sheets start on their title).
+  const focusIsHere = () => ref.current?.contains(document.activeElement) ?? false;
+
+  function handleDismiss() {
+    const hadFocus = focusIsHere();
+    onDismiss();
+    if (hadFocus) toast.focusAfter?.();
+  }
 
   async function handleUndo() {
     if (undoing || !toast.undo) return;
     setUndoing(true);
     setProblem(null);
     const why = await toast.undo();
+    // Checked after the wait, not before: if you moved on meanwhile, focus
+    // stays where you went. (The button keeps focus while "Undoing…".)
+    // And before the state changes below, which may remove the button.
+    const stillHere = focusIsHere();
     setUndoing(false);
     // Didn't work: say why and stay (with Undo, if trying again can help).
     if (why) setProblem(why);
-    // Worked (the page closes this message) or never can: the button goes,
-    // so put focus back on the row. Always, not only after a keyboard:
-    // iPhones don't move focus to a tapped button, VoiceOver included, so
-    // there's no telling. A tap doesn't draw a focus ring, so it's harmless.
-    if (!why || why.final) toast.focusAfterUndo?.();
+    if (!stillHere) return;
+    // Worked: the page closes this message, so back to the row.
+    if (!why) toast.focusAfter?.();
+    // Never can: the Undo button goes but the message stays, showing why,
+    // so focus goes to its × right next to it.
+    else if (why.final) dismissButton.current?.focus();
   }
 
   const showUndo = toast.undo !== undefined && !problem?.final;
@@ -96,20 +106,12 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
     // With reduced motion, MotionConfig (on Today) drops the slide and
     // keeps the fade.
     <motion.div
+      ref={ref}
       initial={{ y: 16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 16, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      onPointerEnter={() => setHovered(true)}
-      onPointerLeave={() => setHovered(false)}
-      onFocus={() => setFocused(true)}
-      onBlur={(e) => {
-        // Still inside (focus moved between parts of the message)?
-        if (!e.currentTarget.contains(e.relatedTarget)) setFocused(false);
-      }}
-      className={`pointer-events-auto flex min-h-[3.25rem] items-center gap-3 rounded-2xl border border-border bg-popover py-1 pl-4 ${
-        showUndo ? "pr-1" : "pr-4"
-      }`}
+      className="pointer-events-auto flex min-h-[3.25rem] items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
     >
       <p className={`min-w-0 flex-1 text-sm ${isError ? "text-destructive" : ""}`}>
         {problem?.message ?? toast.text}
@@ -127,6 +129,19 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
           {undoing ? "Undoing…" : "Undo"}
         </Button>
       )}
+      {/* Not while undoing: closing then would hide whether it worked. */}
+      <Button
+        ref={dismissButton}
+        variant="ghost"
+        size="icon"
+        onClick={handleDismiss}
+        disabled={undoing}
+        focusableWhenDisabled
+        aria-label="Dismiss"
+        className="size-11 shrink-0 text-muted-foreground aria-disabled:opacity-50"
+      >
+        <X aria-hidden="true" className="size-5" />
+      </Button>
     </motion.div>
   );
 }

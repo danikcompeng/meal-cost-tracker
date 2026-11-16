@@ -161,8 +161,9 @@ Top to bottom:
   the lunch section the old name slides out and "Lentil dal" slides in;
   the rings and totals ease to the new numbers. A message appears above
   the tab bar: "Lunch is now Lentil dal · 1.5 servings   Undo". It
-  stays 10 seconds, and doesn't go while your finger or the keyboard
-  is on it. Undo puts back the exact entry you had (section 3).
+  stays until you tap its × (changed from "10 seconds" in
+  plans/polish.md, item 3). Undo puts back the exact entry you had
+  (section 3).
 - **If the swap fails** (no signal): the card slides back in from the
   right, and under it: "Couldn't swap. Please try again." Nothing
   changed.

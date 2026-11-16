@@ -45,5 +45,9 @@ Per feature (all approved, don't re-raise)
   Login code (step 3): Confirm signup template left without {{ .Token }}, since only the owner
   uses the app (coordinator to tell them). Code field accepts 6-10 digits; dashboard says 8.
 
+- Polish (2026-11-15, plans/polish.md): Undo message stays until ×/Undo/newer message/leaving
+  Today, for everyone, no timer (web can't detect VoiceOver). Don't suggest a timeout again.
+  Delete in the edit sheet gets the same Undo message as the swipe (item 4).
+
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

@@ -108,10 +108,13 @@ export function TodayView({
   } | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastCount = useRef(0);
-  // Which sheet is open right now, for code that finishes later.
+  // Which sheet and message are on screen right now, for code that
+  // finishes later.
   const openSheet = useRef(sheet);
+  const shownToast = useRef(toast);
   useEffect(() => {
     openSheet.current = sheet;
+    shownToast.current = toast;
   });
 
   const status = sheet?.mode === "swap" && swapStatus?.sheet === sheet ? swapStatus : null;
@@ -162,7 +165,9 @@ export function TodayView({
       // the next try: the server answers "It's already that recipe.")
       if (reached) router.refresh();
       // The sheet was closed meanwhile: say it where you can see it.
-      if (openSheet.current !== mine) showToast({ text: message, isError: true });
+      if (openSheet.current !== mine) {
+        showToast({ text: message, isError: true, focusAfter: () => focusSwapButton(entry.id) });
+      }
       return false;
     }
 
@@ -170,33 +175,55 @@ export function TodayView({
     // Only this sheet's status: another sheet may have a swap of its own.
     setSwapStatus((s) => (s?.sheet === mine ? null : s));
     setSheet((current) => (current === mine ? null : current));
-    const focusRow = () =>
-      document.querySelector<HTMLElement>(`[data-swap-entry="${entry.id}"]`)?.focus();
     const id = showToast({
       text: `${MEAL_LABELS[entry.meal]} is now ${swap.name} · ${amountText(entry.amount, "serving")}`,
-      undo: () => undo(id, entry.id, swap.id, previous),
-      focusAfterUndo: focusRow,
+      undo: () => undo(id, entry.id, swap, previous),
+      focusAfter: () => focusSwapButton(entry.id),
     });
     return true;
+  }
+
+  /** Focus back on a row's swap button (it's the same row after a swap). */
+  function focusSwapButton(entryId: string) {
+    document.querySelector<HTMLElement>(`[data-swap-entry="${entryId}"]`)?.focus();
+  }
+
+  /**
+   * Undo didn't work, but its message was replaced by a newer one while
+   * it was trying (× waits while Undo runs, a new message doesn't): say
+   * so in a message of its own, or you'd think it worked.
+   */
+  function reportLostUndo(id: number, text: string, focusAfter: () => void) {
+    if (shownToast.current?.id !== id) showToast({ text, isError: true, focusAfter });
   }
 
   /** Puts the old entry back. Gives back why it didn't work, or null. */
   async function undo(
     id: number,
     entryId: string,
-    swappedTo: string,
+    swappedTo: RankedSwap,
     previous: SwappedFrom,
   ): Promise<UndoProblem | null> {
+    let problem: UndoProblem | null = null;
     try {
-      const result = await undoSwap(entryId, swappedTo, previous);
+      const result = await undoSwap(entryId, swappedTo.id, previous);
       if (!result.ok) {
         const message = result.message ?? UNDO_FAILED;
         // Only "couldn't" is worth another try; "it's changed since" and
         // "doesn't exist anymore" will say the same again.
-        return { message, final: message !== UNDO_FAILED };
+        problem = { message, final: message !== UNDO_FAILED };
       }
     } catch {
-      return { message: UNDO_FAILED, final: false };
+      problem = { message: UNDO_FAILED, final: false };
+    }
+    if (problem) {
+      // Not "please try again": that message has no Undo of its own.
+      reportLostUndo(
+        id,
+        `Couldn't undo: ${MEAL_LABELS[previous.meal]} is still ${swappedTo.name}.`,
+        () => focusSwapButton(entryId),
+      );
+      return problem;
     }
     // Only this message: a newer swap's message stays.
     setToast((t) => (t?.id === id ? null : t));
@@ -259,6 +286,11 @@ export function TodayView({
           />
         ))}
       </div>
+      {/* The message stays until dismissed, and it sits over the bottom of
+          the page (undo-toast.tsx), so while it's up the page gets this
+          much more room: the last row (snack's "+ Add") can always scroll
+          above it, even with 4 lines of message on a small phone. */}
+      {toast && <div aria-hidden="true" className="h-20" />}
 
       {sheet?.mode === "add" && (
         <BottomSheet title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`} onClose={close}>
