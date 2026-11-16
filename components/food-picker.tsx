@@ -44,12 +44,17 @@ export function FoodPicker({
   // Possible if you deleted every food but still have past days logged.
   if (foods.length === 0 && !grouped) {
     return (
-      <p className="py-8 text-center text-muted-foreground">
-        You have no foods yet.{" "}
-        <Link href="/foods" className="focus-ring rounded-sm font-medium text-primary">
+      <div className="py-8 text-center">
+        <p className="text-muted-foreground">You have no foods yet.</p>
+        {/* Its own line, 44 px tall: a link inside a sentence is a tiny
+            target for a thumb. */}
+        <Link
+          href="/foods"
+          className="focus-ring mt-1 inline-flex h-11 items-center rounded-md px-2 font-medium text-primary"
+        >
           Add one on Foods
         </Link>
-      </p>
+      </div>
     );
   }
 
@@ -69,12 +74,15 @@ export function FoodPicker({
       />
 
       {matches.length === 0 && recipeMatches.length === 0 ? (
-        <p className="py-6 text-center text-muted-foreground">
-          Nothing called “{query.trim()}”.{" "}
-          <Link href="/foods" className="focus-ring rounded-sm font-medium text-primary">
+        <div className="py-6 text-center">
+          <p className="text-muted-foreground">Nothing called “{query.trim()}”.</p>
+          <Link
+            href="/foods"
+            className="focus-ring mt-1 inline-flex h-11 items-center rounded-md px-2 font-medium text-primary"
+          >
             Add it on Foods
           </Link>
-        </p>
+        </div>
       ) : (
         <>
           {recipeMatches.length > 0 && onPickRecipe && (

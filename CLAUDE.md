@@ -236,13 +236,19 @@ Colors (final): light / dark
 - foreground      #171717 / #EDEDED   near-black ink / off-white text
 - muted-fg (grey) #616161 / #A3A3A3   neutral grey for labels
 - border          #E2E2E2 / #2E2E2E   barely visible
+- field-border    #858585 / #737373   edges of boxes you type in only
+                                      (3:1, so a box can be found)
 - primary         #4F6B2E / #93C07F   matcha: actions, key numbers, text
 - primary-fg      #FFFFFF / #141414   text on matcha buttons
 - matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
 - highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it
 - destructive     #A8432F / #E08470   over budget: muted tomato red
 All text colors pass 4.5:1 contrast on background, tiles, popovers and
-hover backgrounds (lowest: destructive on light hover, 4.88:1).
+hover backgrounds (lowest: destructive on light hover, 4.88:1). Tinted
+buttons are measured separately (lowest: red "Yes" on a food row being
+edited, 4.53:1; white on matcha hover, 4.82:1). Busy buttons stay full
+colour; unavailable ones are greyed with muted text on muted (5.4:1),
+never faded with opacity.
 matcha-soft is never used for text or as the only way to show information
 (the budget bar always has its amount written next to it).
 

@@ -16,9 +16,14 @@ export function FirstUse() {
       <Link href="/foods" data-first-use className={cn(buttonVariants(), "mt-6 h-11 px-6 text-base")}>
         Add your first food
       </Link>
-      <p className="mt-3 text-sm text-muted-foreground">
+      {/* "or" and the link on their own line, the link 44 px tall: a
+          link inside a sentence is a tiny target for a thumb. */}
+      <p className="mt-1 text-sm text-muted-foreground">
         or{" "}
-        <Link href="/scan" className="focus-ring rounded-sm font-medium text-primary">
+        <Link
+          href="/scan"
+          className="focus-ring inline-flex h-11 items-center rounded-md px-1 font-medium text-primary"
+        >
           scan a barcode
         </Link>
       </p>

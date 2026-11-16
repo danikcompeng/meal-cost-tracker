@@ -115,6 +115,7 @@ export function DuplicateDialog({
             onClick={() => setChoice("update")}
             disabled={pending}
             focusableWhenDisabled
+            data-unavailable={(pending && choice !== "update") || undefined}
             className="h-11 w-full text-base"
           >
             {pending && choice === "update" ? "Updating…" : "Update existing"}
@@ -127,6 +128,9 @@ export function DuplicateDialog({
             onClick={() => setChoice("keep")}
             disabled={pending}
             focusableWhenDisabled
+            // Greyed while the other answer saves; full colour while it's
+            // the one saving.
+            data-unavailable={(pending && choice !== "keep") || undefined}
             className="h-11 w-full text-base"
           >
             {pending && choice === "keep" ? "Saving…" : "Keep both"}
@@ -138,6 +142,7 @@ export function DuplicateDialog({
             onClick={onCancel}
             disabled={pending}
             focusableWhenDisabled
+            data-unavailable={pending || undefined}
             className="h-11 w-full text-base"
           >
             Cancel

@@ -80,7 +80,8 @@ export function LogFoodForm({
         <ChevronLeft aria-hidden="true" className="size-4" />
         {backLabel}
       </button>
-      <p className="text-lg font-medium">{food.name}</p>
+      {/* h3: under the sheet's own h2 title ("Add to lunch"). */}
+      <h3 className="text-lg font-medium">{food.name}</h3>
 
       <div className="space-y-2">
         <AmountField

@@ -161,7 +161,7 @@ export function SwapSheet({
                   if (pendingLabel === null) goTo(index - 1, index - 1 === 0);
                 }}
                 aria-disabled={pendingLabel !== null}
-                className={`focus-ring -ml-2 flex h-11 items-center gap-1 rounded-md px-2 text-sm font-medium text-muted-foreground hover:text-foreground aria-disabled:opacity-50 ${
+                className={`focus-ring -ml-2 flex h-11 items-center gap-1 rounded-md px-2 text-sm font-medium text-muted-foreground hover:text-foreground aria-disabled:hover:text-muted-foreground ${
                   index === 0 ? "invisible" : ""
                 }`}
               >

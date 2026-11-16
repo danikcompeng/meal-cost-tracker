@@ -100,7 +100,9 @@ export function LoginCodeForm({
         onClick={() => {
           if (!pending) onStartOver();
         }}
-        className="h-11 w-full aria-disabled:opacity-50"
+        // Greyed with a colour, not faded, so its focus ring stays solid.
+        data-unavailable={pending || undefined}
+        className="h-11 w-full"
       >
         Start over (new email or new code)
       </Button>

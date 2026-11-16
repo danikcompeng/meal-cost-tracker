@@ -5,8 +5,11 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 8 (swap flick, first-use toast, data-autofocus), Minor issues. Plan: plans/states-a11y.md
-  (commit 9 busy-button colour/contrast/tap targets/headings).
+  states commit 9 (data-unavailable, field-border, h-11, headings), Minor issues. Plan: plans/states-a11y.md.
+- Button states (commit 9): busy = disabled + focusableWhenDisabled (full colour); can't-use-now = also
+  `data-unavailable={x || undefined}` (bg-muted grey). TW v4 variant order: hover < disabled < aria <
+  data < custom (dark), so data-* beats plain/hover classes; numeric sort: h-11 beats size sm's h-7.
+  New confirm/second buttons must get data-unavailable while the OTHER action runs.
 - React 19.3 async transitions: setState AFTER an await is an urgent (Default lane) update and commits
   BEFORE isPending flips false (two commits). An effect keyed only on the error sees the busy UI still
   mounted. Form onSubmit runs before a function `action` (and on Enter); preventDefault there skips it.

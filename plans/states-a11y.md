@@ -331,6 +331,9 @@ help.
 
 Tap targets (at least 44 × 44 px):
 - Foods' delete ✕, "Yes" and "Cancel" (28 px tall now) become h-11.
+  The question ("Delete Rolled oats? Yes Cancel") moves to its own line
+  under the food, so the name keeps its width on a 320 px phone, and
+  keyboard focus follows the buttons as they swap (taps are left alone).
 - Text links that stand alone get h-11: "Add one on Foods", "Add it on
   Foods", "scan a barcode" (first use), "Log that one". Recipe's "Edit"
   gets wider padding (42 px now); the food form's unit picker gets a
@@ -352,11 +355,22 @@ Contrast (text at least 4.5:1, light and dark), measured:
   Dimmed with a grey colour, not opacity, so the focus ring on them
   stays solid.
 - The scanner's hint over the camera can drop to 4.1:1 over a white
-  box: it gets a dark pill behind it (8.4:1).
+  box: it gets a dark pill behind it (8.4:1). The buttons over the
+  camera (×, torch, Type the number, Enter manually) get the same dark
+  fill: over a white counter they were about 2.4:1.
+- Known and accepted: a few unavailable controls look the same as
+  usual, because they're already grey (Swap's Back) or because muted
+  and the sheet are the same colour in dark mode (the toast's ×, a
+  greyed Save in a sheet). They still ignore taps and keep focus.
+  How: Base UI's focusableWhenDisabled keeps a busy button full colour;
+  a button that's unavailable because something ELSE is running also
+  gets `data-unavailable`, which the shadcn Button greys (muted
+  background, grey text, 5.4:1).
 - Not text, so a decision (E): input borders are 1.3:1 on white, and
-  white inputs on grey tiles are 1.14:1. Recommended: darken only the
-  input border to #858585 light / #737373 dark (3.2:1 or more
-  everywhere), leaving the tiles' barely visible borders as they are.
+  white inputs on grey tiles are 1.14:1. Done: a new `field-border`
+  token (#858585 light / #737373 dark, 3.2:1 or more everywhere) for
+  the edges of boxes you type in only, leaving the tiles' barely
+  visible borders as they are. Added to CLAUDE.md's colour list.
 
 Headings (one h1 per screen, no skipped levels; none skip today):
 - The live scanner gets a hidden h1 "Scan a barcode"; scan results
@@ -365,7 +379,8 @@ Headings (one h1 per screen, no skipped levels; none skip today):
   the sheet's h2 (it's styled like one already).
 - Foods: the add/edit form gets a hidden h2 "Add a food" / "Edit Oats",
   and tapping a food to edit moves focus there (today focus stays on
-  the row while the page scrolls up).
+  the row while the page scrolls up). Cancel or Save sends focus back
+  to it too, instead of the top of the page.
 - Smaller: the "$" before a price is hidden from screen readers like
   the units are; the camera help's "Other phone or app?" gets a chevron
   that shows open or shut.

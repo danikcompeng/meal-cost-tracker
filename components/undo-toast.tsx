@@ -137,8 +137,10 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
         onClick={handleDismiss}
         disabled={undoing}
         focusableWhenDisabled
+        // Greyed (not faded, so its focus ring stays solid).
+        data-unavailable={undoing || undefined}
         aria-label="Dismiss"
-        className="size-11 shrink-0 text-muted-foreground aria-disabled:opacity-50"
+        className="size-11 shrink-0 text-muted-foreground"
       >
         <X aria-hidden="true" className="size-5" />
       </Button>

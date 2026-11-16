@@ -98,7 +98,8 @@ export function EditEntryForm({
       noValidate
     >
       <input type="hidden" name="id" value={entry.id} />
-      <p className="text-lg font-medium">{entry.name}</p>
+      {/* h3: under the sheet's own h2 title ("Edit entry"). */}
+      <h3 className="text-lg font-medium">{entry.name}</h3>
 
       <div className="space-y-2">
         <AmountField unit={entry.unit} value={amount} onChange={setAmount} error={errors.amount} />
@@ -129,6 +130,9 @@ export function EditEntryForm({
         type="submit"
         disabled={pending || deleting}
         focusableWhenDisabled
+        // Greyed while a delete runs (it can't be used then); full
+        // colour while it's saving itself.
+        data-unavailable={deleting || undefined}
         className="h-11 w-full text-base"
       >
         {pending ? "Saving…" : "Save changes"}
@@ -141,8 +145,10 @@ export function EditEntryForm({
             type="button"
             variant="destructive"
             onClick={handleDelete}
-            disabled={deleting}
+            // Not while a save runs (the same race as Delete below).
+            disabled={pending || deleting}
             focusableWhenDisabled
+            data-unavailable={pending || undefined}
             className="h-11 px-4 text-base"
           >
             {deleting ? "Deleting…" : "Yes, delete"}
@@ -167,6 +173,7 @@ export function EditEntryForm({
           // would find the sheet gone (like Remove in ingredient-form).
           disabled={pending}
           focusableWhenDisabled
+          data-unavailable={pending || undefined}
           className="h-11 w-full text-base text-destructive"
         >
           Delete

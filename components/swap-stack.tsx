@@ -254,8 +254,12 @@ export function SwapStack({
           onClick={() => commit("skip")}
           disabled={pending}
           focusableWhenDisabled
+          // Greyed while a swap saves (not faded, so its focus ring stays
+          // solid). The Swap button itself stays full colour: its
+          // "Swapping…" is the only sign something is happening.
+          data-unavailable={pending || undefined}
           aria-label={`Skip ${swap.name}`}
-          className="h-12 flex-1 text-base aria-disabled:opacity-50"
+          className="h-12 flex-1 text-base"
         >
           <X aria-hidden="true" className="size-5" />
           Skip
@@ -267,7 +271,7 @@ export function SwapStack({
           // The visible words come first, so voice control ("tap Open
           // it") matches what's on the button.
           aria-label={pending ? undefined : `${pickLabel}: ${swap.name}`}
-          className="h-12 flex-1 text-base aria-disabled:opacity-50"
+          className="h-12 flex-1 text-base"
         >
           <Check aria-hidden="true" className="size-5" />
           {pendingLabel ?? pickLabel}

@@ -32,7 +32,7 @@ export function LookupStatus({
   if (state === "looking") {
     return (
       <div role="status" aria-live="polite" className="space-y-3">
-        <p className="text-lg font-medium">Looking up…</p>
+        <h2 className="text-lg font-medium">Looking up…</h2>
         {number}
         {/* Grey placeholder lines where the name and brand will go. */}
         <div aria-hidden="true" className="space-y-2 pt-1">
@@ -47,7 +47,7 @@ export function LookupStatus({
     return (
       <div role="status" className="space-y-4">
         <div className="space-y-1">
-          <p className="text-lg font-medium">Not on Open Food Facts yet</p>
+          <h2 className="text-lg font-medium">Not on Open Food Facts yet</h2>
           {number}
         </div>
         <p className="text-muted-foreground">
@@ -83,7 +83,7 @@ export function LookupStatus({
   return (
     <div role="alert" className="space-y-4">
       <div className="space-y-1">
-        <p className="text-lg font-medium">{copy.title}</p>
+        <h2 className="text-lg font-medium">{copy.title}</h2>
         {number}
       </div>
       <p className="text-muted-foreground">{copy.body}</p>

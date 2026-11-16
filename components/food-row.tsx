@@ -30,9 +30,31 @@ export function FoodRow({
   // Waits for `deleting` to end too: the error is drawn a moment before
   // Yes goes away (Yes stays while deleting), and only then does focus
   // fall to the page.
+  // Was the button you just pressed focused (keyboard, or a mouse)? Only
+  // then does focus follow the buttons around. A tap on iPhone never
+  // focuses a button, and focus moved by code after a tap draws Safari's
+  // ring, so taps are left alone.
+  const pressedWithFocus = useRef(false);
+  const notePress = (e: React.MouseEvent) => {
+    pressedWithFocus.current = document.activeElement === e.currentTarget;
+  };
+
   useEffect(() => {
-    if (error && !deleting && document.activeElement === document.body) deleteRef.current?.focus();
+    if (error && !deleting && pressedWithFocus.current) deleteRef.current?.focus();
   }, [error, deleting]);
+
+  // ✕ and the Yes / Cancel line swap places, so the button that had focus
+  // disappears: send focus to the one that appeared (Yes when the
+  // question opens, ✕ after Cancel).
+  const wasConfirming = useRef(confirming);
+  const yesRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (wasConfirming.current === confirming) return;
+    wasConfirming.current = confirming;
+    if (!pressedWithFocus.current) return;
+    if (confirming) yesRef.current?.focus();
+    else if (!deleting) deleteRef.current?.focus();
+  }, [confirming, deleting]);
 
   function handleDelete() {
     setError(undefined);
@@ -81,45 +103,66 @@ export function FoodRow({
           </span>
         </button>
 
-        <div className="flex min-h-16 items-center">
-          {confirming || deleting ? (
-            <div className="flex items-center gap-1">
-              {/* While it works, "Delete?" becomes "Deleting…" and Cancel goes
-                  (it couldn't stop it anyway), so the name keeps its room.
-                  Yes stays, focusable but waiting, so keyboard focus isn't
-                  dropped to the page. */}
-              <span className="mr-1 text-sm">{deleting ? "Deleting…" : "Delete?"}</span>
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={deleting}
-                focusableWhenDisabled
-                // "Yes" alone doesn't say to what, for a screen reader.
-                aria-label={`Yes, delete ${name}`}
-              >
-                Yes
-              </Button>
-              {!deleting && (
-                <Button size="sm" variant="ghost" onClick={() => setConfirming(false)}>
-                  Cancel
-                </Button>
-              )}
-            </div>
-          ) : (
+        {!(confirming || deleting) && (
+          <div className="flex min-h-16 items-center">
             <Button
               ref={deleteRef}
-              size="sm"
+              size="icon"
               variant="ghost"
-              className="text-muted-foreground"
-              onClick={() => setConfirming(true)}
+              className="size-11 text-muted-foreground"
+              onClick={(e) => {
+                notePress(e);
+                setConfirming(true);
+              }}
               aria-label={`Delete ${name}`}
             >
               ✕
             </Button>
+          </div>
+        )}
+      </div>
+
+      {/* The question gets its own line under the food, so the name and
+          macros keep their full width (beside them, the 44 px Yes and
+          Cancel squeezed the name on a small phone). */}
+      {(confirming || deleting) && (
+        <div className="-mt-1 flex items-center justify-end gap-1 pb-2">
+          {/* While it works, "Delete?" becomes "Deleting…" and Cancel goes
+              (it couldn't stop it anyway). Yes stays, focusable but
+              waiting, so keyboard focus isn't dropped to the page. */}
+          <span className="mr-1 text-sm">{deleting ? "Deleting…" : `Delete ${name}?`}</span>
+          {/* 44 px tall, the size phones recommend for a tap. */}
+          <Button
+            ref={yesRef}
+            size="sm"
+            variant="destructive"
+            className="h-11 px-3"
+            onClick={(e) => {
+              notePress(e);
+              handleDelete();
+            }}
+            disabled={deleting}
+            focusableWhenDisabled
+            // "Yes" alone doesn't say to what, for a screen reader.
+            aria-label={`Yes, delete ${name}`}
+          >
+            Yes
+          </Button>
+          {!deleting && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-11 px-3"
+              onClick={(e) => {
+                notePress(e);
+                setConfirming(false);
+              }}
+            >
+              Cancel
+            </Button>
           )}
         </div>
-      </div>
+      )}
       {/* Outside the row's button (inside, it was read as part of the
           button's name), and read out as soon as it appears. */}
       {error && (

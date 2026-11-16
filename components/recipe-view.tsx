@@ -88,7 +88,8 @@ export function RecipeView({
           <button
             type="button"
             onClick={() => setSheet({ mode: "edit" })}
-            className="focus-ring -mr-2 flex h-11 shrink-0 items-center rounded-md px-2 text-sm text-muted-foreground hover:text-foreground"
+            // px-3: "Edit" is short, so this keeps it at least 44 px wide.
+            className="focus-ring -mr-3 flex h-11 min-w-11 shrink-0 items-center justify-center rounded-md px-3 text-sm text-muted-foreground hover:text-foreground"
           >
             Edit
           </button>

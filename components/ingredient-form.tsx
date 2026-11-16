@@ -120,7 +120,8 @@ export function IngredientForm({
           All foods
         </button>
       )}
-      <p className="text-lg font-medium">{food.name}</p>
+      {/* h3: under the sheet's own h2 title. */}
+      <h3 className="text-lg font-medium">{food.name}</h3>
 
       <div className="space-y-2">
         <AmountField
@@ -154,6 +155,8 @@ export function IngredientForm({
         type="submit"
         disabled={pending || removing}
         focusableWhenDisabled
+        // Greyed while a remove runs; full colour while it saves itself.
+        data-unavailable={removing || undefined}
         className="h-11 w-full text-base"
       >
         {isNew ? (pending ? "Adding…" : "Add") : pending ? "Saving…" : "Save changes"}
@@ -171,6 +174,7 @@ export function IngredientForm({
               // first, the save would put the ingredient straight back.
               disabled={pending || removing}
               focusableWhenDisabled
+              data-unavailable={pending || undefined}
               className="h-11 px-4 text-base"
             >
               {removing ? "Removing…" : "Yes, remove"}
@@ -192,6 +196,7 @@ export function IngredientForm({
             onClick={() => setConfirming(true)}
             disabled={pending || removing}
             focusableWhenDisabled
+            data-unavailable={pending || removing || undefined}
             className="h-11 w-full text-base text-destructive"
           >
             Remove

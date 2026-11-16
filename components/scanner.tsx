@@ -13,8 +13,11 @@ import { cn } from "@/lib/utils";
 import { ScanFrame } from "./scan-frame";
 import { useBarcodeCamera } from "./use-barcode-camera";
 
+// Buttons over the camera picture sit on the near-black camera colour at
+// 80%: over a white counter, the old see-through black (40%) left the
+// light text and icons at about 2.4:1; this keeps them at 8.4:1.
 const ROUND_BUTTON =
-  "flex size-11 items-center justify-center rounded-full bg-black/40 text-camera-foreground outline-none focus-visible:ring-3 focus-visible:ring-camera-accent";
+  "flex size-11 items-center justify-center rounded-full bg-camera/80 text-camera-foreground outline-none focus-visible:ring-3 focus-visible:ring-camera-accent";
 
 export function Scanner({
   onDetected,
@@ -51,6 +54,9 @@ export function Scanner({
       transition={{ duration: 0.15 }}
       className="fixed inset-0 overflow-hidden bg-camera text-camera-foreground"
     >
+      {/* The screen's title, for screen readers only: the camera picture
+          says it for everyone else. Results below it are h2s. */}
+      <h1 className="sr-only">Scan a barcode</h1>
       {/* playsInline + muted: iPhones otherwise open the video full screen
           in their own player, or refuse to start it without a tap. */}
       <video
@@ -73,15 +79,26 @@ export function Scanner({
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-6 px-4">
         <ScanFrame ref={frameRef} state={status} />
-        <p className="relative min-h-12 max-w-xs text-center text-base" role="status" aria-live="polite">
-          {status === "starting"
-            ? "Starting camera…"
-            : read
-              ? "Got it"
-              : slow
-                ? "Hold it a little further away if it's blurry"
-                : "Line up the barcode inside the frame"}
-        </p>
+        {/* A dark pill behind the words: straight on the camera picture,
+            over something white, they dropped to about 4.1:1. On the pill
+            it's 8.4:1 whatever the camera sees. */}
+        {/* min-h-16: room for two lines, so the frame above doesn't move
+            when the hint changes length. */}
+        <div className="relative flex min-h-16 max-w-xs items-start justify-center">
+          <p
+            className="rounded-2xl bg-camera/80 px-4 py-2 text-center text-base"
+            role="status"
+            aria-live="polite"
+          >
+            {status === "starting"
+              ? "Starting camera…"
+              : read
+                ? "Got it"
+                : slow
+                  ? "Hold it a little further away if it's blurry"
+                  : "Line up the barcode inside the frame"}
+          </p>
+        </div>
       </div>
 
       {/* Top bar, kept clear of the notch with the safe-area insets: at the
@@ -115,14 +132,14 @@ export function Scanner({
           <button
             type="button"
             onClick={onTypeNumber}
-            className="h-11 rounded-full bg-black/40 px-5 text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-camera-accent"
+            className="h-11 rounded-full bg-camera/80 px-5 text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-camera-accent"
           >
             Type the number
           </button>
           <button
             type="button"
             onClick={onManual}
-            className="h-11 rounded-full bg-black/40 px-5 text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-camera-accent"
+            className="h-11 rounded-full bg-camera/80 px-5 text-base font-medium outline-none focus-visible:ring-3 focus-visible:ring-camera-accent"
           >
             Enter manually
           </button>

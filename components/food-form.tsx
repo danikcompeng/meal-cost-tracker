@@ -379,7 +379,11 @@ export function FoodForm({
         <div className="grid grid-cols-2 gap-3">
           <Field label="Price" htmlFor="price" error={errors.price}>
             <div className="relative">
-              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground">
+              {/* Decoration, like the units: the label already says Price. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+              >
                 $
               </span>
               <Input
@@ -423,7 +427,7 @@ export function FoodForm({
                   aria-label="Package unit"
                   value={fields.unit}
                   onChange={set("unit")}
-                  className="focus-ring h-11 rounded-r-lg border border-l-0 border-input bg-background px-2 text-base focus-visible:border-ring"
+                  className="focus-ring h-11 min-w-11 rounded-r-lg border border-l-0 border-field-border bg-background px-2 text-base focus-visible:border-ring"
                 >
                   {inputUnitsFor(measuredBy).map((u) => (
                     <option key={u} value={u}>
@@ -444,14 +448,21 @@ export function FoodForm({
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. */}
       {!pending && state.message && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message}{" "}
+        <div>
+          <p role="alert" className="text-sm text-destructive">
+            {state.message}
+          </p>
+          {/* Its own line, 44 px tall, not a small link inside the
+              sentence. */}
           {state.existingId && (
-            <Link href={`/?log=${state.existingId}`} className="focus-ring rounded-sm font-medium text-primary">
+            <Link
+              href={`/?log=${state.existingId}`}
+              className="focus-ring -ml-2 inline-flex h-11 items-center rounded-md px-2 font-medium text-primary"
+            >
               Log that one
             </Link>
           )}
-        </p>
+        </div>
       )}
 
       <div className="flex gap-2">

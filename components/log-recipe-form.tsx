@@ -74,7 +74,8 @@ export function LogRecipeForm({
         <ChevronLeft aria-hidden="true" className="size-4" />
         Recipes and foods
       </button>
-      <p className="text-lg font-medium">{recipe.name}</p>
+      {/* h3: under the sheet's own h2 title ("Add to lunch"). */}
+      <h3 className="text-lg font-medium">{recipe.name}</h3>
 
       <div className="space-y-2">
         <AmountField unit="serving" value={amount} onChange={setAmount} error={errors.amount} />

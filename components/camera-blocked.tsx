@@ -6,7 +6,7 @@
 // camera: type the number, or enter the food by hand.
 
 import { useSyncExternalStore } from "react";
-import { CameraOff, X } from "lucide-react";
+import { CameraOff, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { platformFrom, type CameraProblem, type Platform } from "@/lib/camera";
 
@@ -160,9 +160,16 @@ export function CameraBlocked({
               ))}
             </ol>
           </section>
-          <details className="mt-3 rounded-2xl px-4 py-2">
-            <summary className="focus-ring flex h-11 cursor-pointer items-center rounded-md text-sm font-medium text-muted-foreground">
+          <details className="group mt-3 rounded-2xl px-4 py-2">
+            {/* "flex" hides the browser's own ▸ marker (older iPhones need
+                the webkit line too), so a chevron shows open or shut
+                instead (group-open: while <details> is open). */}
+            <summary className="focus-ring flex h-11 cursor-pointer items-center gap-1 rounded-md text-sm font-medium text-muted-foreground [&::-webkit-details-marker]:hidden">
               Other phone or app?
+              <ChevronDown
+                aria-hidden="true"
+                className="size-4 transition-transform group-open:rotate-180 motion-reduce:transition-none"
+              />
             </summary>
             <div className="space-y-4 pb-2">
               {others.map((other) => (

@@ -329,3 +329,19 @@ metadata:
   resumeAnimation needs this card's constraints resolved) - comment line 147 overclaims, settle like
   entry-row; unsure: fast thumb flicks with >10 px y drift lock y; bottom-sheet comment "iPhone keyboard
   waits for a tap" likely wrong (discrete-event effects flush inside the click).
+- 2026-11-16 states commit 9 (uncommitted: Button data-unavailable greying, destructive 10% tint,
+  primary/90 hover, --field-border, h-11 targets, headings, scanner pill): Minor issues. Verified:
+  Base UI Button spreads data-* to the DOM; TW v4 variant order hover < disabled < aria < data
+  (lib.mjs), so data-unavailable (0,2,0, later) beats bg-primary, hover:bg-primary/90, text-destructive;
+  h-11 beats size sm h-7 (numeric sort, cn pkg keeps both); every data-unavailable uses `|| undefined`;
+  contrasts: muted-fg on muted 5.44 / 6.53, red on tint 5.17 white / 4.57 card / 4.53 on edited
+  food row (primary/10) / 5.19 + 5.89 dark, white on primary/90 4.82, pill 8.45, field-border
+  3.69 / 3.24 / 3.89 / 3.47; headings fine (scanner h1 + panel h2, typing h1, sheets h2 > h3);
+  food-manager effect skips editing -> null. Raised: edit-entry "Yes, delete" not blocked/greyed
+  while a save runs (Save stays visible under confirming; ingredient-form does it right); Cancel /
+  Save on Foods remounts FoodForm (key) -> focus to <body>; food-row confirm group ~172 px -> name
+  column ~84 px at 320, nowrap macro items ~86-96 px overflow under "Delete?" (estimate); scanner
+  bottom buttons + round buttons bg-black/40 = 2.4:1 over white; summary display:flex doesn't hide
+  Safari < 18.4's -webkit-details-marker (unsure); Back + toast x (dark) look identical when
+  unavailable; dark sheets: greyed button has no box (muted == popover); duplicate dialog Keep
+  both/Cancel full colour while the other runs; CLAUDE.md "lowest 4.88" now stale (4.82, 4.53).

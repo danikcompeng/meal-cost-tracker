@@ -37,10 +37,11 @@ export default function ErrorPage({ error, retry }: { error: unknown; retry: () 
           // offline it waits: focusable but doing nothing, and the strip
           // at the top says why.
           aria-disabled={!online}
+          data-unavailable={!online || undefined}
           onClick={() => {
             if (navigator.onLine) retry();
           }}
-          className="mt-6 h-11 px-6 text-base aria-disabled:opacity-50"
+          className="mt-6 h-11 px-6 text-base"
         >
           Try again
         </Button>
