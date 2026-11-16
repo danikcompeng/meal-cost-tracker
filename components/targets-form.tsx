@@ -8,6 +8,7 @@
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { saveTargets, type TargetsFormState } from "@/lib/settings-actions";
 import {
   DEFAULT_WATER_ML,
@@ -62,7 +63,10 @@ export function TargetsForm({ targets }: { targets: Targets }) {
 
   const [state, formAction, pending] = useActionState(
     async (prev: TargetsFormState, formData: FormData) => {
-      const result = await saveTargets(prev, formData);
+      // Offline: a message here, and what you typed stays.
+      const result = await keepOnFailure(saveTargets, tapAgain("save", "Save targets"))(prev, formData);
+      // A failed save mustn't leave an earlier "Saved" showing next to it.
+      if (!result.ok) setJustSaved(false);
       if (result.ok && result.saved) {
         // Show what was really saved: 140.6 becomes 141.
         setFields(fieldsFrom(result.saved));

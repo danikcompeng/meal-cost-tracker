@@ -5,7 +5,8 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 2 (skeletons), Minor issues. Plan: plans/states-a11y.md.
+  states commit 3 (keepOnFailure), Minor issues. Plan: plans/states-a11y.md (commits 4-9 queued:
+  role=alert + edit-sheet message slot are commit 7, so don't raise them as missing earlier).
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
@@ -36,6 +37,11 @@
 - Focus rings on coloured fills: ring-ring/50 (matcha) on bg-destructive is ~1.1:1, invisible.
   Check every new solid-colour button's focus-visible ring against its own fill.
 
+- Client-side action failures (server-action-reducer.js): fetch TypeError (offline, OR the link
+  dropped while the server was already running the action -> it may have SAVED); non-RSC reply
+  (Vercel 5xx) -> Error; stale page after a deploy -> UnrecognizedActionError (action ids change
+  per build; next/navigation exports unstable_isUnrecognizedActionError). Retrying never fixes that.
+  lib/action-call.ts keepOnFailure wraps all form saves; login wraps in commit 5.
 - Server action redirect("/") in Next 16: Next does an internal GET to "/" with the action's
   Set-Cookie merged in (action-handler.js getForwardedHeaders), so proxy sees new cookies.
 - React 19 <form action>: after the action returns (even an error state) uncontrolled fields

@@ -5,8 +5,10 @@
 // the server works out the real snapshot from the saved recipe and foods.
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { logRecipe } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
@@ -29,12 +31,20 @@ export function LogRecipeForm({
   onBack: () => void;
   onDone: () => void;
 }) {
+  const router = useRouter();
   const [amount, setAmount] = useState("1");
   const [meal, setMeal] = useState<Meal>(initialMeal);
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await logRecipe(prev, formData);
+      // Offline: a message here, and the servings you typed stay. If the
+      // connection dropped on the way it may have been logged anyway, so
+      // Today reloads behind the sheet and the message says to check it.
+      const result = await keepOnFailure(
+        logRecipe,
+        tapAgain("log it", "Log it", "Check Today"),
+        () => router.refresh(),
+      )(prev, formData);
       if (result.ok) onDone();
       return result;
     },

@@ -144,7 +144,7 @@ export function SwapSheet({
           <SwapEmpty kind={others.length === 0 ? "none" : "no-ingredients"} />
         ) : (
           <>
-            {swapHeaderNotes(current).map((note) => (
+            {swapHeaderNotes(current, history !== null).map((note) => (
               <p key={note} className="mb-2 text-[13px] text-muted-foreground">
                 {note}
               </p>

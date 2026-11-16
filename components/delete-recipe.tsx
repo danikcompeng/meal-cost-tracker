@@ -6,6 +6,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { keepOnFailure } from "@/lib/action-call";
 import { deleteRecipe } from "@/lib/recipe-actions";
 
 export function DeleteRecipe({ recipeId }: { recipeId: string }) {
@@ -16,7 +17,10 @@ export function DeleteRecipe({ recipeId }: { recipeId: string }) {
 
   function handleDelete() {
     startDelete(async () => {
-      const result = await deleteRecipe(recipeId);
+      const result = await keepOnFailure(deleteRecipe, {
+        verb: "delete it",
+        retry: "delete it again",
+      })(recipeId);
       // replace, not push: "back" shouldn't return to a deleted recipe.
       if (result.ok) router.replace("/recipes");
       else {

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { keepOnFailure } from "@/lib/action-call";
 import { deleteFood } from "@/lib/food-actions";
 import { pricePerUnit, unitPriceLabel } from "@/lib/cost";
 import { basisLabel, hasAnyMacro, macroText } from "@/lib/macros";
@@ -25,7 +26,10 @@ export function FoodRow({
 
   function handleDelete() {
     startDelete(async () => {
-      const result = await deleteFood(food.id);
+      const result = await keepOnFailure(deleteFood, {
+        verb: "delete it",
+        retry: "delete it again",
+      })(food.id);
       if (!result.ok) {
         setError(result.message);
         setConfirming(false);

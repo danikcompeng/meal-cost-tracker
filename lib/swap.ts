@@ -185,15 +185,23 @@ export function swapCurrentFromEntry(entry: {
 
 /**
  * Lines shown once above the stack when the CURRENT meal is missing a
- * number, because then nothing can be matched on it.
+ * number, because then nothing can be matched on it. Also when what you
+ * ate lately didn't load (`historyLoaded` false): then "eaten recently"
+ * and "foods you've had this week" are unknown for every card, and the
+ * stack would otherwise rank without them and say nothing.
  */
-export function swapHeaderNotes(current: SwapCurrent): string[] {
+export function swapHeaderNotes(current: SwapCurrent, historyLoaded: boolean): string[] {
   const notes: string[] = [];
   if (current.protein === null) {
     notes.push(`${current.name} has unknown protein, so these aren't matched on protein.`);
   }
   if (current.cost === null) {
     notes.push(`${current.name} has an unknown cost, so these aren't matched on price.`);
+  }
+  if (!historyLoaded) {
+    notes.push(
+      "Couldn't load what you've eaten lately, so recent meals and this week's foods aren't checked.",
+    );
   }
   return notes;
 }

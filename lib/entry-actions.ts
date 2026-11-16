@@ -1,7 +1,9 @@
 "use server";
 // Logging, changing and deleting what you ate. Runs on the server.
-// Each action is wrapped in guarded(), so a lost connection or expired
-// login shows a message in the sheet instead of replacing the screen.
+// Each action is wrapped in guarded(), so a failure on the server (an
+// expired login, the database down) shows a message in the sheet instead
+// of replacing the screen. The phone being offline is caught in the phone
+// instead, by keepOnFailure (lib/action-call.ts).
 
 import { revalidatePath } from "next/cache";
 import { DELETED_ENTRY_COLUMNS, getEntry, toDeletedEntry } from "./entries";

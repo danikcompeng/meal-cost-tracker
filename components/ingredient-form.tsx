@@ -7,6 +7,7 @@
 import { useActionState, useState, useTransition } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { costOfAmount } from "@/lib/cost";
 import { waterText } from "@/lib/hydration";
 import { nutrientsForAmount } from "@/lib/nutrition";
@@ -39,7 +40,12 @@ export function IngredientForm({
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await saveIngredient(prev, formData);
+      // Offline: a message here, and the amount you typed stays.
+      const result = await keepOnFailure(
+        saveIngredient,
+        // Each food is in a recipe once, so adding it twice can't happen.
+        isNew ? tapAgain("add it", "Add") : tapAgain("save", "Save changes"),
+      )(prev, formData);
       if (result.ok) onSaved();
       return result;
     },
@@ -48,7 +54,10 @@ export function IngredientForm({
 
   function handleRemove() {
     startRemove(async () => {
-      const result = await removeIngredient(recipeId, food.id);
+      const result = await keepOnFailure(
+        removeIngredient,
+        { verb: "remove it", retry: "remove it again" },
+      )(recipeId, food.id);
       if (result.ok) onSaved();
       else {
         setRemoveError(result.message);

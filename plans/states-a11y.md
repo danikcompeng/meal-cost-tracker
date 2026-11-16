@@ -163,10 +163,20 @@ arrives. No spinners, no numbers.
   recipe, add/edit/remove an ingredient, save targets, save a scanned
   food.
 - **The message says what happened and how to retry**, next to the
-  button that failed, with everything you typed still there:
-  "Couldn't save: no connection. Check your connection, then tap Save
-  changes again." The button you just used is the Retry (see decision
-  B).
+  button that failed, with everything you typed still there. The
+  button you just used is the Retry (see decision B).
+  - Offline: "Couldn't save: no connection. Check your connection, then
+    tap Save changes again."
+  - Online but the connection dropped on the way: "Couldn't save: the
+    connection dropped. Please tap Save changes again."
+  - For saves that ADD something (Log it, a new recipe), a dropped
+    connection may have saved it anyway, and tapping again would add it
+    twice. So: "The connection dropped, so it may have worked anyway.
+    Check Today before you tap Log it again.", and Today (or the recipe
+    list) reloads behind the sheet so you can see.
+  - After a deploy, an app left open has out-of-date actions and every
+    tap would fail the same way: "The app was just updated. Close it and
+    open it again (or reload the page), then try again."
 - **Swap history** (`getEatenHistory`) failing: the swap sheet says
   "Couldn't load what you've eaten lately, so recent meals and foods
   you have aren't checked." Today it ranks differently and says nothing.
@@ -176,7 +186,8 @@ arrives. No spinners, no numbers.
 
 ## Commit 4: the error page, a 404 page, and an offline strip
 
-- **Error page** keeps the tab bar, so you can leave. Its words stay
+- **Error page** keeps the tab bar, so you can leave (not on the login
+  screen, where the tabs would only lead back to it). Its words stay
   ("Couldn't load this. Check your connection, then try again. Nothing
   you logged is lost."), which are now true, since only loading
   reaches it.
@@ -184,9 +195,11 @@ arrives. No spinners, no numbers.
   exist", "Go to Today", tab bar.
 - **Offline strip** (new `components/offline-strip.tsx`, in the
   layout): while the phone is offline, a thin grey tile at the top, under
-  the status bar: "You're offline. Changes save when you're back."
-  Muted grey text, no colour, announced once (role="status"). It slides
-  away when you're back online (fade only with reduced motion).
+  the status bar: "You're offline. Nothing can be saved until you're
+  back." (Saves aren't queued, so it can't promise they'll happen
+  later.) Muted grey text, no colour, announced once (role="status").
+  It slides away when you're back online (fade only with reduced
+  motion).
 - `day-rollover.tsx` and `timezone-sync.tsx` don't refresh the page
   while offline (today that leads to the phone's "no internet" page);
   they refresh once you're back online.
@@ -207,8 +220,13 @@ arrives. No spinners, no numbers.
   again." instead of "That code didn't work". The form now shows that
   kind of message (today only the code-box error shows).
 - Sending, logging in and logging out offline: a message on the form,
-  not the error page (with commit 3's helper).
-- Log out logs the reason if Supabase refuses (today it's ignored).
+  not the error page (with commit 3's helper). Log out becomes a small
+  browser component (`components/log-out-button.tsx`) so it can show
+  "Couldn't reach the server… log out again" under itself.
+- Log out: if Supabase refuses, it logs why and logs this phone out
+  anyway (deletes the login cookie, Supabase's own suggested fallback).
+  Today the error is ignored and you could stay logged in.
+- The line under the title says "We'll email you a code and a link."
 - The page gets a tab title, "Log in · Meal Cost Tracker".
 
 ## Commit 6: matcha focus rings
@@ -235,6 +253,8 @@ help.
   round), clears when you try again, is read out (role="alert"), and
   "Yes, delete" keeps keyboard focus while deleting
   (`focusableWhenDisabled`, like Swap and Undo).
+- The ingredient sheet has the same one-slot problem (an old Save
+  error hides a newer Remove error): same fix.
 - Every other form's message line gets role="alert" too: log a food or
   a recipe, ingredient, recipe, targets, food form, delete recipe.
 - Field errors ("Type an amount") are linked to their box

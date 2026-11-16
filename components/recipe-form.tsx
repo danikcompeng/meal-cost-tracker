@@ -6,8 +6,10 @@
 // after a form action runs.
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { createRecipe, updateRecipe } from "@/lib/recipe-actions";
 import type { FormState } from "@/lib/types";
 import { unitWordForTyped } from "@/lib/units";
@@ -22,12 +24,22 @@ export function RecipeForm({
   /** After saving. A new recipe passes its id. */
   onDone: (id?: string) => void;
 }) {
+  const router = useRouter();
   const [name, setName] = useState(recipe?.name ?? "");
   const [servings, setServings] = useState(recipe ? String(recipe.servings) : "1");
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await (recipe ? updateRecipe : createRecipe)(prev, formData);
+      // Offline: a message here, and what you typed stays. A new recipe
+      // may have been created anyway if the connection dropped on the
+      // way, so the list behind reloads and the message says to check it.
+      const result = recipe
+        ? await keepOnFailure(updateRecipe, tapAgain("save", "Save changes"))(prev, formData)
+        : await keepOnFailure(
+            createRecipe,
+            tapAgain("create it", "Create", "Check your recipes"),
+            () => router.refresh(),
+          )(prev, formData);
       if (result.ok) onDone(result.id);
       return result;
     },

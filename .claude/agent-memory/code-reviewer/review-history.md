@@ -254,3 +254,17 @@ metadata:
   row ~120 on phones (macro line wraps), not 96; AppHeader row ~46 px not 44 (baseline, estimate);
   recipe tile 91 vs 88; "Deleting…" widens the confirm group (name column ~52 px at 320), Cancel
   during a delete cancels nothing; commit 9's h-11 buttons will widen it more.
+- 2026-11-16 states commit 3 (uncommitted: lib/action-call.ts keepOnFailure + noConnectionMessage/
+  tapAgain, 9 callers wrapped, swapHeaderNotes historyLoaded): Minor issues, no blocking bugs.
+  Verified: every wrapped action returns FormState/TargetsFormState (all fields optional but ok), so
+  `as Result` is sound today; every caller renders its message and only runs onDone/onSaved/setFields
+  on ok; no missed callers (login = commit 5, today-view catches itself); unstable_rethrow browser
+  build rethrows redirect errors; per-submit wrapper fine. Raised: stale page after a deploy ->
+  UnrecognizedActionError shown as "Couldn't reach the server. Check your connection" forever (use
+  unstable_isUnrecognizedActionError, reload message); dropped link mid-action = saved but message
+  says not reached -> "tap Log it again" logs twice (logFood/logRecipe/createRecipe); constraint lets
+  {ok:true,...}-only types through (test line 30 shows it); wording differs from plan ("Couldn't
+  save: no connection") and from Today's offline "Couldn't delete. Please try again."; entry-actions
+  .ts:3 and recipe-actions.ts:3 headers still say guarded covers a lost connection; ingredient-form
+  state.message hides removeError (commit 7 only names the edit sheet); historyLoaded default true;
+  small: duplicate-dialog Keep both offline says "tap Add food again", targets "Saved" + error.

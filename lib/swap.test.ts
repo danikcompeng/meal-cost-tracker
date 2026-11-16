@@ -258,7 +258,7 @@ describe("missing stays missing", () => {
     expect(ids(ranked)).toEqual(["cheap", "same"]);
     expect(ranked.flatMap((s) => s.reasons).some((r) => r.endsWith("protein"))).toBe(false);
     expect(ranked.flatMap((s) => s.notes).some((n) => n.startsWith("Not a close match: "))).toBe(false);
-    expect(swapHeaderNotes(cur)).toEqual([
+    expect(swapHeaderNotes(cur, true)).toEqual([
       "Overnight oats has unknown protein, so these aren't matched on protein.",
     ]);
   });
@@ -296,7 +296,14 @@ describe("missing stays missing", () => {
   });
 
   it("both unknown: two lines above the stack", () => {
-    expect(swapHeaderNotes({ ...current, protein: null, cost: null })).toHaveLength(2);
+    expect(swapHeaderNotes({ ...current, protein: null, cost: null }, true)).toHaveLength(2);
+  });
+
+  it("says so when what you ate lately didn't load, and not otherwise", () => {
+    expect(swapHeaderNotes(current, false)).toEqual([
+      "Couldn't load what you've eaten lately, so recent meals and this week's foods aren't checked.",
+    ]);
+    expect(swapHeaderNotes(current, true)).toEqual([]);
   });
 
   it("current cost unknown: no cost chips, but a known cost still beats an unknown one", () => {
@@ -306,13 +313,13 @@ describe("missing stays missing", () => {
     const ranked = rankSwaps(cur, [unknown, known], ctx());
     expect(ids(ranked)).toEqual(["known", "unknown"]);
     expect(ranked.flatMap((s) => s.reasons).some((r) => r.includes("cheaper") || r === "Same cost")).toBe(false);
-    expect(swapHeaderNotes(cur)).toEqual([
+    expect(swapHeaderNotes(cur, true)).toEqual([
       "Overnight oats has an unknown cost, so these aren't matched on price.",
     ]);
   });
 
   it("a known current meal needs no line above the stack", () => {
-    expect(swapHeaderNotes(current)).toEqual([]);
+    expect(swapHeaderNotes(current, true)).toEqual([]);
   });
 
   it("kitchen unknown: no effect on order and no kitchen chip", () => {

@@ -1,7 +1,9 @@
 "use server";
 // Creating, changing and deleting recipes and their ingredients. Runs on
-// the server. Each action is wrapped in guarded(), so a lost connection
-// shows a message in the sheet instead of replacing the screen.
+// the server. Each action is wrapped in guarded(), so a failure on the
+// server shows a message in the sheet instead of replacing the screen.
+// The phone being offline is caught in the phone instead, by
+// keepOnFailure (lib/action-call.ts).
 //
 // Row Level Security does the real protecting: Postgres refuses to show
 // or change a recipe that isn't yours, and refuses an ingredient unless

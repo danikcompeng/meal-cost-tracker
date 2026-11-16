@@ -6,6 +6,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { updateEntry } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
@@ -40,7 +41,9 @@ export function EditEntryForm({
 
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await updateEntry(prev, formData);
+      // Offline: a message here, and your changes stay. (Delete goes
+      // through Today, which already catches this itself.)
+      const result = await keepOnFailure(updateEntry, tapAgain("save", "Save changes"))(prev, formData);
       if (result.ok) onDone();
       return result;
     },

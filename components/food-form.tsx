@@ -10,6 +10,7 @@ import { HydrationSwitch } from "./hydration-switch";
 import { MoreNutrients } from "./more-nutrients";
 import { NutrientInput } from "./nutrient-input";
 import { SegmentedControl } from "./segmented-control";
+import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { saveFood } from "@/lib/food-actions";
 import { FIELD_COLUMNS, validateFood, validateMacros } from "@/lib/food-validation";
 import { unitPriceLabel } from "@/lib/cost";
@@ -154,9 +155,17 @@ export function FoodForm({
   const sodiumFromSalt = draft?.sodiumFromSalt ? toField(draft.sodium_mg) : null;
   const barcode = editing?.barcode ?? draft?.barcode ?? null;
 
+  const saveLabel = editing ? "Save changes" : (submitLabel ?? "Add food");
   const [state, formAction, pending] = useActionState(
     async (prev: FormState, formData: FormData) => {
-      const result = await saveFood(prev, formData);
+      // Offline: a message here, and everything you typed (or scanned)
+      // stays.
+      // (Adding it twice can't happen: a second one with the same name or
+      // barcode is caught as a duplicate.)
+      const result = await keepOnFailure(
+        saveFood,
+        tapAgain(editing ? "save" : "add it", saveLabel),
+      )(prev, formData);
       if (result.ok) {
         setFields(EMPTY);
         setMacroUnits({});
@@ -428,7 +437,7 @@ export function FoodForm({
           disabled={pending}
           className="h-11 flex-1 text-base"
         >
-          {pending ? "Saving…" : editing ? "Save changes" : (submitLabel ?? "Add food")}
+          {pending ? "Saving…" : saveLabel}
         </Button>
         {editing && (
           <Button type="button" variant="ghost" onClick={() => onDone()} className="h-11 text-base">

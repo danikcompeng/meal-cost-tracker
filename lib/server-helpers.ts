@@ -51,12 +51,17 @@ export async function userHour(): Promise<number> {
 }
 
 /**
- * Runs a server action and turns any unexpected failure (lost connection,
- * expired login, database down) into a friendly message for the form.
+ * Runs a server action and turns any unexpected failure ON THE SERVER
+ * (expired login, database down or unreachable from the server) into a
+ * friendly message for the form.
  *
  * Why: if an action throws, the error doesn't go back to the form. It goes
  * to the error page, which replaces the whole screen, so you'd lose the
  * open sheet and see "Couldn't load this" instead of "Couldn't log it".
+ *
+ * It can't help when the phone itself is offline: then the request never
+ * reaches the server, so this never runs. keepOnFailure in
+ * lib/action-call.ts catches that one, in the phone.
  */
 export async function guarded<T extends { ok: boolean; message?: string }>(
   action: string,
