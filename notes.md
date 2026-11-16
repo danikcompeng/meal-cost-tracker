@@ -186,3 +186,47 @@ If one fails, tell Claude exactly which rule and what to change.
 | Nov 9 | Foods form | Price is required, but CLAUDE.md says a food with no price should show "no price yet" | Not sent yet. Tracked for when purchases are built: price moves off foods and becomes optional. Workaround: $0 for free food like tap water. | No, after the month |
 | Nov 9 | Today | Water with 0 kcal and blank macros shows "+ 1 unknown" under every macro | 0 kcal means 0 protein, carbs and fat, so save blank macros as 0 when kcal is 0. Fix my existing water. | Yes |
 | Nov 11 | Today | Fraunces looked old-fashioned for a fitness app | Compared Fraunces, Figtree, Geist and Manrope side by side on a preview page, chose Figtree bold for one clean font across the app | Yes |
+
+## Polish later
+
+Found during the polish pass (2026-11-15, plans/polish.md) but not fixed
+there. Most important first.
+
+- **Swap stack: a diagonal scroll can count as a flick.** swap-stack.tsx
+  decides Skip / Swap from the finger's speed, even when the browser took
+  the touch as a scroll. A quick scroll that drifts sideways could skip a
+  card or swap a meal. Today's swipe-to-delete got the fix (only count a
+  gesture Framer locked sideways, never a cancelled touch); copy it there.
+- **One message slot.** A newer message (a swipe, a swap) replaces the
+  Undo message on screen. If an Undo fails after its message was
+  replaced, it now comes back with its own Undo, but the newer message's
+  Undo is the one lost then. Rare; would need a small stack of messages.
+- **The edit sheet's error line** shows an old Save error over a newer
+  Delete error, never clears the Delete error, isn't announced to screen
+  readers (no role="alert"), and "Yes, delete" drops keyboard focus while
+  deleting (needs focusableWhenDisabled, like the Undo button).
+- **Undo message text can go stale.** "Lunch is now Lentil dal · 1.5
+  servings" stays until you tap ×, even after you edit that entry. Undo
+  then rightly refuses ("It's changed since"). Could close the message
+  when its entry is edited or deleted.
+- **Deleting a meal's only entry** doesn't play the slide and fade: the
+  whole list is swapped for the big "+ Add to …" button at once. Keep the
+  list on the page and pick the button style from the number of rows.
+- **First-use screen hides the Undo message.** With no foods left,
+  deleting your last entry shows "Start with the foods you buy", which
+  doesn't draw the message, so its Undo disappears.
+- **Hand-made buttons use Safari's blue focus ring**, not the matcha one
+  (18 components, e.g. entry-row's swap button, meal-section's "+ Add",
+  the tab bar). Give them `outline-none focus-visible:ring-3
+  focus-visible:ring-ring/50` like the shadcn Button.
+- **autoFocus that never works when a sheet opens**: recipe-form's name
+  box ("New recipe") and LogFoodForm after a scan. React focuses them
+  while the sheet is still shut. Remove them, or let BottomSheet honour a
+  `data-autofocus` marker (decide whether the keyboard should pop up).
+- **Undo message, small layout things**: the page jumps up by the spacer
+  when the message closes while you're scrolled to the bottom (the spacer
+  goes before the fade ends), and "Undoing…" is wider than "Undo", so the
+  text reflows while you wait.
+- **Typed numbers accept computer formats**: parseDecimal uses Number(),
+  so a pasted "0x10" logs 16 and "1e2" logs 100. A phone keypad can't
+  type them; a laptop or a paste can.
