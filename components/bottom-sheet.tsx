@@ -21,6 +21,8 @@ export function BottomSheet({
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const dialog = ref.current;
@@ -30,6 +32,17 @@ export function BottomSheet({
     // the page before closing it, which skips that step.
     const opener = document.activeElement as HTMLElement | null;
     dialog?.showModal();
+    // Start on the title, not the ×. showModal() moves focus into the sheet
+    // by code, and for focus moved by code the browser guesses whether to
+    // draw a ring; on iPhone it guesses "yes" even after a tap (a tap never
+    // focuses the button you tapped, so Safari can't tell it was a tap).
+    // The title draws no ring, a screen reader reads it out ("Add to
+    // breakfast"), and the first Tab still reaches the ×. tabIndex -1
+    // makes the title the first focusable thing in the sheet, so most
+    // browsers start there by themselves; this line covers any that pick
+    // the × anyway. (A child's own autoFocus can't help: it runs while the
+    // sheet is still shut, and focus can't go into a hidden sheet.)
+    if (document.activeElement === closeRef.current) titleRef.current?.focus();
     // Stop the page behind from scrolling while the sheet is open (iPhones
     // otherwise scroll the page when you drag inside the sheet).
     const root = document.documentElement;
@@ -77,14 +90,18 @@ export function BottomSheet({
         className="flex max-h-[85dvh] flex-col rounded-t-2xl border border-b-0 border-border bg-popover pb-[env(safe-area-inset-bottom)]"
       >
         <div className="flex items-center justify-between px-4 pt-3">
-          <h2 id="sheet-title" className="text-lg font-semibold">
+          {/* tabIndex -1: code can focus it (see above), Tab skips it. */}
+          <h2 ref={titleRef} id="sheet-title" tabIndex={-1} className="text-lg font-semibold outline-none">
             {title}
           </h2>
           <button
+            ref={closeRef}
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="-mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            // Our matcha ring, only for keyboard focus (:focus-visible),
+            // instead of Safari's built-in blue one.
+            className="-mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
           >
             <X aria-hidden="true" className="size-5" />
           </button>

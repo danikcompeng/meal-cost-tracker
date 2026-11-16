@@ -157,3 +157,13 @@ metadata:
   lastHadText all branch; swap.ts:309 only runs at >= 3 days). Raised: "1." is singular in code
   but the plan says plural, comment at units.ts:65 reads ambiguously, no test for "1." / ".";
   optional swap-card.tsx:25 exact `servings === 1`; out of scope: parseDecimal takes "0x10"/"1e2".
+- 2026-11-15 polish item 2 (uncommitted bottom-sheet.tsx: title tabIndex -1 + focus after showModal,
+  x gets outline-none focus-visible ring): Minor issues, no bugs in the file. Verified: child
+  autoFocus/useEffect focus runs while the dialog is shut (no-op), StrictMode open/close/open keeps
+  the opener, Escape/Tab/return-focus unchanged, no sheet worse off on the title. Raised: same
+  Safari ring cause elsewhere (toast focusAfter -> shuffle button entry-row.tsx:76 has no
+  outline-none, opener.focus() on close; undo-toast.tsx:82 "a tap doesn't draw a ring" contradicts
+  item 2); comment 35-41 overclaims (title is now showModal's own pick, probably; "deliberate
+  choice" can't exist at open); dead autoFocus at open: recipe-form.tsx:50 always, log-food-form
+  on ?log=; working tree: today-view.tsx:178 focusAfterUndo vs Toast.focusAfter (build fails;
+  item 3 WIP, commit bottom-sheet.tsx alone).

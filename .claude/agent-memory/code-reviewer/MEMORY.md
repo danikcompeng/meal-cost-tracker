@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  polish item 1 ("1 serving" wording), Looks good. Polish plan: plans/polish.md (5 items).
+  polish item 2 (sheet focus on title), Minor issues. Polish plan: plans/polish.md (5 items).
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -36,6 +36,11 @@
 - parseDecimal uses Number(): "0x10" = 16, "1e2" = 100, "1." = 1, "." = invalid. Pre-existing,
   raised once (polish 1) as out of scope. Intl rounds the exact double: 0.995 shows "0.99".
 - Count words: new "N things" text must branch on 1 or use unitWord/amountText (lib/units.ts).
+- Focus + iPhone (polish item 2): a tap never focuses a button, so Safari treats ANY later
+  script .focus() as keyboard-like and draws a ring (blue if the element has no outline-none).
+  Every .focus() after a tap (toast focusAfter, opener on close, Skip, Start over) can ring.
+  BottomSheet: React autoFocus / child useEffect focus at open is a no-op (dialog still shut).
+  showModal's pick = first focusable incl. tabIndex -1 (sheet title), or an HTML autofocus attr.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
