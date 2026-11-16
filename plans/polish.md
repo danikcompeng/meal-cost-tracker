@@ -110,7 +110,7 @@ you approve.
   shows a bin icon and "Delete". Let go past about 40% of the row (or
   flick fast) and it slides off, the rows below close the gap, and the
   rings and totals update straight away. Short of that, it springs back.
-- Then "Rolled oats deleted from breakfast · Undo", the same message as
+- Then "Rolled oats deleted from Breakfast · Undo", the same message as
   the swap's. Undo puts it back in the same spot.
 - Sideways drags only: `dragDirectionLock` and Framer's
   `touch-action: pan-y` (as in the swap stack), so scrolling the day up

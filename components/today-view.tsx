@@ -11,6 +11,7 @@ import { MotionConfig } from "framer-motion";
 import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
 import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
+import { deletedMessage, swapNotUndoneMessage, swappedMessage } from "@/lib/entry-messages";
 import {
   DELETE_FAILED,
   SWAP_FAILED,
@@ -24,7 +25,6 @@ import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import { swapCurrentFromEntry, type EatenRow, type RankedSwap } from "@/lib/swap";
 import type { Targets } from "@/lib/targets";
 import type { Food, MealEntry, Recipe } from "@/lib/types";
-import { amountText } from "@/lib/units";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
 import { DaySummary } from "./day-summary";
@@ -181,12 +181,7 @@ export function TodayView({
     // Only this sheet's status: another sheet may have a swap of its own.
     setSwapStatus((s) => (s?.sheet === mine ? null : s));
     setSheet((current) => (current === mine ? null : current));
-    showSwapUndo(
-      entry,
-      swap,
-      previous,
-      `${MEAL_LABELS[entry.meal]} is now ${swap.name} · ${amountText(entry.amount, "serving")}`,
-    );
+    showSwapUndo(entry, swap, previous, swappedMessage(entry.meal, swap.name, entry.amount));
     return true;
   }
 
@@ -239,7 +234,7 @@ export function TodayView({
     }
     if (problem) {
       if (replaced(id)) {
-        const text = `Couldn't undo: ${MEAL_LABELS[previous.meal]} is still ${swappedTo.name}.`;
+        const text = swapNotUndoneMessage(previous.meal, swappedTo.name);
         // With its own Undo when trying again can help, so the newer
         // message taking its place doesn't leave you stuck.
         if (problem.final) {
@@ -398,7 +393,7 @@ export function TodayView({
       if (result.reached) router.refresh();
       return;
     }
-    showDeleteUndo(entry, result.deleted, deletedText(entry));
+    showDeleteUndo(entry, result.deleted, deletedMessage(entry.name, entry.meal));
   }
 
   /**
@@ -433,15 +428,12 @@ export function TodayView({
     // Deleted now, or already: either way the sheet's job is done.
     if (pressedWithFocus) focusLater.current = addSelector(entry.meal);
     finish(mine);
-    if (result.ok) showDeleteUndo(entry, result.deleted, deletedText(entry));
+    if (result.ok) showDeleteUndo(entry, result.deleted, deletedMessage(entry.name, entry.meal));
     else showAlreadyDeleted(entry);
     return null;
   }
 
-  const deletedText = (entry: MealEntry) =>
-    `${entry.name} deleted from ${MEAL_LABELS[entry.meal].toLowerCase()}`;
-
-  /** "Rolled oats deleted from breakfast   Undo". */
+  /** "Rolled oats deleted from Breakfast   Undo". */
   function showDeleteUndo(entry: MealEntry, deleted: DeletedEntry, text: string, isError = false) {
     let restored = false;
     const id = showToast({
