@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  swap step 3 (swapEntry/undoSwap + Undo toast on Today), Minor issues.
+  PWA step 1 (manifest, icons, meta tags, proxy matcher), Minor issues.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -25,6 +25,7 @@
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.
+  Same for "change one, change the other" notes: check the OTHER file has the matching note.
 - Postgres numeric arrives as string: Number()/numberOrNull at every new Supabase read.
 - Null must propagate: no `?? 0` on price or nutrients; guard servings / package_size = 0.
 - Swallowed errors: every new action/read must logDbError before returning a friendly message.

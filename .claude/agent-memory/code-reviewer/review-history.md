@@ -112,3 +112,11 @@ metadata:
   render-tree.js exitStatus 2; experimental.useOffline is off) = offline browser error page;
   refresh only after a server answer. Also success does setSwapStatus(null) unconditionally,
   wiping another sheet's pending/error (use s?.sheet === mine). Rest OK.
+- 2026-11-15 PWA step 1 (uncommitted: manifest, icons route, meta tags, proxy matcher): Minor
+  issues, no bugs. Verified fine: ImageResponse prod cache-control is max-age=0 must-revalidate
+  (no stale-icon risk); generateStaticParams in route handlers + unknown params at runtime = 404;
+  maskable 0.56 square corners at 39.6% < 40% safe circle; matcher test regex ~ Next's (Next only
+  adds optional _next/data prefix / .rsc suffix); vitest picks up root proxy.test.ts. Raised:
+  globals.css --background/--primary lack the back-pointer to app-identity.ts the plan promised;
+  layout.tsx re-implements iconByFile with `!`; manifest.webmanifest + favicon.ico in the matcher
+  duplicate the ending rules (fine, just say so); optional comment on why 0.56.

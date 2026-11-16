@@ -58,3 +58,8 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   swapCurrentFromEntry in swap.ts. today-view.tsx pickSwap (useTransition, returns
   Promise<boolean>) + undo + Toast; undo-toast.tsx (10 s timer, hover/focus pause, status box);
   entry-row.tsx two buttons, data-swap-entry on the shuffle button (Undo focus target).
+- PWA (plans/pwa.md, no migration): lib/app-identity.ts (names, PAGE_BACKGROUND, ICON_GREEN,
+  APP_ICONS, appManifest), components/app-icon.tsx (Satori, inline styles), app/icons/[file]/
+  route.tsx, app/manifest.ts, layout.tsx metadata/viewport, proxy.ts matcher + proxy.test.ts.
+  Steps: 1 manifest/icons/meta, 2 safe areas + 16 px inputs, 3 login code (verifyOtp), 4 Android
+  camera help.

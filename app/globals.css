@@ -57,13 +57,13 @@
 /* Light mode. Values and reasons: Design section in CLAUDE.md. */
 :root {
   color-scheme: light dark; /* native inputs and scrollbars match too */
-  --background: #FFFFFF;          /* white */
+  --background: #FFFFFF;          /* white. Also in lib/app-identity.ts (status bar) */
   --foreground: #171717;          /* near-black ink */
   --card: #F0F0F0;                /* tile: light grey, one step off white */
   --card-foreground: #171717;
   --popover: #FFFFFF;             /* menus (they have a border) */
   --popover-foreground: #171717;
-  --primary: #4F6B2E;             /* matcha: the single accent */
+  --primary: #4F6B2E;             /* matcha: the single accent. Also the icon's green (lib/app-identity.ts) */
   --primary-foreground: #FFFFFF;
   --secondary: #F0F0F0;
   --secondary-foreground: #171717;
@@ -102,7 +102,7 @@
 /* Dark mode: used automatically when the device is set to dark. */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #141414;        /* near-black, not pure black */
+    --background: #141414;        /* near-black, not pure black. Also in lib/app-identity.ts (status bar) */
     --foreground: #EDEDED;        /* off-white text */
     --card: #1F1F1F;
     --card-foreground: #EDEDED;

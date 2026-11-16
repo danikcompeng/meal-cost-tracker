@@ -63,6 +63,8 @@ Core features:
    shown on recipes, swap suggestions and the day.
 
 Platform: web app only, installable on iPhone and Android as a PWA.
+The home-screen name, colours and icon list live in lib/app-identity.ts;
+the icon drawing is components/app-icon.tsx (plan: plans/pwa.md).
 Out of scope: Apple Health / Google Fit, calories burnt, exercise,
 generated or suggested recipes from outside your own, and searching a
 big public food database as the main way to log.

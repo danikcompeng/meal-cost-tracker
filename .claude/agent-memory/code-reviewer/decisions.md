@@ -37,6 +37,10 @@ Per feature (all approved, don't re-raise)
   Servings stay the same. Recency is the LAST group on purpose. Protein 15% or 2 g; cost
   10% or $0.25; recent = < 3 days; history 60 days. "Not had it in 60+ days" also for new
   recipes (worded true either way). Swap is recipe -> recipe only.
+- PWA (2026-11-15, plans/pwa.md): no service worker (offline = phone's own page); status bar
+  "default"; manifest colours light-only (dark via theme-color tags, Android splash white);
+  id "/" forever; short name "Meal Cost". proxy skips /icons/ by path as well as by .png ending:
+  the developer asked for that explicitly. Next 16 emits mobile-web-app-capable (not apple-), fine.
 
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

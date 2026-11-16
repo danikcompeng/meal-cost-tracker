@@ -1,0 +1,86 @@
+// The app's name, icons and colours for the home screen, in one place.
+// Renaming the app later is mostly this file (plus the icon drawing in
+// components/app-icon.tsx and the email template's "Meal Cost Tracker").
+import type { MetadataRoute } from "next";
+
+export const APP_NAME = "Meal Cost Tracker";
+
+/**
+ * The name under the icon on the home screen. iPhone cuts names off at
+ * about 12 characters ("Meal Cost Tr…"), so this one has to be short.
+ */
+export const APP_SHORT_NAME = "Meal Cost";
+
+export const APP_DESCRIPTION = "Cheap meals on repeat, without getting bored.";
+
+/**
+ * The page background, so the phone's status bar blends into the page.
+ * Copied from --background in app/globals.css: a manifest and a <meta> tag
+ * can't read CSS variables. Change one, change the other.
+ */
+export const PAGE_BACKGROUND = { light: "#FFFFFF", dark: "#141414" } as const;
+
+/** The icon's matcha green: --primary (light) in app/globals.css. */
+export const ICON_GREEN = "#4F6B2E";
+
+/**
+ * - "rounded": a rounded square, for browser tabs and Android's "any" icon.
+ * - "full": fills the whole square, no rounding. iPhone rounds the corners
+ *   itself, and it shows see-through corners as black.
+ * - "maskable": fills the square with the drawing kept small in the middle,
+ *   because Android cuts it to its own shape (circle, squircle...).
+ */
+export type IconShape = "rounded" | "full" | "maskable";
+
+export type AppIconFile = {
+  file: string;
+  size: number;
+  shape: IconShape;
+  /** Listed in the manifest (Android). The iPhone icon has its own tag. */
+  inManifest: boolean;
+};
+
+/** Every icon PNG, served at /icons/<file> by app/icons/[file]/route.tsx. */
+export const APP_ICONS: readonly AppIconFile[] = [
+  { file: "icon-192.png", size: 192, shape: "rounded", inManifest: true },
+  { file: "icon-512.png", size: 512, shape: "rounded", inManifest: true },
+  { file: "icon-maskable-512.png", size: 512, shape: "maskable", inManifest: true },
+  // 180 x 180 is what iPhones ask for.
+  { file: "apple-touch-icon.png", size: 180, shape: "full", inManifest: false },
+];
+
+export const iconUrl = (icon: AppIconFile) => `/icons/${icon.file}`;
+
+export function iconByFile(file: string): AppIconFile | undefined {
+  return APP_ICONS.find((icon) => icon.file === file);
+}
+
+/**
+ * The web app manifest: what Android (and iPhone, partly) reads when you
+ * add the app to the home screen.
+ */
+export function appManifest(): MetadataRoute.Manifest {
+  return {
+    // `id` is the app's identity. It stays "/" forever, so after a rename
+    // Android still knows it's the same app and updates the icon in place.
+    id: "/",
+    name: APP_NAME,
+    short_name: APP_SHORT_NAME,
+    description: APP_DESCRIPTION,
+    start_url: "/", // opens on Today (or Login when you're logged out)
+    scope: "/",
+    // Its own window, without the browser's address bar.
+    display: "standalone",
+    // A manifest takes one colour each, so these are the light ones. Dark
+    // mode's status bar comes from the theme-color tags (app/layout.tsx);
+    // Android's splash screen stays white for the half second it shows.
+    background_color: PAGE_BACKGROUND.light,
+    theme_color: PAGE_BACKGROUND.light,
+    icons: APP_ICONS.filter((icon) => icon.inManifest).map((icon) => ({
+      src: iconUrl(icon),
+      sizes: `${icon.size}x${icon.size}`,
+      type: "image/png",
+      purpose: icon.shape === "maskable" ? "maskable" : "any",
+    })),
+  };
+}
