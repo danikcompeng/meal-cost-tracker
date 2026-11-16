@@ -20,8 +20,9 @@ export const metadata: Metadata = { title: "Recipe · Meal Cost Tracker" };
 export default function RecipePage({ params }: PageProps<"/recipes/[id]">) {
   return (
     <>
-      {/* Bottom padding leaves room for the tab bar fixed at the bottom. */}
-      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-28">
+      {/* Bottom padding leaves room for the tab bar fixed at the bottom
+          (pb-above-tab-bar, in globals.css). */}
+      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-above-tab-bar">
         <Suspense fallback={<RecipeSkeleton />}>
           {params.then(({ id }) => (
             <Recipe id={id} />

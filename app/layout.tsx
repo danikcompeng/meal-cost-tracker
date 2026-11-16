@@ -41,6 +41,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
+  // "cover" lets the page reach the very edges of the screen and switches
+  // on env(safe-area-inset-...): how tall the iPhone's home bar is, etc.
+  // Without it those are always 0. The tab bar, bottom sheets, Undo
+  // message and scanner already add them, so they stay clear of the home
+  // bar; screens with a tab bar get the extra room from pb-above-tab-bar.
+  viewportFit: "cover",
   // The status bar's colour, matching the page in light and dark mode.
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: PAGE_BACKGROUND.light },

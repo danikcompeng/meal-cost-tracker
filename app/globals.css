@@ -139,6 +139,16 @@
   }
 }
 
+/* Empty space under a screen's content, so the last item can scroll up
+   past the tab bar (fixed to the bottom, about 4.3 rem tall, with the
+   round Scan button sticking up above it). On an iPhone without a home
+   button, the tab bar also grows by the home bar's height (the thin line
+   you swipe up on), so that's added too. It's 0 everywhere else.
+   Used on every screen with a <TabBar />. */
+@utility pb-above-tab-bar {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

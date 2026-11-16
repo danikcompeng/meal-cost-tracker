@@ -41,6 +41,7 @@ Per feature (all approved, don't re-raise)
   "default"; manifest colours light-only (dark via theme-color tags, Android splash white);
   id "/" forever; short name "Meal Cost". proxy skips /icons/ by path as well as by .png ending:
   the developer asked for that explicitly. Next 16 emits mobile-web-app-capable (not apple-), fine.
+  Undo toast bottom 6rem + inset (fix 5a, approved). No maximum-scale=1 (keeps pinch zoom).
 
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

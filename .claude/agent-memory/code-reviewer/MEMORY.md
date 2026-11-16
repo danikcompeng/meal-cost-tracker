@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  PWA step 1 (manifest, icons, meta tags, proxy matcher), Minor issues.
+  PWA step 2 (safe areas, 16 px inputs, toast), Minor issues.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -22,6 +22,10 @@
 - Framer (motion-dom): MotionValue.stop()/jump() stop an animate(x) run and its .then NEVER
   fires; x.set() does NOT stop it. Pointerdown on a drag element stops its x animation.
   So "commit in .then + a latch" can get stuck; check for it.
+
+- viewport-fit=cover is on (2026-11-15): any new FULL-WIDTH fixed/absolute element needs
+  env(safe-area-inset-left/right) too (landscape notch); centred max-w-lg columns are safe.
+  Tab bar ~68.5 px, Scan ring top 91.5 px: toast (6rem) and pb-above-tab-bar (7rem) depend on it.
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.

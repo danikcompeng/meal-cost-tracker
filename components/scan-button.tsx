@@ -4,6 +4,9 @@ import { ScanBarcode } from "lucide-react";
 // The round matcha button in the middle of the tab bar. It's raised a
 // little above the bar (negative top margin) so it reads as the main
 // action, and the word "Scan" sits under the icon so nobody has to guess.
+// How far it sticks up sets two other numbers: the Undo message's position
+// (undo-toast.tsx) and pb-above-tab-bar (globals.css). Re-check both if you
+// change its size, ring or -mt-7.
 export function ScanButton() {
   return (
     <Link

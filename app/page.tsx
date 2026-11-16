@@ -24,8 +24,9 @@ export const metadata: Metadata = { title: "Today · Meal Cost Tracker" };
 export default function TodayPage({ searchParams }: PageProps<"/">) {
   return (
     <>
-      {/* Bottom padding leaves room for the tab bar fixed at the bottom. */}
-      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-28">
+      {/* Bottom padding leaves room for the tab bar fixed at the bottom
+          (pb-above-tab-bar, in globals.css). */}
+      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-above-tab-bar">
         {/* Everything here depends on your login and timezone cookies, which
             are only known per request, so it streams in behind Suspense. */}
         <Suspense fallback={<TodaySkeleton />}>

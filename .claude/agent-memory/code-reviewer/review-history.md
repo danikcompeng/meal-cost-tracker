@@ -120,3 +120,10 @@ metadata:
   globals.css --background/--primary lack the back-pointer to app-identity.ts the plan promised;
   layout.tsx re-implements iconByFile with `!`; manifest.webmanifest + favicon.ico in the matcher
   duplicate the ending rules (fine, just say so); optional comment on why 0.56.
+- 2026-11-15 PWA step 2 (uncommitted: viewport-fit cover, @utility pb-above-tab-bar on the 5
+  TabBar screens, input 16 px, toast bottom 6rem): Minor issues, no blocking bugs. Verified: only
+  5 TabBar screens, no pb-28 left, every input/select >= 16 px, sheets/panels/pages are centred
+  max-w-lg (safe in landscape), toast/padding maths hold with inset. Raised: scanner top bar
+  (close/torch) is full-width px-4 -> under the notch in landscape (needs inset-left/right);
+  plan's "browser tab looks the same" not quite (Safari tab bar lifts when toolbar collapses,
+  unsure); 12 dead md:text-base overrides; Scan button size <-> toast 6rem/7rem needs a pointer.

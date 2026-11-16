@@ -40,9 +40,11 @@ export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss
   return (
     <div
       role="status"
-      // Fixed above the tab bar (about 4 rem tall, plus the iPhone's home
-      // bar). Taps pass through the empty box; only the message takes them.
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-lg px-4"
+      // Fixed above the tab bar, plus the iPhone's home bar. The bar is
+      // about 4.3 rem tall, but the round Scan button (with its ring) sticks
+      // up about 1.4 rem above it, so 6 rem clears the button's top.
+      // Taps pass through the empty box; only the message takes them.
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-lg px-4"
     >
       {/* mode="wait": a second message waits for the first to fade out,
           instead of both showing for a moment. */}

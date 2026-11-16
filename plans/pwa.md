@@ -51,8 +51,9 @@ My defaults are in brackets. Say "yes" to keep them all, or change any.
   a "Log in" button, and "Use a different email".
 - **Login email:** the "Log in" button stays, and below it a big code
   ("Or type this code in the app: 123456").
-- Nothing else changes, and in a normal browser tab everything looks the
-  same as today.
+- Nothing else changes. In a normal Safari tab, one small difference:
+  when Safari's bottom toolbar shrinks as you scroll, the tab bar now
+  moves up by the home bar's height instead of sitting on top of it.
 
 ## 2. iPhone details
 
@@ -247,7 +248,8 @@ required, like for the camera):
 7. Scan: the close button is clear of the Dynamic Island; allow the
    camera if it asks.
 8. Log out, then log in inside the app with the code. You land on Today.
-9. Turn the phone sideways on Today: nothing under the notch.
+9. Turn the phone sideways on Today, and on Scan: nothing under the
+   notch, and the scanner's close and torch buttons are easy to tap.
 10. Airplane mode, open the app: the phone's "no connection" page. Back
     online: it works.
 

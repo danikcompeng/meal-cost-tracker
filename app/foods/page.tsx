@@ -12,8 +12,9 @@ export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
 export default function FoodsPage() {
   return (
     <>
-      {/* Bottom padding leaves room for the tab bar fixed at the bottom. */}
-      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-28">
+      {/* Bottom padding leaves room for the tab bar fixed at the bottom
+          (pb-above-tab-bar, in globals.css). */}
+      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-above-tab-bar">
         <AppHeader title="Foods">
           <KitchenSwitch current="foods" />
         </AppHeader>

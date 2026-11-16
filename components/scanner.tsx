@@ -84,8 +84,10 @@ export function Scanner({
         </p>
       </div>
 
-      {/* Top bar, kept clear of the notch with the safe-area inset. */}
-      <div className="absolute inset-x-0 top-0 flex justify-between px-4 pt-[max(1rem,env(safe-area-inset-top))]">
+      {/* Top bar, kept clear of the notch with the safe-area insets: at the
+          top, and at the sides when the phone is held sideways (the notch
+          is then on the left or right). */}
+      <div className="absolute inset-x-0 top-0 flex justify-between pt-[max(1rem,env(safe-area-inset-top))] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))]">
         <button type="button" onClick={onClose} aria-label="Close scanner" className={ROUND_BUTTON}>
           <X aria-hidden="true" className="size-6" />
         </button>
