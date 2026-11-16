@@ -230,3 +230,47 @@ there. Most important first.
 - **Typed numbers accept computer formats**: parseDecimal uses Number(),
   so a pasted "0x10" logs 16 and "1e2" logs 100. A phone keypad can't
   type them; a laptop or a paste can.
+
+## Today screen critique (Nov 16)
+
+Works:
+1. Logging: one tap on "+ Add to lunch", recipes above foods, and the
+   rings update straight away.
+2. Scanning: the middle tab opens the camera instantly, and a food I've
+   scanned before goes straight to logging.
+3. Recipes and cost: each recipe shows cost per serving and all 8
+   nutrients, and a missing value shows "—", never a lower number.
+
+To fix:
+1. Protein is always the green one. The accent says protein is what
+   matters, but not everyone tracks protein. Fix: let me pick a focus
+   nutrient that gets the accent and the top spot.
+2. One fixed accent colour. Apps like Transit let you pick yours. Fix:
+   5–6 preset accents, each checked for contrast in light and dark.
+   Presets, not a free colour picker, so no choice can make the app
+   unreadable.
+3. The login code was hidden on the lock screen, so I had to open Gmail
+   to see it. Fix: the code now comes first in the email's preview line
+   (c035d9b).
+
+## Next feature: make it yours
+
+Critique fixes 1 and 2, held back from the states and accessibility
+pass (2026-11-16, plans/states-a11y.md) because each is a feature of
+its own. Plan both before building, like every feature.
+
+1. **Focus nutrient.** Today, protein always gets the matcha accent and
+   the second spot, which says protein is what matters. Not everyone
+   tracks protein. Let me pick a focus nutrient (calories, protein,
+   carbs, fat, maybe fiber or water) that gets the accent and the top
+   spot on Today. Things to decide: where the choice lives (Settings,
+   next to the targets), and what happens to protein per dollar, the
+   app's own number, when protein isn't the focus.
+2. **Accent colour presets.** One fixed accent today. Apps like Transit
+   let you pick yours. Offer 5–6 preset accents, matcha first, each
+   checked for contrast in light and dark: text on background, tiles,
+   popovers and hover, and white or dark text on the accent's buttons,
+   the same 4.5:1 rule as the palette in CLAUDE.md. Presets, not a free
+   colour picker, so no choice can make the app unreadable. Things to
+   decide: which tokens change with it (primary, ring, matcha-soft) and
+   where the choice is saved (user_settings).
