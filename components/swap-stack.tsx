@@ -73,6 +73,9 @@ export function SwapStack({
   const leaving = useRef(false);
   const [flyingId, setFlyingId] = useState<string | null>(null);
   const flying = flyingId === swap.id;
+  // Did this touch become a sideways drag? Framer decides after a few
+  // pixels (dragDirectionLock); until then it may still be a scroll.
+  const sideways = useRef(false);
 
   // A new top card starts in the middle again. jump() also STOPS a fly-off
   // still running from the card before (plain set() wouldn't), and a
@@ -130,7 +133,27 @@ export function SwapStack({
     });
   }
 
-  function handleDragEnd(_: unknown, { offset, velocity }: PanInfo) {
+  /**
+   * Back to the middle after a gesture that doesn't count. Framer only
+   * springs the card back by itself after a sideways drag; after a scroll
+   * or a tap that caught it mid-slide it would stay tilted part-way off.
+   */
+  function settle() {
+    if (leaving.current) return;
+    if (reduceMotion) x.jump(0);
+    else animate(x, 0, { type: "spring", stiffness: 380, damping: 32 });
+  }
+
+  function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) {
+    // Only a gesture locked sideways decides, never one the browser took
+    // over to scroll the sheet ("pointercancel"). Framer reports the
+    // finger's speed even for a scroll, so a quick scroll that drifts a
+    // little sideways would otherwise look like a flick and skip a card
+    // or swap your meal. Same fix as Today's swipe row (entry-row.tsx).
+    if (!sideways.current || event.type === "pointercancel") {
+      settle();
+      return;
+    }
     // A fast flick only counts towards the side the card is on: pulling
     // back quickly towards the middle means "never mind".
     if (offset.x > COMMIT_DISTANCE || (offset.x > 0 && velocity.x > COMMIT_SPEED)) commit("pick");
@@ -179,6 +202,18 @@ export function SwapStack({
           dragDirectionLock
           dragElastic={0.9}
           dragConstraints={{ left: 0, right: 0 }}
+          onPointerDownCapture={() => {
+            sideways.current = false;
+          }}
+          // A press that never became a sideways drag (a tap, a scroll the
+          // phone took over) stops any slide still running: put it back.
+          onPointerUp={() => {
+            if (!sideways.current) settle();
+          }}
+          onPointerCancel={settle}
+          onDirectionLock={(axis) => {
+            sideways.current = axis === "x";
+          }}
           onDragEnd={handleDragEnd}
           style={{ x, rotate }}
           // The new top card grows from the stack (or just fades in when

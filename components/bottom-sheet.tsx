@@ -42,7 +42,16 @@ export function BottomSheet({
     // browsers start there by themselves; this line covers any that pick
     // the × anyway. (A child's own autoFocus can't help: it runs while the
     // sheet is still shut, and focus can't go into a hidden sheet.)
-    if (document.activeElement === closeRef.current) titleRef.current?.focus();
+    //
+    // A box marked data-autofocus ("New recipe"'s name, the amount when
+    // Today opens straight to a scanned food) gets focus instead, now that
+    // the sheet is open, so you can type straight away. On an iPhone the
+    // keyboard may or may not open by itself: Safari only opens it when
+    // the focus comes from a tap (likely for "New recipe", which you tap
+    // to open; not after a scan, which opens the page).
+    const marked = dialog?.querySelector<HTMLElement>("[data-autofocus]");
+    if (marked) marked.focus();
+    else if (document.activeElement === closeRef.current) titleRef.current?.focus();
     // Stop the page behind from scrolling while the sheet is open (iPhones
     // otherwise scroll the page when you drag inside the sheet).
     const root = document.documentElement;

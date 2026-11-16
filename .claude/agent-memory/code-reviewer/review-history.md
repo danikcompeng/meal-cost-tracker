@@ -315,3 +315,17 @@ metadata:
   alert present at load (likely not read); "can't use" buttons (Remove while saving, Save while
   deleting) now full colour (commit 9); edit-entry Delete not blocked while saving; Edit recipe sheet
   has 2 message lines; nits: setSetAside name, duplicated block, hard-coded email-error/code-error.
+- 2026-11-16 states commit 8 (uncommitted: swap-stack sideways ref + pointercancel; first-use branch
+  renders UndoToast; bottom-sheet [data-autofocus] after showModal; amount-field/recipe-form markers):
+  Minor issues. Verified: `|| undefined` keeps data-autofocus off ("false" would match); only ?log=
+  LogFoodForm and New recipe open straight onto a marker (Edit entry/ingredient/recipe, swap: none);
+  mouse gets onDirectionLock; commit()/keys untouched; x-lock + pointercancel springs back; branch on
+  server `entries` is right; Undo from first-use refocuses the row (setToast/focusLater commit before
+  Next's tree transition). Raised: UndoToast remounts on branch switch (slot 1 vs 7) -> entrance
+  replays, status box recreated (hoist to a stable slot); keyboard delete of the last entry: "+ Add"
+  focused then unmounted -> body, x on first-use too (no [data-add-meal] there, stale focusLater); no
+  h-20 spacer on first-use (small phones: toast over "scan a barcode", page can't scroll); swap card
+  stuck off-centre when a press stops a running spring then y-locks/taps (Framer skips x for y-lock,
+  resumeAnimation needs this card's constraints resolved) - comment line 147 overclaims, settle like
+  entry-row; unsure: fast thumb flicks with >10 px y drift lock y; bottom-sheet comment "iPhone keyboard
+  waits for a tap" likely wrong (discrete-event effects flush inside the click).

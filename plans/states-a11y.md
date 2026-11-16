@@ -312,8 +312,14 @@ help.
   row (`entry-row.tsx`: `onDirectionLock` plus ignoring
   "pointercancel").
 - **First use keeps the Undo message**: the "Start with the foods you
-  buy" screen draws the message too, so deleting your last entry with
-  no foods left can still be undone.
+  buy" screen (now `components/first-use.tsx`) and the day share one
+  message in one place, so deleting your last entry with no foods left
+  keeps the same message and its Undo (not a rebuilt copy). The page's
+  spacer under it works on both. A keyboard delete of that last entry
+  puts focus on "Add your first food" instead of losing it.
+- The swap card slides back to the middle after any gesture that
+  doesn't count (a scroll, a tap mid-slide), not only after a sideways
+  drag.
 - **autoFocus** (decision C): `BottomSheet` looks for a
   `data-autofocus` box inside it after it opens and focuses that,
   otherwise its title as now. Used for "New recipe"'s name box and the

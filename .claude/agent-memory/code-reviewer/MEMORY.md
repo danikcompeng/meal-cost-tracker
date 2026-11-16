@@ -5,11 +5,18 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 7 (role=alert, describedby, one message slot), Minor issues. Plan: plans/states-a11y.md
-  (commit 8 swap flick/autoFocus, commit 9 busy-button colour/contrast/tap targets/headings).
+  states commit 8 (swap flick, first-use toast, data-autofocus), Minor issues. Plan: plans/states-a11y.md
+  (commit 9 busy-button colour/contrast/tap targets/headings).
 - React 19.3 async transitions: setState AFTER an await is an urgent (Default lane) update and commits
   BEFORE isPending flips false (two commits). An effect keyed only on the error sees the busy UI still
   mounted. Form onSubmit runs before a function `action` (and on Enter); preventDefault there skips it.
+  Next's action reducer calls resolve(actionResult) BEFORE the revalidated tree commits, so code after
+  `await action()` renders against the OLD server props first.
+- Early-return branches: a component rendered in both (UndoToast) at a different child index REMOUNTS
+  (state + entrance animation lost). React renders data-x={false} as "false" (matches [data-x]).
+- Framer drag release: y-locked gesture -> startAnimation skips x (no spring back); no-drag tap/cancel
+  -> resumeAnimation only if this element's constraints were resolved (first onStart) and
+  currentDirection (kept from the LAST gesture) allows x. Lock = 10 px, checks y first.
 - Base UI focusableWhenDisabled: aria-disabled, onClick preventDefault (blocks click AND Enter implicit
   submit), keydown preventDefault on every key but Tab (also stops Esc closing a dialog from it).
   buttonVariants `disabled:` classes stop applying: style "can't use" vs "busy" by hand.

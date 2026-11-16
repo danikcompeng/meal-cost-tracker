@@ -5,10 +5,8 @@
 // "Lunch is now Lentil dal · Undo" message after a swap.
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { MotionConfig } from "framer-motion";
-import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
 import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
 import { deletedMessage, swapNotUndoneMessage, swappedMessage } from "@/lib/entry-messages";
@@ -25,10 +23,10 @@ import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import { swapCurrentFromEntry, type EatenRow, type RankedSwap } from "@/lib/swap";
 import type { Targets } from "@/lib/targets";
 import type { Food, MealEntry, Recipe } from "@/lib/types";
-import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
 import { DaySummary } from "./day-summary";
 import { EditEntryForm } from "./edit-entry-form";
+import { FirstUse } from "./first-use";
 import { FoodPicker } from "./food-picker";
 import { LogFoodForm } from "./log-food-form";
 import { LogRecipeForm } from "./log-recipe-form";
@@ -290,7 +288,14 @@ export function TodayView({
     else focusLater.current = selector;
   }
   const rowSelector = (entry: MealEntry) => `[data-entry-open="${entry.id}"]`;
-  const addSelector = (meal: Meal) => `[data-add-meal="${meal}"]`;
+  // That meal's "+ Add", or on the first-use screen (no foods, nothing
+  // logged) its "Add your first food". Each screen has only one of them.
+  const addSelector = (meal: Meal) => `[data-add-meal="${meal}"], [data-first-use]`;
+  // After deleting: deleting your last entry with no foods left switches
+  // to the first-use screen a moment later, which would remove "+ Add"
+  // just after it got focus. So wait for "Add your first food" instead.
+  const afterDeleteSelector = (meal: Meal) =>
+    foods.length === 0 && entries.length === 1 ? "[data-first-use]" : addSelector(meal);
 
   /** Deletes on the server: the deleted copy (for Undo), or why not. */
   async function removeEntry(
@@ -373,7 +378,7 @@ export function TodayView({
     // button)? The button is going, so focus moves on to the meal's
     // "+ Add" instead of falling to the top of the page.
     if (document.activeElement?.matches("[data-row-delete]")) {
-      focusLater.current = addSelector(entry.meal);
+      focusLater.current = afterDeleteSelector(entry.meal);
     }
     setHiddenFor(entry.id, true);
     const result = await removeEntry(entry);
@@ -426,7 +431,7 @@ export function TodayView({
       return result.message;
     }
     // Deleted now, or already: either way the sheet's job is done.
-    if (pressedWithFocus) focusLater.current = addSelector(entry.meal);
+    if (pressedWithFocus) focusLater.current = afterDeleteSelector(entry.meal);
     finish(mine);
     if (result.ok) showDeleteUndo(entry, result.deleted, deletedMessage(entry.name, entry.meal));
     else showAlreadyDeleted(entry);
@@ -487,31 +492,33 @@ export function TodayView({
   const water = waterTotal(visible);
 
   // First use: there's nothing to log until you've added a food.
-  if (foods.length === 0 && entries.length === 0) {
-    return (
-      <section className="rounded-2xl bg-card px-5 py-10 text-center">
-        <h2 className="text-lg font-semibold">Start with the foods you buy</h2>
-        <p className="mx-auto mt-2 max-w-xs text-muted-foreground">
-          Add a food or two, with what you paid and the macros from the label. Then log what you
-          eat here.
-        </p>
-        <Link href="/foods" className={cn(buttonVariants(), "mt-6 h-11 px-6 text-base")}>
-          Add your first food
-        </Link>
-        <p className="mt-3 text-sm text-muted-foreground">
-          or{" "}
-          <Link href="/scan" className="focus-ring rounded-sm font-medium text-primary">
-            scan a barcode
-          </Link>
-        </p>
-      </section>
-    );
-  }
+  const firstUse = foods.length === 0 && entries.length === 0;
 
   return (
     // reducedMotion="user": if your phone asks for less motion, Framer
     // Motion skips the slides and keeps only gentle fades.
     <MotionConfig reducedMotion="user">
+      {firstUse ? <FirstUse /> : dayContent()}
+      {/* The message stays until dismissed, and it sits over the bottom of
+          the page (undo-toast.tsx), so while it's up the page gets this
+          much more room: the last thing on the page (snack's "+ Add", or
+          "scan a barcode" on first use) can always scroll above it, even
+          with 4 lines of message on a small phone. */}
+      {toast && <div aria-hidden="true" className="h-20" />}
+      {/* One message in one place for both screens: deleting your last
+          entry with no foods left switches to the first-use screen, and
+          the same message (with its Undo) has to stay up, not be rebuilt. */}
+      <UndoToast toast={toast} onDismiss={() => setToast(null)} />
+    </MotionConfig>
+  );
+
+  // The day itself: summary, meals and their sheets. Called as a plain
+  // function, not drawn as <Day />: a component defined inside TodayView
+  // would be a new kind of component on every redraw, and React would
+  // rebuild the whole day each time (losing open rows and animations).
+  function dayContent() {
+    return (
+      <>
       {/* Everything below counts what's on screen: a row you just deleted
           leaves the totals as it leaves the list. */}
       <DaySummary
@@ -545,11 +552,6 @@ export function TodayView({
           />
         ))}
       </div>
-      {/* The message stays until dismissed, and it sits over the bottom of
-          the page (undo-toast.tsx), so while it's up the page gets this
-          much more room: the last row (snack's "+ Add") can always scroll
-          above it, even with 4 lines of message on a small phone. */}
-      {toast && <div aria-hidden="true" className="h-20" />}
 
       {sheet?.mode === "add" && (
         <BottomSheet title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`} onClose={close}>
@@ -612,8 +614,7 @@ export function TodayView({
           onClose={close}
         />
       )}
-
-      <UndoToast toast={toast} onDismiss={() => setToast(null)} />
-    </MotionConfig>
-  );
+      </>
+    );
+  }
 }

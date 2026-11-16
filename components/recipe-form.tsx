@@ -62,7 +62,9 @@ export function RecipeForm({
           onChange={(e) => setName(e.target.value)}
           placeholder="Overnight oats"
           autoComplete="off"
-          autoFocus={!recipe}
+          // "New recipe" opens straight onto this box, so the sheet focuses
+          // it once it's open (data-autofocus, see bottom-sheet.tsx).
+          data-autofocus={!recipe || undefined}
           className="h-11"
           aria-invalid={Boolean(errors.name)}
           aria-describedby={errors.name ? errorId("recipe-name") : undefined}

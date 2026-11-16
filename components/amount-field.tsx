@@ -32,7 +32,11 @@ export function AmountField({
           inputMode="decimal"
           placeholder={String(placeholder)}
           autoComplete="off"
+          // Both: autoFocus works when this appears in a sheet that's
+          // already open (picking a food); data-autofocus is for a sheet
+          // that opens straight onto it (after a scan), see bottom-sheet.tsx.
           autoFocus={autoFocus}
+          data-autofocus={autoFocus || undefined}
           className={`h-11 tabular-nums ${unit === "serving" ? "pr-24" : "pr-16"}`}
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId("amount") : undefined}
