@@ -4,8 +4,10 @@
 // login shows a message in the sheet instead of replacing the screen.
 
 import { revalidatePath } from "next/cache";
-import { getEntry } from "./entries";
+import { DELETED_ENTRY_COLUMNS, getEntry, toDeletedEntry } from "./entries";
 import {
+  DELETE_FAILED,
+  RESTORE_REFUSED,
   SWAP_FAILED,
   swappedFrom,
   UNDO_CHANGED,
@@ -13,8 +15,10 @@ import {
   validateEntryChange,
   validateNewEntry,
   validateNewRecipeEntry,
+  validateRestoredEntry,
   validateSwap,
   validateUndoSwap,
+  type DeletedEntry,
   type SwappedFrom,
 } from "./entry-validation";
 import { getFood } from "./foods";
@@ -26,6 +30,15 @@ import type { FormState } from "./types";
 
 /** After a swap: the entry as it was, so Undo can put it back. */
 export type SwapResult = { ok: true; previous: SwappedFrom } | { ok: false; message: string };
+
+/**
+ * After a delete: the entry as it was, so Undo can put it back.
+ * `gone`: it was already deleted (say, a delete whose answer never reached
+ * your phone), so what you wanted has happened, just without an Undo.
+ */
+export type DeleteResult =
+  | { ok: true; deleted: DeletedEntry }
+  | { ok: false; message: string; gone?: boolean };
 
 export async function logFood(_prev: FormState, formData: FormData): Promise<FormState> {
   return guarded("logFood", "Couldn't log it. Please try again.", async () => {
@@ -269,13 +282,73 @@ export async function undoSwap(
   });
 }
 
-export async function deleteEntry(id: string): Promise<FormState> {
-  return guarded("deleteEntry", "Couldn't delete. Please try again.", async () => {
+/**
+ * Deletes an entry and hands back the row as it was, so Undo can put it
+ * back (restoreEntry). The copy comes from the database's own answer to
+ * the delete, not from what your phone had on screen, which could be out
+ * of date.
+ */
+export async function deleteEntry(id: string): Promise<DeleteResult> {
+  return guarded("deleteEntry", DELETE_FAILED, async (): Promise<DeleteResult> => {
     const supabase = await requireUser();
-    const { error } = await supabase.from("meal_entries").delete().eq("id", id);
+    if (!isUuid(id)) return { ok: false, message: DELETE_FAILED };
+
+    const { data, error } = await supabase
+      .from("meal_entries")
+      .delete()
+      .eq("id", id)
+      // Sends back the row it deleted: none means it was already gone.
+      .select(DELETED_ENTRY_COLUMNS);
     if (error) {
       logDbError("deleteEntry", error);
-      return { ok: false, message: "Couldn't delete. Please try again." };
+      return { ok: false, message: DELETE_FAILED };
+    }
+    const row = (data ?? [])[0];
+    if (!row) {
+      revalidatePath("/");
+      return { ok: false, gone: true, message: "That entry doesn't exist anymore." };
+    }
+
+    revalidatePath("/");
+    return { ok: true, deleted: toDeletedEntry(row) };
+  });
+}
+
+/**
+ * Undo a delete: puts the entry back as it was, with the same id and
+ * created_at, so it returns to the same spot in its meal.
+ *
+ * The copy comes back from your phone, so it's checked first
+ * (validateRestoredEntry), like the swap's Undo. Working it out again from
+ * the food would quietly change it if you'd edited the food since.
+ */
+export async function restoreEntry(copy: unknown): Promise<FormState> {
+  return guarded("restoreEntry", UNDO_FAILED, async (): Promise<FormState> => {
+    const supabase = await requireUser();
+
+    const result = validateRestoredEntry(copy);
+    if (!result.ok) {
+      // A real Undo never fails these checks, so say which one did.
+      console.error("restoreEntry refused:", result.fieldErrors);
+      return { ok: false, message: RESTORE_REFUSED };
+    }
+    const entry = result.value;
+
+    // Deleted since? Row Level Security would refuse it anyway (it must be
+    // one of YOUR foods), but with a vague error; this says what happened.
+    if (entry.food_id && !(await getFood(entry.food_id))) {
+      return { ok: false, message: "Couldn't put it back: that food was deleted." };
+    }
+    if (entry.recipe_id && !(await getRecipe(entry.recipe_id))) {
+      return { ok: false, message: "Couldn't put it back: that recipe was deleted." };
+    }
+
+    const { error } = await supabase.from("meal_entries").insert(entry);
+    // 23505 = that id is already there: an Undo whose answer never reached
+    // your phone, then tapped again. It's back, which is what you wanted.
+    if (error && error.code !== "23505") {
+      logDbError("restoreEntry", error);
+      return { ok: false, message: UNDO_FAILED };
     }
 
     revalidatePath("/");

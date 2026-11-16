@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-Verify paths before citing: this is a snapshot (last updated 2026-11-14).
+Verify paths before citing: this is a snapshot (last updated 2026-11-15).
 
 - lib/cost.ts: pure cost math + money formatting (pricePerUnit, costOfAmount, unitPriceLabel,
   formatMoney, costPerServing, proteinPerDollar(+Text)). cost.test.ts has the worked rice
@@ -59,6 +59,11 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   swapCurrentFromEntry in swap.ts. today-view.tsx pickSwap (useTransition, returns
   Promise<boolean>) + undo + Toast; undo-toast.tsx (10 s timer, hover/focus pause, status box);
   entry-row.tsx two buttons, data-swap-entry on the shuffle button (Undo focus target).
+- Delete + Undo (polish item 4, no migration): deleteEntry returns the row (.delete().select
+  DELETED_ENTRY_COLUMNS, toDeletedEntry in entries.ts); restoreEntry inserts it back (same id +
+  created_at, 23505 = already back) after validateRestoredEntry (entry-validation.ts). today-view.tsx
+  `hidden` id set -> `visible`, swipeDelete / deleteFromSheet / showDeleted / restore, focusLater
+  slot; entry-row.tsx drag + red strip + useIsPresent reset; meal-section data-add-meal targets.
 - PWA (plans/pwa.md, no migration): lib/app-identity.ts (names, PAGE_BACKGROUND, ICON_GREEN,
   APP_ICONS, appManifest), components/app-icon.tsx (Satori, inline styles), app/icons/[file]/
   route.tsx, app/manifest.ts, layout.tsx metadata/viewport, proxy.ts matcher + proxy.test.ts.

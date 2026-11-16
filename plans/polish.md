@@ -182,6 +182,16 @@ fix what we agree to → `npm run build` → commit only the files it changed
   it, swipe to Undo, double-tap: it works.
 - Swipe an entry left halfway and let go: it springs back. All the way:
   gone, totals drop, Undo brings it back in the same spot. Scroll the day
-  with your finger on a row: it scrolls, no swipe.
+  with your finger on a row, including a quick scroll that drifts a bit
+  sideways: it scrolls, nothing is deleted. A slightly wobbly tap still
+  opens the edit sheet.
+- Edit sheet → Delete → Yes, delete: the sheet closes and the same
+  "… deleted from …   Undo  ×" message shows.
+- Airplane mode, swipe a row: it comes back at full height with "Couldn't
+  delete. Please try again."
+- VoiceOver on: double-tap × on the message, and on an entry's Delete in
+  the edit sheet. Note where VoiceOver lands (it should be the row, or the
+  meal's "+ Add", not the top of the page).
+- After tapping Undo or × (no VoiceOver), no ring appears on the row.
 - Settings → Accessibility → Reduce Motion on: the swipe fades out
   instead of sliding.

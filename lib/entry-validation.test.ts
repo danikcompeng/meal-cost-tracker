@@ -7,6 +7,7 @@ import {
   validateEntryChange,
   validateNewEntry,
   validateNewRecipeEntry,
+  validateRestoredEntry,
   validateSwap,
   validateUndoSwap,
 } from "./entry-validation";
@@ -196,6 +197,92 @@ describe("validateUndoSwap", () => {
     };
     const result = validateUndoSwap(swappedFrom(entry), now);
     expect(result.ok && result.value).toEqual(before);
+  });
+
+  it("refuses something that isn't an entry at all", () => {
+    expect(errors(null)).toHaveProperty("entry");
+    expect(errors("undo")).toHaveProperty("entry");
+  });
+});
+
+describe("validateRestoredEntry", () => {
+  const FOOD_ID = "9c8b7a6d-5e4f-4a3b-8c2d-1e0f9a8b7c6d";
+  // 150 g of rolled oats at breakfast, as the database sent it back.
+  const deleted = {
+    id: ENTRY_ID,
+    day: "2026-11-15",
+    meal: "breakfast",
+    food_id: FOOD_ID,
+    recipe_id: null,
+    name: "Rolled oats",
+    unit: "g",
+    amount: 150,
+    kcal: 568.5,
+    protein_g: 19.5,
+    carbs_g: 90,
+    fat_g: 10,
+    ...NO_EXTRAS,
+    cost: 1.05,
+    water_ml: 0,
+    status: "eaten",
+    created_at: "2026-11-15T08:01:02.123456+00:00",
+  };
+  const recipe = { ...deleted, food_id: null, recipe_id: RECIPE_ID, unit: "serving", amount: 1.5 };
+  const errors = (raw: unknown) => {
+    const result = validateRestoredEntry(raw);
+    return result.ok ? null : result.fieldErrors;
+  };
+
+  it("accepts a deleted food entry and a recipe entry, unknowns and all", () => {
+    const result = validateRestoredEntry(deleted);
+    expect(result.ok && result.value).toEqual(deleted);
+    expect(errors(recipe)).toBeNull();
+    // Its food was deleted before it was: neither id. Unknown protein, cost.
+    expect(errors({ ...deleted, food_id: null, protein_g: null, cost: null })).toBeNull();
+    expect(errors({ ...deleted, created_at: "2026-11-15T08:01:02Z" })).toBeNull();
+    // A recipe entry whose recipe was deleted: neither id, still servings.
+    expect(errors({ ...recipe, recipe_id: null })).toBeNull();
+  });
+
+  it("keeps only the fields it checked, never someone else's user id", () => {
+    const result = validateRestoredEntry({ ...deleted, user_id: "someone-else", extra: "x" });
+    expect(result.ok && result.value).toEqual(deleted);
+  });
+
+  it("needs real ids, a real day, meal, status and time", () => {
+    expect(errors({ ...deleted, id: "entry-1" })).toHaveProperty("id");
+    expect(errors({ ...deleted, food_id: "rice" })).toHaveProperty("food_id");
+    expect(errors({ ...recipe, recipe_id: 7 })).toHaveProperty("recipe_id");
+    expect(errors({ ...deleted, day: "2026-02-30" })).toHaveProperty("day");
+    expect(errors({ ...deleted, meal: "brunch" })).toHaveProperty("meal");
+    expect(errors({ ...deleted, status: "maybe" })).toHaveProperty("status");
+    expect(errors({ ...deleted, created_at: "yesterday" })).toHaveProperty("created_at");
+    expect(errors({ ...deleted, created_at: 1731657662 })).toHaveProperty("created_at");
+  });
+
+  it("allows a food or a recipe, never both, with the matching unit", () => {
+    expect(errors({ ...deleted, recipe_id: RECIPE_ID })).toHaveProperty("entry");
+    expect(errors({ ...recipe, unit: "g" })).toHaveProperty("unit");
+    expect(errors({ ...deleted, unit: "serving" })).toHaveProperty("unit");
+    expect(errors({ ...deleted, unit: "kg" })).toHaveProperty("unit");
+  });
+
+  it("checks the name and amount like the database does", () => {
+    expect(errors({ ...deleted, name: "  " })).toHaveProperty("name");
+    expect(errors({ ...deleted, name: "x".repeat(101) })).toHaveProperty("name");
+    expect(errors({ ...deleted, amount: 0 })).toHaveProperty("amount");
+    expect(errors({ ...deleted, amount: "150" })).toHaveProperty("amount");
+    expect(errors({ ...deleted, amount: 100001 })).toHaveProperty("amount");
+    expect(errors({ ...recipe, amount: 25 })).toHaveProperty("amount");
+  });
+
+  it("refuses negative, text, NaN and Infinity numbers", () => {
+    for (const bad of [-1, "19.5", Number.NaN, Number.POSITIVE_INFINITY, undefined]) {
+      expect(errors({ ...deleted, protein_g: bad })).toHaveProperty("protein_g");
+      expect(errors({ ...deleted, cost: bad })).toHaveProperty("cost");
+      expect(errors({ ...deleted, water_ml: bad })).toHaveProperty("water_ml");
+    }
+    expect(errors({ ...deleted, water_ml: null })).toHaveProperty("water_ml");
   });
 
   it("refuses something that isn't an entry at all", () => {

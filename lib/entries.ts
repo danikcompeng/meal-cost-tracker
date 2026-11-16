@@ -1,5 +1,6 @@
 import "server-only";
 import { addDays } from "./dates";
+import type { DeletedEntry } from "./entry-validation";
 import { numberOrNull } from "./numbers";
 import { nutrientsFromRow } from "./nutrition";
 import { logDbError } from "./server-helpers";
@@ -119,6 +120,21 @@ export async function getEatenHistory(today: string): Promise<EatenRow[] | null>
   // Recipe rows from this week come back in both; that's fine, because
   // "newest day" and "foods you've had" don't change if a row repeats.
   return [...(recipes.data ?? []), ...(week.data ?? [])];
+}
+
+/**
+ * A whole entry, for Undo after a delete: everything Today shows, plus
+ * the status and created_at, so it can go back exactly as it was.
+ */
+export const DELETED_ENTRY_COLUMNS =
+  "id, day, meal, food_id, recipe_id, name, unit, amount, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, cost, water_ml, status, created_at";
+
+export function toDeletedEntry(row: Record<string, unknown>): DeletedEntry {
+  return {
+    ...toEntry(row),
+    status: row.status as DeletedEntry["status"],
+    created_at: String(row.created_at),
+  };
 }
 
 // Postgres "numeric" can arrive as a string, so convert (see numberOrNull).

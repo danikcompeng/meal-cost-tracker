@@ -10,8 +10,14 @@ import { useRouter } from "next/navigation";
 import { MotionConfig } from "framer-motion";
 import { buttonVariants } from "@/components/ui/button";
 import { dayTotals } from "@/lib/day-totals";
-import { swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
-import { SWAP_FAILED, UNDO_FAILED, type SwappedFrom } from "@/lib/entry-validation";
+import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
+import {
+  DELETE_FAILED,
+  SWAP_FAILED,
+  UNDO_FAILED,
+  type DeletedEntry,
+  type SwappedFrom,
+} from "@/lib/entry-validation";
 import { waterTotal } from "@/lib/hydration";
 import { showsWater } from "@/lib/summary";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
@@ -175,12 +181,29 @@ export function TodayView({
     // Only this sheet's status: another sheet may have a swap of its own.
     setSwapStatus((s) => (s?.sheet === mine ? null : s));
     setSheet((current) => (current === mine ? null : current));
+    showSwapUndo(
+      entry,
+      swap,
+      previous,
+      `${MEAL_LABELS[entry.meal]} is now ${swap.name} · ${amountText(entry.amount, "serving")}`,
+    );
+    return true;
+  }
+
+  /** "Lunch is now Lentil dal · 1.5 servings   Undo". */
+  function showSwapUndo(
+    entry: MealEntry,
+    swap: RankedSwap,
+    previous: SwappedFrom,
+    text: string,
+    isError = false,
+  ) {
     const id = showToast({
-      text: `${MEAL_LABELS[entry.meal]} is now ${swap.name} · ${amountText(entry.amount, "serving")}`,
-      undo: () => undo(id, entry.id, swap, previous),
+      text,
+      isError,
+      undo: () => undo(id, entry, swap, previous),
       focusAfter: () => focusSwapButton(entry.id),
     });
-    return true;
   }
 
   /** Focus back on a row's swap button (it's the same row after a swap). */
@@ -189,24 +212,22 @@ export function TodayView({
   }
 
   /**
-   * Undo didn't work, but its message was replaced by a newer one while
-   * it was trying (× waits while Undo runs, a new message doesn't): say
-   * so in a message of its own, or you'd think it worked.
+   * Was this message replaced by a newer one while its Undo was trying?
+   * (× waits while Undo runs; a new message doesn't.) Then a failure has
+   * to get a message of its own, or you'd think it worked.
    */
-  function reportLostUndo(id: number, text: string, focusAfter: () => void) {
-    if (shownToast.current?.id !== id) showToast({ text, isError: true, focusAfter });
-  }
+  const replaced = (id: number) => shownToast.current?.id !== id;
 
   /** Puts the old entry back. Gives back why it didn't work, or null. */
   async function undo(
     id: number,
-    entryId: string,
+    entry: MealEntry,
     swappedTo: RankedSwap,
     previous: SwappedFrom,
   ): Promise<UndoProblem | null> {
     let problem: UndoProblem | null = null;
     try {
-      const result = await undoSwap(entryId, swappedTo.id, previous);
+      const result = await undoSwap(entry.id, swappedTo.id, previous);
       if (!result.ok) {
         const message = result.message ?? UNDO_FAILED;
         // Only "couldn't" is worth another try; "it's changed since" and
@@ -217,12 +238,14 @@ export function TodayView({
       problem = { message: UNDO_FAILED, final: false };
     }
     if (problem) {
-      // Not "please try again": that message has no Undo of its own.
-      reportLostUndo(
-        id,
-        `Couldn't undo: ${MEAL_LABELS[previous.meal]} is still ${swappedTo.name}.`,
-        () => focusSwapButton(entryId),
-      );
+      if (replaced(id)) {
+        const text = `Couldn't undo: ${MEAL_LABELS[previous.meal]} is still ${swappedTo.name}.`;
+        // With its own Undo when trying again can help, so the newer
+        // message taking its place doesn't leave you stuck.
+        if (problem.final) {
+          showToast({ text, isError: true, focusAfter: () => focusSwapButton(entry.id) });
+        } else showSwapUndo(entry, swappedTo, previous, text, true);
+      }
       return problem;
     }
     // Only this message: a newer swap's message stays.
@@ -230,7 +253,194 @@ export function TodayView({
     return null;
   }
 
-  const water = waterTotal(entries);
+  // ----- Deleting, with Undo -----
+  // A deleted entry leaves the screen straight away (a swipe doesn't wait
+  // for the server), so it's kept in this list of hidden ids until the
+  // server's own list catches up.
+  const [hidden, setHidden] = useState<ReadonlySet<string>>(() => new Set());
+  // Each time the server sends the day again, forget hidden ids it no
+  // longer has: they've done their job. So an entry that comes back later
+  // (an Undo whose answer got lost on the way) shows again by itself.
+  // Adjusting state while rendering, React's way to follow a prop.
+  const [entriesSeen, setEntriesSeen] = useState(entries);
+  if (entriesSeen !== entries) {
+    setEntriesSeen(entries);
+    setHidden((current) => new Set([...current].filter((id) => entries.some((e) => e.id === id))));
+  }
+  const visible = useMemo(() => entries.filter((e) => !hidden.has(e.id)), [entries, hidden]);
+  function setHiddenFor(id: string, hide: boolean) {
+    setHidden((current) => {
+      const next = new Set(current);
+      if (hide) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  // Focus that has to wait for the page to redraw (a CSS selector): the
+  // row Undo brings back, or "+ Add" once the edit sheet has closed (the
+  // sheet puts focus back on its opener, the deleted row, as it closes;
+  // this runs after that).
+  const focusLater = useRef<string | null>(null);
+  useEffect(() => {
+    const selector = focusLater.current;
+    const element = selector && document.querySelector<HTMLElement>(selector);
+    if (!element) return;
+    focusLater.current = null;
+    element.focus();
+  });
+  function focusWhenThere(selector: string) {
+    const element = document.querySelector<HTMLElement>(selector);
+    if (element) element.focus();
+    else focusLater.current = selector;
+  }
+  const rowSelector = (entry: MealEntry) => `[data-entry-open="${entry.id}"]`;
+  const addSelector = (meal: Meal) => `[data-add-meal="${meal}"]`;
+
+  /** Deletes on the server: the deleted copy (for Undo), or why not. */
+  async function removeEntry(
+    entry: MealEntry,
+  ): Promise<
+    | { ok: true; deleted: DeletedEntry }
+    | { ok: false; message: string; gone?: boolean; reached: boolean }
+  > {
+    try {
+      const result = await deleteEntry(entry.id);
+      return result.ok ? result : { ...result, reached: true };
+    } catch {
+      // No signal: the answer never arrived.
+      return { ok: false, message: DELETE_FAILED, reached: false };
+    }
+  }
+
+  /**
+   * It was already deleted (a delete whose answer never reached your
+   * phone, or another phone): what you wanted has happened, so not an
+   * error, just no Undo. The server's fresh list (deleteEntry sends it)
+   * drops the row.
+   */
+  function showAlreadyDeleted(entry: MealEntry) {
+    showToast({
+      text: `${entry.name} was already deleted.`,
+      focusAfter: () => focusWhenThere(addSelector(entry.meal)),
+    });
+  }
+
+  /** Swiped left: gone at once; back with a message if the server says no. */
+  async function swipeDelete(entry: MealEntry) {
+    setHiddenFor(entry.id, true);
+    const result = await removeEntry(entry);
+    if (!result.ok) {
+      if (result.gone) {
+        showAlreadyDeleted(entry);
+        return;
+      }
+      setHiddenFor(entry.id, false);
+      showToast({
+        text: result.message,
+        isError: true,
+        focusAfter: () => focusWhenThere(rowSelector(entry)),
+      });
+      // Same rule as a swap: reload only after a real answer from the
+      // server, never with no signal.
+      if (result.reached) router.refresh();
+      return;
+    }
+    showDeleteUndo(entry, result.deleted, deletedText(entry));
+  }
+
+  /**
+   * Delete in the edit sheet: the sheet waits ("Deleting…") and shows
+   * the problem itself if it fails, like Save. Gives back that problem.
+   */
+  async function deleteFromSheet(mine: Sheet): Promise<string | null> {
+    if (mine?.mode !== "edit") return null;
+    const { entry } = mine;
+    // Pressed with a keyboard (or VoiceOver)? Then focus moves on to the
+    // meal's "+ Add" afterwards. A plain tap on iPhone never focuses a
+    // button, and focus moved by code after a tap draws Safari's ring.
+    const pressedWithFocus = document.activeElement?.matches("dialog button") ?? false;
+    // Hidden before the server answers, like a swipe (it's behind the
+    // sheet anyway): its fresh list may arrive first, and hiding it after
+    // that would keep an entry that comes back later hidden.
+    setHiddenFor(entry.id, true);
+    const result = await removeEntry(entry);
+    if (!result.ok && !result.gone) {
+      setHiddenFor(entry.id, false);
+      if (result.reached) router.refresh();
+      // The sheet was closed meanwhile: say it where you can see it.
+      if (openSheet.current !== mine) {
+        showToast({
+          text: result.message,
+          isError: true,
+          focusAfter: () => focusWhenThere(rowSelector(entry)),
+        });
+      }
+      return result.message;
+    }
+    // Deleted now, or already: either way the sheet's job is done.
+    if (pressedWithFocus) focusLater.current = addSelector(entry.meal);
+    finish(mine);
+    if (result.ok) showDeleteUndo(entry, result.deleted, deletedText(entry));
+    else showAlreadyDeleted(entry);
+    return null;
+  }
+
+  const deletedText = (entry: MealEntry) =>
+    `${entry.name} deleted from ${MEAL_LABELS[entry.meal].toLowerCase()}`;
+
+  /** "Rolled oats deleted from breakfast   Undo". */
+  function showDeleteUndo(entry: MealEntry, deleted: DeletedEntry, text: string, isError = false) {
+    let restored = false;
+    const id = showToast({
+      text,
+      isError,
+      undo: async () => {
+        const problem = await restore(id, entry, deleted);
+        restored = problem === null;
+        return problem;
+      },
+      // Undo worked: the row, once it's back. Dismissed: its meal's "+ Add".
+      focusAfter: () =>
+        restored ? focusWhenThere(rowSelector(entry)) : focusWhenThere(addSelector(entry.meal)),
+    });
+  }
+
+  /** Puts a deleted entry back. Gives back why it didn't work, or null. */
+  async function restore(id: number, entry: MealEntry, deleted: DeletedEntry): Promise<UndoProblem | null> {
+    let problem: UndoProblem | null = null;
+    try {
+      const result = await restoreEntry(deleted);
+      if (!result.ok) {
+        const message = result.message ?? UNDO_FAILED;
+        // Only "couldn't" is worth another try; "that food was deleted"
+        // will say the same again.
+        problem = { message, final: message !== UNDO_FAILED };
+      }
+    } catch {
+      problem = { message: UNDO_FAILED, final: false };
+    }
+    if (problem) {
+      if (replaced(id)) {
+        const text = `Couldn't undo: ${entry.name} is still deleted.`;
+        // With its own Undo when trying again can help (see undo above).
+        if (problem.final) {
+          showToast({
+            text,
+            isError: true,
+            focusAfter: () => focusWhenThere(addSelector(entry.meal)),
+          });
+        } else showDeleteUndo(entry, deleted, text, true);
+      }
+      return problem;
+    }
+    setHiddenFor(entry.id, false);
+    // Only this message: a newer one stays.
+    setToast((t) => (t?.id === id ? null : t));
+    return null;
+  }
+
+  const water = waterTotal(visible);
 
   // First use: there's nothing to log until you've added a food.
   if (foods.length === 0 && entries.length === 0) {
@@ -258,8 +468,10 @@ export function TodayView({
     // reducedMotion="user": if your phone asks for less motion, Framer
     // Motion skips the slides and keeps only gentle fades.
     <MotionConfig reducedMotion="user">
+      {/* Everything below counts what's on screen: a row you just deleted
+          leaves the totals as it leaves the list. */}
       <DaySummary
-        totals={dayTotals(entries)}
+        totals={dayTotals(visible)}
         water={water}
         isToday={isToday}
         targets={targets}
@@ -267,7 +479,7 @@ export function TodayView({
         initialOpen={detailsOpen}
       />
 
-      {entries.length === 0 && (
+      {visible.length === 0 && (
         <p className="mt-6 text-center text-muted-foreground">
           {isToday ? "Nothing logged yet today." : "Nothing logged this day."} Tap a meal to add
           what you ate.
@@ -279,10 +491,11 @@ export function TodayView({
           <MealSection
             key={meal}
             meal={meal}
-            entries={entries.filter((e) => e.meal === meal)}
+            entries={visible.filter((e) => e.meal === meal)}
             onAdd={() => setSheet({ mode: "add", meal, food: null, recipe: null })}
             onOpen={(entry) => setSheet({ mode: "edit", entry })}
             onSwap={openSwap}
+            onDelete={(entry) => void swipeDelete(entry)}
           />
         ))}
       </div>
@@ -328,6 +541,7 @@ export function TodayView({
             entry={sheet.entry}
             onDone={close}
             onSwap={sheet.entry.unit === "serving" ? () => openSwap(sheet.entry) : undefined}
+            onDelete={() => deleteFromSheet(sheet)}
           />
         </BottomSheet>
       )}

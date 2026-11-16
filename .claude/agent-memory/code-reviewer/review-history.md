@@ -184,3 +184,30 @@ metadata:
   "Couldn't undo. Please try again." with no Undo and no meal named, no focusAfter; it REPLACES the
   newer message (and its Undo: matters for item 4 deletes); optional: read focusIsHere() right after
   the await, before setState. OK to commit after the wording/focusAfter tweak.
+- 2026-11-15 polish item 4 (uncommitted: swipe-to-delete in entry-row, hidden ids in today-view,
+  deleteEntry .select, restoreEntry + validateRestoredEntry): Fix before committing. Security clean
+  (insert object rebuilt from validated keys only, no user_id, RLS; every 004/008/009/011 check
+  covered; id/created_at choice = raw-API equivalent; 23505 oracle negligible). Verified in
+  motion-dom: stop() -> startAnimation -> postRender(onDragEnd), so jump/stop/animate replace the
+  snap-back; MotionConfig reduced motion makes height jump (positionalKeys). Raised: onDragEnd
+  fires on pointercancel and for y-locked gestures with POINTER offset/velocity -> a diagonal
+  scroll flick can delete (use onDirectionLock "x" + ignore pointercancel); onDragStart at 3 px
+  suppresses wobbly taps; keyboard Enter after a mouse drag suppressed (e.detail 0); swipe "doesn't
+  exist anymore" flashes row back; hidden ids never pruned (lost restore reply + × = invisible
+  row); lost-undo still replaces a newer delete's Undo, no retry; meal-section comment says
+  MotionConfig leaves height (wrong); last row in a meal has no exit (ul unmounts); edit form
+  message precedence hides delete error; closed-sheet delete toast no focusAfter; first-use
+  return unmounts toast; tests for dropped user_id. swap-stack has the same pointercancel flick.
+  notes.md still had NO "Polish later" section (item 3's three items missing).
+  Re-check same day: 1a/1b (sideways ref via onDirectionLock, pointercancel, detail 0), 1c (gone),
+  1d (entriesSeen render-time prune), 1e (retry message keeps Undo), 1g, comment, tests: all OK.
+  Left: sheet path hides AFTER the await, so if the delete's fresh list lands first the id is
+  added after pruning and a later lost-reply restore stays hidden (narrow; hide before await);
+  the retry message still replaces a newer one's Undo (to Polish later); showAlreadyDeleted's
+  router.refresh duplicates deleteEntry's revalidatePath. To Polish later per coordinator:
+  swap-stack flick, 1f, last-row exit, first-use toast, VoiceOver activeElement. OK to commit.
+- 2026-11-15 polish item 5 (remove 12 md:text-base from Input classNames): Looks good, no findings.
+  Verified: ui/input.tsx text-base with no breakpoint override; zero md:/sm:/lg:text- left in
+  components/app; the 12 lines read clean; food-form unit <select> text-base; login code Input
+  text-lg; no textarea / custom select / font-size in globals.css; ui/ is only button/label/input.
+  Couldn't diff (no Bash), so "nothing else touched" = current lines look right, not a diff check.

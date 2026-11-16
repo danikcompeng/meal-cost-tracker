@@ -5,7 +5,10 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  polish item 3 (Undo message stays, × Dismiss), Minor issues. Polish plan: plans/polish.md (5 items).
+  polish item 5 (md:text-base removed), Looks good. Item 4 (swipe delete): re-checked, OK to
+  commit. Plan: plans/polish.md. notes.md had no "Polish later" section on 2026-11-15.
+- Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
+  inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -22,6 +25,11 @@
 - Framer (motion-dom): MotionValue.stop()/jump() stop an animate(x) run and its .then NEVER
   fires; x.set() does NOT stop it. Pointerdown on a drag element stops its x animation.
   So "commit in .then + a latch" can get stuck; check for it.
+- Framer drag (motion-dom VisualElementDragControls): onDragEnd also fires on pointercancel
+  (browser took the scroll) and when dragDirectionLock locked "y"; PanInfo offset/velocity are the
+  POINTER's, not the element's. Any "flick = commit" rule needs a lock-"x" check. onDragStart fires
+  at 3 px (tap wobble). onDragEnd runs in postRender AFTER the snap-back started (and after a
+  mouse click). MotionConfig reducedMotion jumps positionalKeys: x/y AND width/height.
 
 - Server action redirect("/") in Next 16: Next does an internal GET to "/" with the action's
   Set-Cookie merged in (action-handler.js getForwardedHeaders), so proxy sees new cookies.
@@ -63,6 +71,8 @@
   "had focus" read BEFORE an await is stale after it; re-check before moving focus.
 - Undo toast now never times out (decision 2026-11-15): every toast needs a focusAfter target
   and its text can go stale; today-view.tsx spacer h-16 depends on the toast's height.
+- Optimistic "hidden ids" sets: must be pruned against the server's list, or a lost reply leaves
+  a real row invisible (and out of totals) until reload. Also check "already gone" isn't an error.
 - Closures holding an index (onCommit -> goTo(index + 1)) go stale if the user acts mid-await.
 - Base UI Button `disabled` = native disabled: a focused button that turns disabled while
   pending drops keyboard focus to <body>. Use aria-disabled + a guard (undo-toast.tsx does).

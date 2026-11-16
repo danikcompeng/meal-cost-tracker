@@ -48,6 +48,9 @@ Per feature (all approved, don't re-raise)
 - Polish (2026-11-15, plans/polish.md): Undo message stays until ×/Undo/newer message/leaving
   Today, for everyone, no timer (web can't detect VoiceOver). Don't suggest a timeout again.
   Delete in the edit sheet gets the same Undo message as the swipe (item 4).
+  Item 4 sent to notes.md "Polish later" (don't re-raise as new): swap-stack flick on pointercancel,
+  edit-form deleteError precedence + Yes-delete focus/role=alert, last row in a meal has no exit,
+  first-use return hides the toast, VoiceOver activeElement (phone test). Already-deleted = no Undo.
 
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

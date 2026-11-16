@@ -1,6 +1,6 @@
 // Checks a log entry from the form. Pure, so it can be unit tested.
 
-import { isLoggableDay } from "./dates";
+import { isLoggableDay, isValidDay } from "./dates";
 import { isUuid } from "./ids";
 import { NUTRIENT_KEYS, type Nutrients } from "./macros";
 import { isMeal, type Meal } from "./meals";
@@ -215,6 +215,113 @@ export function validateUndoSwap(
       ...nutrients,
       cost: cost as number | null,
       water_ml: water as number,
+    },
+  };
+}
+
+export const DELETE_FAILED = "Couldn't delete. Please try again.";
+/** Undo of a delete was refused: trying again would say the same. */
+export const RESTORE_REFUSED = "This entry can't be put back.";
+
+/**
+ * A deleted entry, whole: what Undo puts back. Like SwappedFrom, the
+ * server hands it to your phone after deleting and your phone sends it
+ * back for Undo, so validateRestoredEntry checks it first.
+ * The same id and created_at come back too, so the entry returns to the
+ * same spot in its meal (a meal's list is in created_at order).
+ */
+export type DeletedEntry = MealEntry & {
+  status: "planned" | "eaten";
+  created_at: string;
+};
+
+const UNITS: readonly EntryUnit[] = ["g", "ml", "each", "serving"];
+const STATUSES: readonly DeletedEntry["status"][] = ["planned", "eaten"];
+/** "2026-11-15T23:01:02.123456+00:00", how Postgres sends a timestamp. */
+const TIMESTAMP = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}:\d{2})$/;
+
+/**
+ * Checks a deleted entry before Undo puts it back. It's every database
+ * rule, checked here first so a bad copy gets a clear "no" instead of a
+ * vague database error:
+ * - ids are uuids; at most one of food and recipe, and the unit fits it
+ *   (a recipe is in servings, a food never is);
+ * - a real day, a meal, a status, a timestamp; a name of 1 to 100;
+ * - the amount follows the same rules as editing an entry;
+ * - every number is a real number of 0 or more. A nutrient or the cost
+ *   may be unknown (null); water never is.
+ * Row Level Security still only lets you add your own row, with your own
+ * food or recipe.
+ */
+export function validateRestoredEntry(raw: unknown): Result<DeletedEntry> {
+  if (typeof raw !== "object" || raw === null) {
+    return { ok: false, fieldErrors: { entry: "Nothing to put back." } };
+  }
+  const r = raw as Record<string, unknown>;
+  const fieldErrors: Record<string, string> = {};
+
+  if (!isUuid(r.id)) fieldErrors.id = "Missing entry.";
+  if (!isValidDay(r.day)) fieldErrors.day = "Not a day.";
+  if (!isMeal(r.meal)) fieldErrors.meal = "Pick a meal.";
+
+  const foodId = r.food_id;
+  const recipeId = r.recipe_id;
+  if (foodId !== null && !isUuid(foodId)) fieldErrors.food_id = "Not a food.";
+  if (recipeId !== null && !isUuid(recipeId)) fieldErrors.recipe_id = "Not a recipe.";
+  if (foodId !== null && recipeId !== null) fieldErrors.entry = "A food or a recipe, not both.";
+
+  const unit = r.unit;
+  const isUnit = UNITS.includes(unit as EntryUnit);
+  if (!isUnit) fieldErrors.unit = "Not a unit.";
+  else if (recipeId !== null && unit !== "serving") fieldErrors.unit = "A recipe is in servings.";
+  else if (foodId !== null && unit === "serving") fieldErrors.unit = "A food isn't in servings.";
+
+  const name = typeof r.name === "string" ? r.name.trim() : "";
+  if (name.length < 1 || name.length > 100) fieldErrors.name = "Missing name.";
+
+  const amount =
+    typeof r.amount === "number" && isUnit ? checkAmount(String(r.amount), unit as EntryUnit) : null;
+  if (amount === null) fieldErrors.amount = "Enter an amount above 0.";
+  else if ("error" in amount) fieldErrors.amount = amount.error;
+
+  const status = r.status;
+  if (!STATUSES.includes(status as DeletedEntry["status"])) fieldErrors.status = "Not a status.";
+
+  const createdAt = r.created_at;
+  if (typeof createdAt !== "string" || !TIMESTAMP.test(createdAt) || Number.isNaN(Date.parse(createdAt))) {
+    fieldErrors.created_at = "Not a time.";
+  }
+
+  const nutrients = {} as Nutrients;
+  for (const key of NUTRIENT_KEYS) {
+    const value = r[key];
+    if (value === null || isAmountOrZero(value)) nutrients[key] = value;
+    else fieldErrors[key] = "Not a number.";
+  }
+  const cost = r.cost;
+  if (cost !== null && !isAmountOrZero(cost)) fieldErrors.cost = "Not a number.";
+  const water = r.water_ml;
+  if (!isAmountOrZero(water)) fieldErrors.water_ml = "Not a number.";
+
+  if (Object.keys(fieldErrors).length > 0 || amount === null || "error" in amount) {
+    return { ok: false, fieldErrors };
+  }
+  return {
+    ok: true,
+    value: {
+      id: r.id as string,
+      day: r.day as string,
+      meal: r.meal as Meal,
+      food_id: foodId as string | null,
+      recipe_id: recipeId as string | null,
+      name,
+      unit: unit as EntryUnit,
+      amount: amount.amount,
+      ...nutrients,
+      cost: cost as number | null,
+      water_ml: water as number,
+      status: status as DeletedEntry["status"],
+      created_at: createdAt as string,
     },
   };
 }

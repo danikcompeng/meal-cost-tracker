@@ -6,7 +6,7 @@
 
 import { useActionState, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { deleteEntry, updateEntry } from "@/lib/entry-actions";
+import { updateEntry } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { scaleSnapshot } from "@/lib/nutrition";
@@ -20,11 +20,17 @@ export function EditEntryForm({
   entry,
   onDone,
   onSwap,
+  onDelete,
 }: {
   entry: MealEntry;
   onDone: () => void;
   /** Recipe entries only: "Tired of this?" opens the swap stack instead. */
   onSwap?: () => void;
+  /**
+   * Deletes it; Today closes the sheet and shows "… deleted · Undo".
+   * Gives back why it didn't work (shown here), or null.
+   */
+  onDelete: () => Promise<string | null>;
 }) {
   const [amount, setAmount] = useState(String(entry.amount));
   const [meal, setMeal] = useState<Meal>(entry.meal);
@@ -43,10 +49,9 @@ export function EditEntryForm({
 
   function handleDelete() {
     startDelete(async () => {
-      const result = await deleteEntry(entry.id);
-      if (result.ok) onDone();
-      else {
-        setDeleteError(result.message);
+      const problem = await onDelete();
+      if (problem) {
+        setDeleteError(problem);
         setConfirming(false);
       }
     });
