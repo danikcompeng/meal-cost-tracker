@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-15
-  PWA step 4 (Android home-screen camera help), Minor issues.
+  polish item 1 ("1 serving" wording), Looks good. Polish plan: plans/polish.md (5 items).
 
 ## Quick facts
 - No Bash in reviews: read files directly (no git diff); git status comes in the prompt.
@@ -32,6 +32,10 @@
 - viewport-fit=cover is on (2026-11-15): any new FULL-WIDTH fixed/absolute element needs
   env(safe-area-inset-left/right) too (landscape notch); centred max-w-lg columns are safe.
   Tab bar ~68.5 px, Scan ring top 91.5 px: toast (6rem) and pb-above-tab-bar (7rem) depend on it.
+
+- parseDecimal uses Number(): "0x10" = 16, "1e2" = 100, "1." = 1, "." = invalid. Pre-existing,
+  raised once (polish 1) as out of scope. Intl rounds the exact double: 0.995 shows "0.99".
+- Count words: new "N things" text must branch on 1 or use unitWord/amountText (lib/units.ts).
 
 ## Patterns to watch
 - Comments that promise behaviour of another function (e.g. "the hint flags it"): verify them.

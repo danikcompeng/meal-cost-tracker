@@ -150,3 +150,10 @@ metadata:
   Chrome's address bar is at the bottom; Samsung Internet / Firefox installs told "Open Chrome";
   site page may be a Camera switch not "Allow" (unsure, check on a phone); global Camera switch off
   = nothing under Blocked; "Other phone?" label now also lists your phone's other mode.
+- 2026-11-15 polish item 1 (uncommitted: unitWord / unitWordForTyped in units.ts, amount-field,
+  recipe-form "Makes"): Looks good, no bugs. Verified: singular = amountFormat (2 dp) shows "1";
+  comma decimals, "1,000" ambiguous -> plural, blank -> placeholder, junk -> plural; no other fixed
+  plural after a number in components/app/lib (day-totals, food-manager, swap-empty, kitchenReason,
+  lastHadText all branch; swap.ts:309 only runs at >= 3 days). Raised: "1." is singular in code
+  but the plan says plural, comment at units.ts:65 reads ambiguously, no test for "1." / ".";
+  optional swap-card.tsx:25 exact `servings === 1`; out of scope: parseDecimal takes "0x10"/"1e2".

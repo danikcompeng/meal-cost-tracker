@@ -11,7 +11,8 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-14).
   formatMoney, costPerServing, proteinPerDollar(+Text)). cost.test.ts has the worked rice
   example ($4.50 / 2 lb = 907.18474 g -> $0.50 / 100 g, $0.74 per 150 g serving).
 - lib/units.ts: BASE_UNITS g/ml/each, EntryUnit adds "serving"; toBaseUnit converts kg->g,
-  l->ml at form input, so the DB only stores base units. amountText for rows.
+  l->ml at form input, so the DB only stores base units. amountText for rows; unitWord (singular
+  when the 2-dp shown number is "1") and unitWordForTyped (word inside number boxes) since polish 1.
 - lib/food-validation.ts (finite numbers, price >= 0, size > 0, cents); lib/foods.ts getFoods /
   getFood / toFood (also used by recipes.ts); numberOrNull + parseDecimal + sumOrNull in numbers.ts.
 - lib/server-helpers.ts: requireUser, requireUserId, guarded() (try/catch for actions ->

@@ -34,8 +34,8 @@ the unit words written *inside* number boxes, which are fixed text:
 - `lib/units.ts`: a new `unitWord(amount, unit)` gives "serving" or
   "servings", "item" or "items", and "g" or "ml" unchanged. `amountText()`
   uses it, so both places follow the same rule.
-- Inside a box, the word follows what you've typed: exactly 1 → singular,
-  anything else (1.5, 2, half-typed "1." or junk) → plural. An empty box
+- Inside a box, the word follows what you've typed: 1 (or a half-typed
+  "1.") → singular, anything else (1.5, 2, junk) → plural. An empty box
   counts as its placeholder, so a blank "1" placeholder says "serving".
   The typed text is read with the existing `parseDecimal()`.
 - Unit tests for `unitWord()` and for the box's word (blank, "1", "1.0",

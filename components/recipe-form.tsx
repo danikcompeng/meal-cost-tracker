@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { createRecipe, updateRecipe } from "@/lib/recipe-actions";
 import type { FormState } from "@/lib/types";
+import { unitWordForTyped } from "@/lib/units";
 import { Field } from "./form-field";
 
 export function RecipeForm({
@@ -68,7 +69,8 @@ export function RecipeForm({
             aria-hidden="true"
             className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
           >
-            servings
+            {/* "Makes 1 serving", "Makes 4 servings". */}
+            {unitWordForTyped(servings, "serving")}
           </span>
         </div>
       </Field>

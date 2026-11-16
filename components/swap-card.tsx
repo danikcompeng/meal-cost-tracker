@@ -1,6 +1,6 @@
 import { formatMoney, proteinPerDollarNumber } from "@/lib/cost";
 import type { RankedSwap } from "@/lib/swap";
-import { amountText } from "@/lib/units";
+import { amountText, unitWord } from "@/lib/units";
 
 // One card in the swap stack: what you'd eat instead. No state; the stack
 // moves it around. On screen, top to bottom:
@@ -22,7 +22,11 @@ const CHIPS = 3;
 
 export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: number }) {
   const { shown, foods } = swap;
-  const costLabel = servings === 1 ? "Cost per serving" : `Cost for ${amountText(servings, "serving")}`;
+  // "Shown as 1" (unitWord's rule), so a saved 1.004 says "per serving" too.
+  const costLabel =
+    unitWord(servings, "serving") === "serving"
+      ? "Cost per serving"
+      : `Cost for ${amountText(servings, "serving")}`;
   const extra = foods.length - CHIPS;
 
   return (
