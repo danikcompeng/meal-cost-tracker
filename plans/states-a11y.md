@@ -236,9 +236,15 @@ arrives. No spinners, no numbers.
   browser component (`components/log-out-button.tsx`) so it can show
   "Couldn't log out: no connection…" in a small bordered box under
   itself, with a × to close it; it also closes when you're back online.
-- Log out: if Supabase refuses, it logs why and logs this phone out
-  anyway (deletes the login cookie, Supabase's own suggested fallback).
-  Today the error is ignored and you could stay logged in.
+- Log out (replaced, see the follow-up below): if Supabase refuses, it
+  logs why and logs this phone out anyway (deletes the login cookie,
+  Supabase's own suggested fallback). Today the error is ignored and you
+  could stay logged in.
+  - Follow-up commit (approved after the phone test question): Log out
+    now logs out THIS device only (`scope: "local"`), so logging out on
+    the laptop no longer logs out the phone. Supabase deletes the cookie
+    before it sends anything, so the fallback above isn't needed any
+    more. Tested in `lib/auth-actions.test.ts`.
 - The line under the title says "We'll email you a code and a link."
 - The page gets a tab title, "Log in · Meal Cost Tracker".
 

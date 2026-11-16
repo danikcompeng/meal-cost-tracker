@@ -5,7 +5,7 @@
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
 - [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states commit 9 (data-unavailable, field-border, h-11, headings), Minor issues. Plan: plans/states-a11y.md.
+  states follow-up (Log out = scope "local" only), Looks good. Plan: plans/states-a11y.md.
 - Button states (commit 9): busy = disabled + focusableWhenDisabled (full colour); can't-use-now = also
   `data-unavailable={x || undefined}` (bg-muted grey). TW v4 variant order: hover < disabled < aria <
   data < custom (dark), so data-* beats plain/hover classes; numeric sort: h-11 beats size sm's h-7.
@@ -73,7 +73,9 @@
   are RESET. Any "show error, keep what you typed" form needs defaultValue from state.
 - auth-js errors: AuthRetryableFetchError status 0 (fetch failed) or 500-504/520-530; AuthUnknownError
   status undefined (non-JSON reply); wrong/expired OTP = 403 AuthApiError. signOut() global keeps the
-  session on error; scope "local" deletes cookies FIRST, then still sends a revoke request.
+  session on error; scope "local" deletes cookies FIRST (auth-js 2.119), even on a retryable refresh
+  failure, then sends a revoke. App's Log out = local only (decided 2026-11-16, user's request).
+  Server cookie writes go via ssr's SIGNED_OUT/TOKEN_REFRESHED subscriber -> setAll, inside the await.
 - Same text in a role=alert after a retry = no DOM change = not re-announced; hide it while pending.
 - Supabase signInWithOtp for a new/unconfirmed email sends the Confirm signup template, not
   Magic link. Only magic-link.html is in the repo.

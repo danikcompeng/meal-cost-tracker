@@ -345,3 +345,11 @@ metadata:
   Safari < 18.4's -webkit-details-marker (unsure); Back + toast x (dark) look identical when
   unavailable; dark sheets: greyed button has no box (muted == popover); duplicate dialog Keep
   both/Cancel full colour while the other runs; CLAUDE.md "lowest 4.88" now stale (4.82, 4.53).
+- 2026-11-16 states follow-up (uncommitted: signOut = one signOut({scope:"local"}), log, redirect; new
+  lib/auth-actions.test.ts): Looks good. Verified in auth-js 2.119.0 _signOut: local removes the session
+  before the revoke request, also on a retryable refresh failure (rejected refresh already removed it);
+  ssr createServerClient's SIGNED_OUT subscriber -> applyServerStorage -> our setAll (swallows throws)
+  inside the awaited call, so cookies are set before redirect(); only a non-AuthError from refresh can
+  throw (keepOnFailure then says "connection dropped"; accepted, theoretical). Test fails on old code
+  (scope arg + called once), no root vitest config needed. Nits: plan lines 239-241 still read as the
+  current fallback; test 2 couples to auth-log's console format.

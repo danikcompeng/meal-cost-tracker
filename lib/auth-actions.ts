@@ -89,16 +89,19 @@ export async function verifyLoginCode(_prev: FormState, formData: FormData): Pro
   redirect("/");
 }
 
+/**
+ * Logs out THIS device only: this browser, or the app on your home
+ * screen. Your other devices stay logged in (the default, "global", logged
+ * out everywhere, so logging out on the laptop meant a new email code on
+ * the phone). Supabase recommends "local" for a Log out button.
+ *
+ * With "local", Supabase deletes the login cookie first, then (if it can)
+ * asks its server to end this one session. So you're logged out here
+ * whatever happens to that request; any error is only logged.
+ */
 export async function signOut() {
   const supabase = await createClient();
-  const { error } = await supabase.auth.signOut();
-  if (error) {
-    logAuthError("signOut", error);
-    // Supabase couldn't end the session on its side, and then it keeps the
-    // login cookie too, so you'd still be logged in. "local" only deletes
-    // this device's cookie, which always works: logging out of this phone
-    // is what you asked for. (Supabase's docs suggest the same fallback.)
-    await supabase.auth.signOut({ scope: "local" });
-  }
+  const { error } = await supabase.auth.signOut({ scope: "local" });
+  if (error) logAuthError("signOut", error);
   redirect("/login");
 }
