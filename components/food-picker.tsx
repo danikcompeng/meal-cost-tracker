@@ -65,7 +65,7 @@ export function FoodPicker({
         placeholder={search}
         aria-label={search}
         autoComplete="off"
-        className="h-11 md:text-base"
+        className="h-11"
       />
 
       {matches.length === 0 && recipeMatches.length === 0 ? (

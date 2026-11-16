@@ -32,7 +32,7 @@ export function AmountField({
           placeholder={String(placeholder)}
           autoComplete="off"
           autoFocus={autoFocus}
-          className={`h-11 tabular-nums md:text-base ${unit === "serving" ? "pr-24" : "pr-16"}`}
+          className={`h-11 tabular-nums ${unit === "serving" ? "pr-24" : "pr-16"}`}
           aria-invalid={Boolean(error)}
         />
         <span

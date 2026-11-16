@@ -38,7 +38,7 @@ export function NutrientInput({
           onChange={(e) => onChange(e.target.value)}
           inputMode="decimal"
           placeholder={placeholder}
-          className="h-11 bg-background pr-12 tabular-nums md:text-base"
+          className="h-11 bg-background pr-12 tabular-nums"
           aria-invalid={Boolean(error) || invalid}
         />
         <span

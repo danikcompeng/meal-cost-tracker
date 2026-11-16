@@ -48,7 +48,7 @@ export function RecipeForm({
           placeholder="Overnight oats"
           autoComplete="off"
           autoFocus={!recipe}
-          className="h-11 md:text-base"
+          className="h-11"
           aria-invalid={Boolean(errors.name)}
         />
       </Field>
@@ -62,7 +62,7 @@ export function RecipeForm({
             onChange={(e) => setServings(e.target.value)}
             inputMode="decimal"
             autoComplete="off"
-            className="h-11 pr-24 tabular-nums md:text-base"
+            className="h-11 pr-24 tabular-nums"
             aria-invalid={Boolean(errors.servings)}
           />
           <span

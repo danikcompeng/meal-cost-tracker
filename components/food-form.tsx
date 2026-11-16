@@ -240,7 +240,7 @@ export function FoodForm({
           onChange={set("name")}
           placeholder="Rolled oats"
           autoComplete="off"
-          className="h-11 bg-background md:text-base"
+          className="h-11 bg-background"
           aria-invalid={Boolean(errors.name)}
         />
       </Field>
@@ -253,7 +253,7 @@ export function FoodForm({
           onChange={set("brand")}
           placeholder="optional"
           autoComplete="off"
-          className="h-11 bg-background md:text-base"
+          className="h-11 bg-background"
           aria-invalid={Boolean(errors.brand)}
         />
       </Field>
@@ -360,7 +360,7 @@ export function FoodForm({
                 onChange={set("price")}
                 inputMode="decimal"
                 placeholder="3.49"
-                className="h-11 bg-background pl-7 tabular-nums md:text-base"
+                className="h-11 bg-background pl-7 tabular-nums"
                 aria-invalid={Boolean(errors.price)}
                 // After a scan the rest is filled in; the price is what's left.
                 autoFocus={fromOpenFoodFacts}
@@ -382,7 +382,7 @@ export function FoodForm({
                 inputMode="decimal"
                 placeholder="500"
                 className={cn(
-                  "h-11 min-w-0 flex-1 bg-background tabular-nums md:text-base",
+                  "h-11 min-w-0 flex-1 bg-background tabular-nums",
                   measuredBy !== "each" && "rounded-r-none",
                 )}
                 aria-invalid={Boolean(errors.packageSize)}

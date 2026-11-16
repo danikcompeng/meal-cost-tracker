@@ -142,7 +142,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
                 inputMode="decimal"
                 placeholder="optional"
                 autoComplete="off"
-                className="h-11 bg-background pr-12 tabular-nums md:text-base"
+                className="h-11 bg-background pr-12 tabular-nums"
                 aria-invalid={Boolean(errors[key])}
               />
               <span
@@ -178,7 +178,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
                 inputMode="decimal"
                 placeholder="2000"
                 autoComplete="off"
-                className="h-11 bg-background pr-12 tabular-nums md:text-base"
+                className="h-11 bg-background pr-12 tabular-nums"
                 aria-invalid={Boolean(errors.water)}
               />
               <span

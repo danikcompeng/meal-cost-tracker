@@ -65,7 +65,7 @@ export function BarcodeEntry({
             autoComplete="off"
             autoFocus
             placeholder="5000112637922"
-            className="h-11 bg-background tabular-nums md:text-base"
+            className="h-11 bg-background tabular-nums"
             aria-invalid={Boolean(error)}
           />
         </Field>
