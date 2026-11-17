@@ -10,6 +10,7 @@ import { motion } from "framer-motion";
 import { Flashlight, FlashlightOff, X } from "lucide-react";
 import type { CameraProblem } from "@/lib/camera";
 import { cn } from "@/lib/utils";
+import { IconSwap } from "./icon-swap";
 import { ScanFrame } from "./scan-frame";
 import { useBarcodeCamera } from "./use-barcode-camera";
 
@@ -118,11 +119,15 @@ export function Scanner({
             aria-pressed={torch.on}
             className={ROUND_BUTTON}
           >
-            {torch.on ? (
-              <FlashlightOff aria-hidden="true" className="size-5" />
-            ) : (
-              <Flashlight aria-hidden="true" className="size-5" />
-            )}
+            {/* Blurs and fades between the two icons (instant with
+                Reduce Motion): icon-swap.tsx. */}
+            <IconSwap swapKey={torch.on ? "on" : "off"}>
+              {torch.on ? (
+                <FlashlightOff aria-hidden="true" className="size-5" />
+              ) : (
+                <Flashlight aria-hidden="true" className="size-5" />
+              )}
+            </IconSwap>
           </button>
         )}
       </div>
