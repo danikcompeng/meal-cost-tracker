@@ -109,7 +109,10 @@ function contrastChecks(theme: Theme, hue: number) {
     // A focus ring and a box's edge are shapes, not text: 3:1.
     checks.push({ what: `ring on ${surface}`, ratio: c("ring", surface), needs: 3 });
   }
-  // Boxes you type in sit on the page, tiles and sheets.
+  // Boxes you type in sit on the page, tiles and sheets. Never on dark
+  // "raised" (a tile inside a sheet): they'd be under 3:1 there, which is
+  // why CLAUDE.md and globals.css (surface-raised) rule it out. The same
+  // goes for red buttons below.
   for (const surface of ["background", "card", "popover"]) {
     checks.push({ what: `field-border on ${surface}`, ratio: c("field-border", surface), needs: 3 });
   }
@@ -170,6 +173,21 @@ describe("palette: an accent preset only changes the hue", () => {
   it("teal at matcha's chroma is too colourful for a screen, so a teal preset needs less chroma", () => {
     const primary = parseOklch(LIGHT.primary, { "accent-h": 195 })!;
     expect(oklchToRgb(primary).inGamut).toBe(false);
+  });
+});
+
+describe("surface-raised", () => {
+  // The dark-mode step inside sheets. If one of these went missing, that
+  // thing would be darker than its sheet again (greyed buttons would look
+  // sunk in) and no colour above would notice.
+  it("moves the tile, muted, secondary and hover colours up to --raised in dark mode", () => {
+    const raised = propertiesIn(css, /@utility surface-raised\s*\{\s*@media \(prefers-color-scheme: dark\)/);
+    expect(raised).toEqual({
+      card: "var(--raised)",
+      muted: "var(--raised)",
+      secondary: "var(--raised)",
+      accent: "var(--raised)",
+    });
   });
 });
 

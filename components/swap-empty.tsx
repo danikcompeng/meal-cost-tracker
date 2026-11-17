@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils";
  */
 export function SwapEmpty({ kind }: { kind: "none" | "no-ingredients" }) {
   return (
-    // Bordered like the cards, so it shows on the sheet in dark mode too.
+    // Like the cards: one step lighter than the sheet in dark mode
+    // (surface-raised), with a quiet border.
     <section className="rounded-2xl border border-border bg-card px-5 py-8 text-center">
       <h3 className="text-lg font-semibold">
         {kind === "none" ? "Swaps come from your own recipes" : "Nothing to compare yet"}

@@ -4,8 +4,8 @@
 - [Code map](code-map.md) — where each feature's code + migration lives (cost, log, recipes...)
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
-- [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-16
-  states follow-up (Log out = scope "local" only), Looks good. Plan: plans/states-a11y.md.
+- [Review history](review-history.md) — every past review and its findings. Latest: 2026-11-17
+  craft branch (OKLCH, surface-raised, icon strokes), Minor issues. Plan: plans/craft.md.
 - Button states (commit 9): busy = disabled + focusableWhenDisabled (full colour); can't-use-now = also
   `data-unavailable={x || undefined}` (bg-muted grey). TW v4 variant order: hover < disabled < aria <
   data < custom (dark), so data-* beats plain/hover classes; numeric sort: h-11 beats size sm's h-7.
@@ -27,8 +27,14 @@
   the form moves focus or adds an alert. role=alert present in the first HTML is usually not read.
 - Focus rings (since commit 6): `focus-ring` / `focus-ring-inset` @utility in globals.css (solid 2 px
   var(--ring) outline). New buttons/links need one. Dark matcha ring on butter = 1.22:1 (never inset
-  on a highlight fill); opacity on an element fades its outline too. `cn` here is shadcn's compiled
-  "cn" package (not tailwind-merge): unknown classes pass through untouched.
+  on a highlight fill); opacity on an element fades its outline too. `cn` = shadcn's "cn" package,
+  tailwind-merge parity (README): later conflicting class REPLACES earlier (rounded-[calc] drops
+  rounded-lg, h-11 drops h-7); unknown classes (focus-ring, surface-raised) pass through.
+- Craft pass (2026-11-17): dark depth page #141414 < card #1F1F1F < popover #2A2A2A < raised #333.
+  Every bg-popover needs surface-raised (dark --accent == --popover). surface-raised works only
+  because @theme is `inline`. On raised: field-border 2.94:1, red tint button 3.99:1 (both fail;
+  keep inputs/red buttons off tiles inside sheets). Button base is text-sm: icon strokes 1.32 px.
+  Presets must be :root[data-accent] (vars resolve where declared). Tailwind scans .md files too.
 - Input font rule: every text field must be >= 16 px at ALL widths (iOS zoom; iPad = md). New
   inputs/selects/textareas: check for text-sm or md:text-sm. ui/input.tsx is text-base.
 
@@ -43,10 +49,10 @@
   (render-tree.js "SPA navigation failed" -> MPA) unless experimental.useOffline. Offline = the
   browser's error page. Never refresh in a "no signal" catch. error.tsx retry() (Next 16.3+) =
   context.refresh(), so "Try again" offline hits the same trap.
+- MotionConfig reducedMotion jumps motion-dom positionalKeys = width/height/top/left/right/bottom
+  + ALL transforms (x, y, scale, rotate); never opacity or filter (blur).
 - MotionConfig reducedMotion="user" exists only on Today and scan-flow: anything in app/layout.tsx
   gets NO reduced motion from Framer unless it handles useReducedMotion itself.
-- Dark mode: --card == --popover == --muted (#1F1F1F). A bg-card tile inside a BottomSheet
-  is invisible in dark mode; it needs a border or bg-accent.
 - Framer (motion-dom): MotionValue.stop()/jump() stop an animate(x) run and its .then NEVER
   fires; x.set() does NOT stop it. Pointerdown on a drag element stops its x animation.
   So "commit in .then + a latch" can get stuck; check for it.

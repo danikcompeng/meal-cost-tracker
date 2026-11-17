@@ -56,7 +56,12 @@
   color-scheme: light dark; /* native inputs and scrollbars match too */
   /* The accent's hue, read by every matcha colour below and in dark
      mode. A colour preset (notes.md, "Next feature: make it yours")
-     would only change this number, for example 240 for an ocean blue. */
+     would only change this number, for example 240 for an ocean blue.
+     It must be changed on <html> itself, with an unlayered rule like
+       :root[data-accent="ocean"] { --accent-h: 240; }
+     because --primary is worked out where it's declared (on <html>) and
+     children inherit the finished colour, not the formula: setting
+     --accent-h on <body> or a <div> would change nothing. */
   --accent-h: 130;
   --background: oklch(100% 0 0);          /* #FFFFFF white. Also in lib/app-identity.ts (status bar) */
   --foreground: oklch(20.46% 0 0);        /* #171717 near-black ink */
@@ -153,7 +158,15 @@
    the page goes one step up from the sheet instead: a swap card, chips,
    greyed buttons and hover backgrounds. Otherwise they'd be darker than
    the sheet and look sunk into it. Light mode keeps its colours: a white
-   sheet already floats over the dimmed page. */
+   sheet already floats over the dimmed page.
+   Why this works: the @theme block above is "inline", so bg-card becomes
+   background-color: var(--card), looked up on each element, and this
+   class changes --card for everything inside it. Without "inline", bg-card
+   would read --color-card, worked out once on <html>, and this class
+   would silently do nothing.
+   Rule that goes with it: no box you type in and no red button on a tile
+   inside a sheet. On #333333 a box's edge is 2.9:1 and red on its tint
+   3.99:1, both too low. Put them straight on the sheet instead. */
 @utility surface-raised {
   @media (prefers-color-scheme: dark) {
     --card: var(--raised);
@@ -167,8 +180,9 @@
    button, link and box. Only for the keyboard (:focus-visible), so a tap
    on a phone never draws it. Solid because the see-through ring it
    replaces (matcha at 50%) was only 2.2:1 on white, and a focus ring
-   needs 3:1 to be seen: this is 6.0:1 on white, 5.3:1 on tiles and
-   7.9:1 in dark mode. An outline (not a box-shadow ring) leaves a real
+   needs 3:1 to be seen: this is 6.0:1 on white and 4.9:1 at its lowest
+   (light hover grey); in dark mode 6.1:1 at its lowest (a tile inside a
+   sheet). lib/color.test.ts checks every surface. An outline (not a box-shadow ring) leaves a real
    gap, so it shows even around a matcha button, and it follows rounded
    corners. Replaces the browser's own ring (Safari's is blue). */
 @utility focus-ring {
@@ -219,9 +233,12 @@
      weight of nearly every button and label) have strokes 0.094 of the
      font size. So every icon's line is 0.094em of the text it sits in:
      1.5 px beside 16 px text, 1.22 px beside 13 px. non-scaling-stroke
-     makes that a real screen width, whatever size the icon is. An icon
-     alone in a button gets the button's text size (16 px, 1.5 px), so
-     all of those match. */
+     makes that a real screen width, whatever size the icon is.
+     An icon alone in a hand-made button inherits the page's 16 px, so
+     1.5 px. The shadcn Button is text-sm (14 px, 1.3 px): give an
+     icon-only one text-base to match. This rule also beats Lucide's
+     strokeWidth prop, so change a line's weight with a class (like
+     icon-semibold below), never that prop. */
   svg.lucide {
     stroke-width: 0.094em;
   }

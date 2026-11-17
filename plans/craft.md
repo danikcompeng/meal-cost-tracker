@@ -80,7 +80,7 @@ Where you asked about it but it doesn't apply:
   keep their 10 px.
 
 Written with `calc()` from the outer token (for example
-`rounded-[calc(var(--radius-2xl)-4px)]`), so they follow if `--radius`
+`rounded-[calc(var(--radius-2xl)-5px)]`), so they follow if `--radius`
 ever changes. The rule goes into CLAUDE.md → Design → Layout:
 
 > Nested corners are concentric: when a rounded shape sits within a gap
@@ -149,8 +149,10 @@ reads one number, `--accent-h`:
     --matcha-soft: oklch(59.31% 0.0646 calc(var(--accent-h) - 6));
   }
 }
-/* Later, not in this pass: a preset is one line. */
-[data-accent="ocean"] { --accent-h: 240; }
+/* Later, not in this pass: a preset is one line, on <html> itself and
+   outside any @layer. --primary is worked out where it's declared
+   (<html>), so setting the hue on <body> or a <div> changes nothing. */
+:root[data-accent="ocean"] { --accent-h: 240; }
 ```
 
 Lightness and chroma stay put, so every preset is as light as matcha
@@ -218,7 +220,7 @@ font size it sits in (medium's stem), measured in screen pixels
   buttons finally match).
 
 The few icons next to semibold text (the Undo message's ×) get a
-`stroke-semibold` class.
+`icon-semibold` class.
 
 Tab bar: Today and Kitchen are words with no icons, so only the Scan
 icon changes (2 → 1.5 px, matching the other standalone icons).

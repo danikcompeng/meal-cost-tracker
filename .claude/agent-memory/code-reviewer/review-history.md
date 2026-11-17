@@ -353,3 +353,15 @@ metadata:
   throw (keepOnFailure then says "connection dropped"; accepted, theoretical). Test fails on old code
   (scope arg + called once), no root vitest config needed. Nits: plan lines 239-241 still read as the
   current fallback; test 2 couples to auth-log's console format.
+- 2026-11-17 craft branch (whole branch vs main: OKLCH tokens, surface-raised, alpha borders,
+  concentric radii, icon strokes, IconSwap): Minor issues, no live bugs. Verified: cn = tailwind-merge
+  parity so rounded-[calc] replaces Button's rounded-lg; @theme inline -> bg-card reads var(--card)
+  at the element (that's why surface-raised works); compiled .next CSS has the nested @media and
+  calc(var(--radius-lg) - 5px); base-layer svg.lucide beats lucide's stroke-width attr; all 5
+  bg-popover have surface-raised; IconSwap fine; parser fails loudly. Raised: accent preset only
+  works as :root[data-accent] on <html>, unlayered, after the dark block (--primary/--ring resolve
+  at :root); test skips raised for field-border (2.94:1) and red tint (3.99:1), no rule written;
+  Button text-sm -> icon-only Button = 1.32 px not 1.5 (comment overclaims); plan stroke-semibold
+  vs icon-semibold, plan -4px example (Tailwind compiles it from the .md); CLAUDE.md greyed 5.4
+  -> 5.0 in dark sheets; stale swap-empty/Peek comments; segmented track #141414 in #2A2A2A sheet
+  (design question); WHY-comment for @theme inline dependency.

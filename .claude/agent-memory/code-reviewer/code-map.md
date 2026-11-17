@@ -71,6 +71,12 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   route.tsx, app/manifest.ts, layout.tsx metadata/viewport, proxy.ts matcher + proxy.test.ts.
   Steps: 1 manifest/icons/meta, 2 safe areas + 16 px inputs, 3 login code (verifyOtp), 4 Android
   camera help.
+- Craft pass (plans/craft.md, branch craft, 2026-11-17): globals.css tokens in OKLCH with
+  --accent-h, @utility surface-raised (dark: --card/--muted/--secondary/--accent -> --raised #333),
+  icon-semibold, svg.lucide stroke 0.094em + non-scaling-stroke in @layer base. lib/color.ts
+  (oklchToRgb, contrast, over, parseOklch, propertiesIn) + color.test.ts parses globals.css.
+  components/icon-swap.tsx (torch). Every bg-popover (sheet, duplicate dialog, toast, log-out
+  box, ScanPanel) carries surface-raised.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

@@ -285,9 +285,10 @@ export function SwapStack({
 }
 
 // A card-shaped sliver behind the top card. Empty and hidden from screen
-// readers: it only shows that more cards are waiting. Grey like a hover
-// (bg-accent), so it reads as behind the card; in dark mode that's one
-// step lighter than the sheet (surface-raised, globals.css).
+// readers: it only shows that more cards are waiting. bg-accent: in light
+// mode a shade darker than the card, so it reads as behind it. In dark
+// mode it's the same grey as the card (both one step up from the sheet,
+// surface-raised in globals.css); the offset and border show it's behind.
 function Peek({ className }: { className: string }) {
   return <div aria-hidden="true" className={`absolute rounded-2xl border border-border bg-accent ${className}`} />;
 }

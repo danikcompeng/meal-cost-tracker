@@ -268,8 +268,13 @@ on a dark sheet, 4.51:1; red "Yes" on a food row being edited, 4.53:1;
 white on matcha hover, 4.82:1).
 Dark mode shows depth by lightness, never shadows: page, tile, popover,
 raised, each one step lighter. Busy buttons stay full
-colour; unavailable ones are greyed with muted text on muted (5.4:1),
-never faded with opacity.
+colour; unavailable ones are greyed with muted text on muted (5.4:1,
+5.0:1 inside a dark sheet), never faded with opacity.
+No box you type in and no red button on a tile inside a sheet: on dark
+raised they'd be 2.9:1 and 3.99:1. Put them straight on the sheet.
+An accent preset is set on <html>, unlayered:
+:root[data-accent="ocean"] { --accent-h: 240; }. Anywhere else it does
+nothing, because --primary is worked out on <html>.
 matcha-soft is never used for text or as the only way to show information
 (the budget bar always has its amount written next to it).
 
