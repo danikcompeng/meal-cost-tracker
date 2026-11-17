@@ -69,7 +69,7 @@ function Row({
         </span>
       </div>
       {missing > 0 && (
-        <span className="mt-1 block text-right text-[13px] text-muted-foreground">
+        <span className="mt-1 block text-right text-label text-muted-foreground">
           + {missing} unknown
         </span>
       )}
@@ -91,7 +91,7 @@ const EXTRAS = [
  */
 function ExtraNutrients({ totals }: { totals: DayTotals }) {
   return (
-    <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-[13px] tabular-nums">
+    <ul className="grid grid-cols-2 gap-x-4 gap-y-2 text-label tabular-nums">
       {EXTRAS.map(({ key, unit, word }) => {
         const total = totals[key];
         const known = total.sum !== null;

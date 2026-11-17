@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { ICON_GREEN, ICON_WHITE, PAGE_BACKGROUND } from "./app-identity";
 import { contrast, hexToRgb, oklchToRgb, over, parseOklch, propertiesIn, rgbToHex, type Rgb } from "./color";
 
 // The real palette, read from app/globals.css, so this test fails the
@@ -92,6 +93,16 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
   });
   it.each(Object.entries(DARK_HEX))("dark --%s is %s", (name, hex) => {
     expect(rgbToHex(shown("dark", name))).toBe(hex);
+  });
+
+  // The only hex written outside globals.css: the status bar and the
+  // app icon can't read CSS variables, so lib/app-identity.ts keeps
+  // copies. They must stay the same as the tokens they copy.
+  it("lib/app-identity.ts copies match their tokens", () => {
+    expect(PAGE_BACKGROUND.light).toBe(rgbToHex(shown("light", "background")));
+    expect(PAGE_BACKGROUND.dark).toBe(rgbToHex(shown("dark", "background")));
+    expect(ICON_GREEN).toBe(rgbToHex(shown("light", "primary")));
+    expect(ICON_WHITE).toBe(rgbToHex(shown("light", "primary-foreground")));
   });
 });
 

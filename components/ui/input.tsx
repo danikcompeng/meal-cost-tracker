@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Input as InputPrimitive } from "@base-ui/react/input"
-import { cn } from "cn"
+import { cn } from "@/lib/utils"
 
 // Text is 16 px (text-base) at every screen width. shadcn's original drops
 // to 14 px on wide screens (md:text-sm), but an iPad counts as wide, and

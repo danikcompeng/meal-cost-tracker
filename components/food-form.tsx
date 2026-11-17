@@ -273,7 +273,7 @@ export function FoodForm({
       </Field>
 
       {barcode && (
-        <p className="-mt-3 text-[13px] text-muted-foreground tabular-nums">Barcode {barcode}</p>
+        <p className="-mt-3 text-label text-muted-foreground tabular-nums">Barcode {barcode}</p>
       )}
       {/* Errors that belong to no single box are read out when they
           appear, and hidden while saving again so a repeat is read too. */}
@@ -307,7 +307,7 @@ export function FoodForm({
       )}
 
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-[13px] font-medium text-muted-foreground">
+        <legend className="mb-3 text-label font-medium text-muted-foreground">
           Nutrition {basisLabel(measuredBy)}
         </legend>
 
@@ -373,7 +373,7 @@ export function FoodForm({
       </fieldset>
 
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-[13px] font-medium text-muted-foreground">
+        <legend className="mb-3 text-label font-medium text-muted-foreground">
           What you paid
         </legend>
         <div className="grid grid-cols-2 gap-3">

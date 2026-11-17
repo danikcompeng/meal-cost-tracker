@@ -11,7 +11,7 @@ export function FoodsSkeleton() {
         {/* Measured by: its small label and the segmented control. */}
         <div>
           <TextLine line="mb-1.5 h-5" bar="h-3" width="w-24" shade={onTile} />
-          <div className={`h-[54px] rounded-lg ${onTile}`} />
+          <div className={`h-13.5 rounded-lg ${onTile}`} />
         </div>
         {/* Nutrition: the four main boxes, two by two. */}
         <div>
@@ -44,7 +44,7 @@ export function FoodsSkeleton() {
         {[0, 1, 2, 3].map((i) => (
           // A food row on a phone: name, the macro line (it wraps onto a
           // second line below about 512 px wide) and price, with py-3.
-          <div key={i} className={`mb-px h-[120px] rounded-lg ${onPage}`} />
+          <div key={i} className={`mb-px h-30 rounded-lg ${onPage}`} />
         ))}
       </div>
     </Skeleton>

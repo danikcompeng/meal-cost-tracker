@@ -212,8 +212,8 @@ export function ScanFlow() {
             <ChevronLeft aria-hidden="true" className="size-4" />
             {cameraProblem ? "Back" : "Scan again"}
           </button>
-          <h1 className="mt-4 text-[30px] leading-tight font-bold">{step.title}</h1>
-          <p className="mt-1 mb-6 text-[13px] font-medium text-muted-foreground tabular-nums">
+          <h1 className="mt-4 text-3xl leading-tight font-bold">{step.title}</h1>
+          <p className="mt-1 mb-6 text-label font-medium text-muted-foreground tabular-nums">
             {step.subtitle}
           </p>
           <FoodForm

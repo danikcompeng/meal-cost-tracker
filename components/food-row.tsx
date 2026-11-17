@@ -89,7 +89,7 @@ export function FoodRow({
             <span className="text-muted-foreground">No macros yet, tap to add</span>
           )}
 
-          <span className="text-[13px] text-muted-foreground tabular-nums">
+          <span className="text-label text-muted-foreground tabular-nums">
             {hasPrice ? (
               unitPriceLabel(price, package_size, unit)
             ) : (
@@ -213,7 +213,7 @@ function MacroLine({ food }: { food: Food }) {
       })}
       {/* Says what the numbers are per, right next to them, so it can't be
           mistaken for part of the price below. */}
-      <span className="text-[13px] leading-6 whitespace-nowrap text-muted-foreground">
+      <span className="text-label leading-6 whitespace-nowrap text-muted-foreground">
         {basisLabel(food.unit)}
       </span>
     </span>

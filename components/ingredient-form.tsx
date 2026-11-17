@@ -136,7 +136,7 @@ export function IngredientForm({
             own. Water you pour away (pasta, boiled eggs) shouldn't count,
             so the hint says to leave it out. */}
         {hydrates && (
-          <p className="text-[13px] text-muted-foreground tabular-nums">
+          <p className="text-label text-muted-foreground tabular-nums">
             {typed === null ? "Counts toward water." : `Counts toward water: ${waterText(typed)}.`}{" "}
             Leave out water you drain away.
           </p>

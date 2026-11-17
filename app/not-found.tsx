@@ -13,7 +13,7 @@ export default function NotFound() {
   return (
     <>
       <main className="mx-auto w-full max-w-lg px-4 pt-16 pb-above-tab-bar text-center">
-        <h1 className="text-[30px] leading-tight font-bold">This page doesn’t exist</h1>
+        <h1 className="text-3xl leading-tight font-bold">This page doesn’t exist</h1>
         <p className="mt-3 text-muted-foreground">
           The address may be mistyped, or the page has moved.
         </p>

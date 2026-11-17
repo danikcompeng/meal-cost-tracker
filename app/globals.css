@@ -9,6 +9,13 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-figtree);
+  /* The small grey label size (13 px), text-label. Between Tailwind's
+     text-xs (12) and text-sm (14). No line height of its own: it keeps
+     the line height of what it sits in, as the text-[13px] it replaces
+     did. lib/utils.ts tells cn it's a size, not a colour. */
+  --text-label: 0.8125rem;
+  /* The dim behind a sheet or dialog (backdrop:bg-scrim). */
+  --color-scrim: oklch(0% 0 0 / 40%);
   /* Our own colors (not in shadcn): see Design section in CLAUDE.md. */
   --color-matcha-soft: var(--matcha-soft);
   --color-highlight: var(--highlight);

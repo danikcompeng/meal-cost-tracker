@@ -111,7 +111,7 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 16, opacity: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="surface-raised pointer-events-auto flex min-h-[3.25rem] items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
+      className="surface-raised pointer-events-auto flex min-h-13 items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
     >
       <p className={`min-w-0 flex-1 text-sm ${isError ? "text-destructive" : ""}`}>
         {problem?.message ?? toast.text}

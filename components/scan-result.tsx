@@ -27,7 +27,7 @@ export function LookupStatus({
   scanAgainLabel?: string;
 }) {
   const { state, barcode } = lookup;
-  const number = <p className="text-[13px] text-muted-foreground tabular-nums">{barcode}</p>;
+  const number = <p className="text-label text-muted-foreground tabular-nums">{barcode}</p>;
 
   if (state === "looking") {
     return (

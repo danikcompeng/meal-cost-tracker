@@ -145,7 +145,7 @@ export function CameraBlocked({
       <div className="mt-4 flex size-14 items-center justify-center rounded-2xl bg-card">
         <CameraOff aria-hidden="true" className="size-7 text-muted-foreground" />
       </div>
-      <h1 className="mt-5 text-[30px] leading-tight font-bold">{title}</h1>
+      <h1 className="mt-5 text-3xl leading-tight font-bold">{title}</h1>
 
       {problem === "denied" ? (
         <>
@@ -153,7 +153,7 @@ export function CameraBlocked({
             The browser isn&apos;t allowed to use the camera. You can change that:
           </p>
           <section className="mt-6 rounded-2xl bg-card p-4">
-            <h2 className="text-[13px] font-medium text-muted-foreground">{mine.name}</h2>
+            <h2 className="text-label font-medium text-muted-foreground">{mine.name}</h2>
             <ol className="mt-3 list-decimal space-y-2 pl-5">
               {mine.steps.map((step) => (
                 <li key={step}>{withSite(step, site)}</li>
@@ -174,7 +174,7 @@ export function CameraBlocked({
             <div className="space-y-4 pb-2">
               {others.map((other) => (
                 <div key={other.name}>
-                  <h3 className="text-[13px] font-medium text-muted-foreground">{other.name}</h3>
+                  <h3 className="text-label font-medium text-muted-foreground">{other.name}</h3>
                   <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm">
                     {other.steps.map((step) => (
                       <li key={step}>{withSite(step, site)}</li>

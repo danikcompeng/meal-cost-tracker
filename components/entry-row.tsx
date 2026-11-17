@@ -212,7 +212,7 @@ export function EntryRow({
                 className="flex min-w-0 flex-col"
               >
                 <span className="truncate font-medium">{entry.name}</span>
-                <span className="text-[13px] text-muted-foreground tabular-nums">
+                <span className="text-label text-muted-foreground tabular-nums">
                   {amountText(entry.amount, entry.unit)} ·{" "}
                   <span className={entry.protein_g === null ? undefined : "font-medium text-primary"}>
                     {macroText(entry.protein_g, "g", "protein")}

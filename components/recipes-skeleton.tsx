@@ -9,8 +9,9 @@ export function RecipesSkeleton() {
     <Skeleton label="Loading your recipes…" className="space-y-3">
       <div className={`h-11 rounded-lg ${onPage}`} />
       {[0, 1, 2].map((i) => (
-        // A recipe tile: name, ingredients and the cost line (91 px).
-        <div key={i} className={`h-[91px] rounded-2xl ${onPage}`} />
+        // A recipe tile: name, ingredients and the cost line (91 px; the
+        // nearest step is 92).
+        <div key={i} className={`h-23 rounded-2xl ${onPage}`} />
       ))}
     </Skeleton>
   );

@@ -17,7 +17,7 @@ export function RecipeCost({ recipe }: { recipe: Recipe }) {
 
   return (
     <section aria-labelledby="cost-label">
-      <h2 id="cost-label" className="text-[13px] font-medium text-muted-foreground">
+      <h2 id="cost-label" className="text-label font-medium text-muted-foreground">
         Cost per serving
       </h2>
       <p className="text-5xl leading-tight font-bold text-primary tabular-nums">
@@ -39,7 +39,7 @@ export function RecipeCost({ recipe }: { recipe: Recipe }) {
           {cost !== null && ` · ${formatMoney(cost * servings)} in total`}
         </p>
       )}
-      {noPrice && <p className="text-[13px] text-muted-foreground">{noPrice}.</p>}
+      {noPrice && <p className="text-label text-muted-foreground">{noPrice}.</p>}
       {ppd !== null && (
         <p className="mt-1 font-medium text-primary tabular-nums">{proteinPerDollarText(ppd)}</p>
       )}

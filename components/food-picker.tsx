@@ -59,7 +59,7 @@ export function FoodPicker({
   }
 
   const search = grouped ? "Search recipes and foods" : "Search your foods";
-  const heading = "px-2 pt-2 text-[13px] font-medium text-muted-foreground";
+  const heading = "px-2 pt-2 text-label font-medium text-muted-foreground";
 
   return (
     <div className="space-y-3 pt-2">
@@ -115,12 +115,12 @@ export function FoodPicker({
                     <li key={food.id}>
                       <button type="button" onClick={() => onPick(food)} className={OPTION_CLASS}>
                         <span className="font-medium">{food.name}</span>
-                        <span className="text-[13px] text-muted-foreground tabular-nums">
+                        <span className="text-label text-muted-foreground tabular-nums">
                           {macroText(food.kcal, "kcal")} ·{" "}
                           {macroText(food.protein_g, "g", "protein")} {basisLabel(food.unit)}
                         </span>
                         {note && (
-                          <span className="text-[13px] font-medium text-primary tabular-nums">
+                          <span className="text-label font-medium text-primary tabular-nums">
                             {note}
                           </span>
                         )}

@@ -27,7 +27,7 @@ export function IngredientRow({
     >
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate font-medium">{food.name}</span>
-        <span className="text-[13px] text-muted-foreground tabular-nums">
+        <span className="text-label text-muted-foreground tabular-nums">
           {amountText(amount, food.unit)} ·{" "}
           <span className={protein === null ? undefined : "font-medium text-primary"}>
             {macroText(protein, "g", "protein")}
@@ -35,7 +35,7 @@ export function IngredientRow({
         </span>
       </span>
       {cost === null ? (
-        <span className="text-[13px] whitespace-nowrap text-muted-foreground">no price yet</span>
+        <span className="text-label whitespace-nowrap text-muted-foreground">no price yet</span>
       ) : (
         <span className="whitespace-nowrap tabular-nums">{formatMoney(cost)}</span>
       )}

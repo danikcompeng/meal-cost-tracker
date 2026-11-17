@@ -233,7 +233,8 @@ Fonts (final)
 - Every number uses `tabular-nums`, including the big number and every
   price in a list. (DM Sans from Google Fonts has no tabular figures.)
 - Sizes: label 13px medium grey · key number 48px · page title 30px ·
-  body 16px (16px also stops iPhones zooming into inputs).
+  body 16px (16px also stops iPhones zooming into inputs). Classes in
+  Tokens below.
 
 Colors (final): light / dark
 Written in OKLCH in app/globals.css (same colours as these hex values;
@@ -277,6 +278,19 @@ An accent preset is set on <html>, unlayered:
 nothing, because --primary is worked out on <html>.
 matcha-soft is never used for text or as the only way to show information
 (the budget bar always has its amount written next to it).
+
+Tokens: use these, never a raw hex, rgb() or a made-up size
+| Kind    | Use                                                        |
+|---------|------------------------------------------------------------|
+| Colour  | the names above as classes (bg-card, text-muted-foreground, border-field-border, bg-camera/80...), backdrop:bg-scrim (black 40%) behind sheets and dialogs. Hex only in lib/app-identity.ts (status bar, icon), checked against globals.css by lib/color.test.ts |
+| Type    | text-label 13 (labels, chips; our own, lib/utils.ts tells cn) · text-sm 14 (secondary lines, buttons) · text-base 16 (body, inputs) · text-lg 18 (sheet titles) · text-xl 20 · text-2xl 24 (swap card name) · text-3xl 30 (page titles, with leading-tight) · text-4xl 36 (big ring number at 6+ digits) · text-5xl 48 (the key number) |
+| Spacing | Tailwind's 4 px steps (--spacing): 1 2 3 4 5 6 8, half steps for tight chips and rows. Page gutter px-4, tile padding p-4 or p-5, tap targets h-11 (44 px) or h-12 |
+| Radius  | from --radius (10 px): rounded-md 8 (text links), rounded-lg 10 (buttons, boxes, rows), rounded-2xl 18 (tiles, sheets, cards), rounded-full (chips, pills, rings); plain rounded 4 only on skeleton text bars. Nested corners: concentric rule above |
+Arbitrary values left on purpose: safe-area insets (env(), the phone
+decides), max-h-[85dvh] on sheets, concentric corners written from their
+outer token, and two width formulas (the dialog's 1 rem gutter, the scan
+window's min(80vw, 360px)). Sizes that JavaScript also needs (ring sizes,
+the swipe reveal width) stay numbers in the component, on the 4 px grid.
 
 ## Commit style
 Small commits with clear messages, one per working feature.

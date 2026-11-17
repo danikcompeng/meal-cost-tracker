@@ -13,7 +13,7 @@
 // - or draw a 1024 x 1024 PNG and return
 //   <img src={...} width={size} height={size} /> with the PNG read as a
 //   data URL.
-import { ICON_GREEN, type IconShape } from "@/lib/app-identity";
+import { ICON_GREEN, ICON_WHITE, type IconShape } from "@/lib/app-identity";
 
 /**
  * How much of the square the drawing takes up. Android's maskable icons
@@ -52,16 +52,16 @@ function BowlDrawing({ size }: { size: number }) {
       <path
         d="M40 36 C34 30 46 24 40 16 M60 36 C54 30 66 24 60 16"
         fill="none"
-        stroke="#FFFFFF"
+        stroke={ICON_WHITE}
         strokeWidth={5}
         strokeLinecap="round"
       />
       {/* Rim */}
-      <rect x={12} y={44} width={76} height={7} rx={3.5} fill="#FFFFFF" />
+      <rect x={12} y={44} width={76} height={7} rx={3.5} fill={ICON_WHITE} />
       {/* Bowl: a half circle hanging under the rim */}
-      <path d="M17 53 H83 A33 33 0 0 1 17 53 Z" fill="#FFFFFF" />
+      <path d="M17 53 H83 A33 33 0 0 1 17 53 Z" fill={ICON_WHITE} />
       {/* Foot */}
-      <rect x={37} y={84} width={26} height={6} rx={3} fill="#FFFFFF" />
+      <rect x={37} y={84} width={26} height={6} rx={3} fill={ICON_WHITE} />
     </svg>
   );
 }

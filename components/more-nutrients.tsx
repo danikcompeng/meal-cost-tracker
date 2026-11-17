@@ -57,7 +57,7 @@ export function MoreNutrients({
         className="focus-ring flex h-11 w-full items-center justify-between gap-3 rounded-md text-left"
       >
         <span className="font-medium">More nutrients</span>
-        <span className="flex items-center gap-1.5 text-[13px] text-muted-foreground tabular-nums">
+        <span className="flex items-center gap-1.5 text-label text-muted-foreground tabular-nums">
           {filled === 0 ? "optional" : `${filled} of 4 filled`}
           <motion.span
             aria-hidden="true"

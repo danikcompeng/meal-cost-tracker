@@ -55,7 +55,7 @@ export function DaySummary({
 
   return (
     <section aria-labelledby="summary-label" className="rounded-2xl bg-card p-5">
-      <h2 id="summary-label" className="text-[13px] font-medium text-muted-foreground">
+      <h2 id="summary-label" className="text-label font-medium text-muted-foreground">
         {kcal ? "Calories today" : isToday ? "Eaten today" : "Eaten this day"}
       </h2>
 
@@ -66,7 +66,7 @@ export function DaySummary({
         <SummaryRings kcalTotal={totals.kcal} kcal={kcal} slots={slots} />
       </div>
       {totals.kcal.sum === null && (
-        <p className="mt-2 text-center text-[13px] text-muted-foreground">
+        <p className="mt-2 text-center text-label text-muted-foreground">
           None of these foods have calories yet
         </p>
       )}
@@ -76,7 +76,7 @@ export function DaySummary({
         onClick={toggle}
         aria-expanded={open}
         aria-controls="summary-details"
-        className="focus-ring mx-auto mt-3 flex h-11 items-center gap-1 rounded-md px-3 text-[13px] font-medium text-muted-foreground"
+        className="focus-ring mx-auto mt-3 flex h-11 items-center gap-1 rounded-md px-3 text-label font-medium text-muted-foreground"
       >
         {open ? "Hide details" : "Show details"}
         <motion.span
@@ -107,7 +107,7 @@ export function DaySummary({
         </div>
       </motion.div>
 
-      <p className="text-center text-[13px] text-muted-foreground tabular-nums">
+      <p className="text-center text-label text-muted-foreground tabular-nums">
         {costLine(totals.cost, isToday)}
         {open && totals.cost.sum !== null && costNote && (
           <span className="block">{costNote}</span>

@@ -52,7 +52,7 @@ export function LogOutButton({ className }: { className: string }) {
         // No shadow in dark mode: there, being one step lighter
         // (surface-raised) is what lifts it off the page.
         <div className="surface-raised absolute top-full right-0 z-10 flex w-64 items-start gap-1 rounded-lg border border-border bg-popover py-1 pr-1 pl-3 shadow-sm dark:shadow-none">
-          <p role="alert" className="flex-1 py-2 text-[13px] text-destructive">
+          <p role="alert" className="flex-1 py-2 text-label text-destructive">
             {message}
           </p>
           <button

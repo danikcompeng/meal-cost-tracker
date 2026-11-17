@@ -145,7 +145,7 @@ export function SwapSheet({
         ) : (
           <>
             {swapHeaderNotes(current, history !== null).map((note) => (
-              <p key={note} className="mb-2 text-[13px] text-muted-foreground">
+              <p key={note} className="mb-2 text-label text-muted-foreground">
                 {note}
               </p>
             ))}
@@ -169,7 +169,7 @@ export function SwapSheet({
                 Back
               </button>
               {swap && (
-                <p className="text-[13px] text-muted-foreground tabular-nums">
+                <p className="text-label text-muted-foreground tabular-nums">
                   {index + 1} of {ranked.length}
                 </p>
               )}

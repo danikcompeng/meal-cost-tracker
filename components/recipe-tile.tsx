@@ -36,10 +36,10 @@ export function RecipeTile({ recipe }: { recipe: Recipe }) {
       </span>
 
       {empty ? (
-        <span className="text-[13px] text-muted-foreground">No ingredients yet</span>
+        <span className="text-label text-muted-foreground">No ingredients yet</span>
       ) : (
         <>
-          <span className="flex items-baseline justify-between gap-3 text-[13px] text-muted-foreground tabular-nums">
+          <span className="flex items-baseline justify-between gap-3 text-label text-muted-foreground tabular-nums">
             <span>
               {macroText(per.kcal, "kcal")} ·{" "}
               <span className={per.protein_g === null ? undefined : "font-medium text-primary"}>
@@ -48,7 +48,7 @@ export function RecipeTile({ recipe }: { recipe: Recipe }) {
             </span>
             <span className="whitespace-nowrap">{cost === null ? "no price yet" : "per serving"}</span>
           </span>
-          <span className="text-[13px] text-muted-foreground tabular-nums">
+          <span className="text-label text-muted-foreground tabular-nums">
             {ppd !== null && (
               <>
                 <span className="font-medium text-primary">{proteinPerDollarText(ppd)}</span> ·{" "}

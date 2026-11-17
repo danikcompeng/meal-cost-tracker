@@ -29,7 +29,7 @@ export function OfflineStrip() {
             className="overflow-hidden"
           >
             <div className="mx-auto w-full max-w-lg px-4 py-2">
-              <p className="rounded-lg bg-card px-3 py-2 text-center text-[13px] text-muted-foreground">
+              <p className="rounded-lg bg-card px-3 py-2 text-center text-label text-muted-foreground">
                 You’re offline. Nothing can be saved or loaded until you’re back online.
               </p>
             </div>

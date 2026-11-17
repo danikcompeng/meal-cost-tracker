@@ -16,12 +16,19 @@ export const APP_DESCRIPTION = "Cheap meals on repeat, without getting bored.";
 /**
  * The page background, so the phone's status bar blends into the page.
  * Copied from --background in app/globals.css: a manifest and a <meta> tag
- * can't read CSS variables. Change one, change the other.
+ * can't read CSS variables. Change one, change the other (lib/color.test.ts
+ * fails until you do).
  */
 export const PAGE_BACKGROUND = { light: "#FFFFFF", dark: "#141414" } as const;
 
-/** The icon's matcha green: --primary (light) in app/globals.css. */
+/**
+ * The icon's colours, from app/globals.css: matcha (--primary, light)
+ * and the white drawn on it (--primary-foreground, light). The icon is
+ * drawn by next/og, which can't read CSS variables. lib/color.test.ts
+ * checks these and PAGE_BACKGROUND still match.
+ */
 export const ICON_GREEN = "#4F6B2E";
+export const ICON_WHITE = "#FFFFFF";
 
 /**
  * - "rounded": a rounded square, for browser tabs and Android's "any" icon.

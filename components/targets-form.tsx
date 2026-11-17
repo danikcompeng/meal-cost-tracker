@@ -124,7 +124,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
       className="space-y-5 rounded-2xl bg-card p-4"
     >
       <div>
-        <h2 id="targets-label" className="text-[13px] font-medium text-muted-foreground">
+        <h2 id="targets-label" className="text-label font-medium text-muted-foreground">
           Daily targets
         </h2>
         <p className="mt-1">Leave any blank for no target.</p>
@@ -168,7 +168,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
       {/* A fieldset, so screen readers say "Water" when you reach the
           switch or the goal box ("Daily goal" alone wouldn't say what for). */}
       <fieldset className="space-y-3">
-        <legend className="mb-3 text-[13px] font-medium text-muted-foreground">Water</legend>
+        <legend className="mb-3 text-label font-medium text-muted-foreground">Water</legend>
         <SwitchRow
           name="showWater"
           label="Show water on Today"

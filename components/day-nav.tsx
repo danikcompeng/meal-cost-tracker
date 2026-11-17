@@ -17,7 +17,7 @@ export function DayNav({ day, today }: { day: string; today: string }) {
       <Link href={hrefFor(prev, today)} className={arrow} aria-label="Previous day">
         <ChevronLeft aria-hidden="true" className="size-5" />
       </Link>
-      <span className="text-[13px] font-medium text-muted-foreground">{dayLabel(day)}</span>
+      <span className="text-label font-medium text-muted-foreground">{dayLabel(day)}</span>
       {day < today ? (
         <Link href={hrefFor(next, today)} className={arrow} aria-label="Next day">
           <ChevronRight aria-hidden="true" className="size-5" />

@@ -79,7 +79,7 @@ export function DuplicateDialog({
       onClick={(e) => {
         if (e.target === e.currentTarget) cancel();
       }}
-      className="surface-raised m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-border bg-popover p-0 text-popover-foreground transition-[opacity,scale] duration-150 backdrop:bg-black/50 starting:opacity-0 motion-safe:starting:scale-97"
+      className="surface-raised m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-border bg-popover p-0 text-popover-foreground transition-[opacity,scale] duration-150 backdrop:bg-scrim starting:opacity-0 motion-safe:starting:scale-97"
     >
       <div className="space-y-4 p-5">
         <h2 id="duplicate-title" className="text-lg font-semibold">
@@ -88,7 +88,7 @@ export function DuplicateDialog({
         </h2>
         <p id="duplicate-question">Update it with these numbers, or keep both?</p>
 
-        <ul className="space-y-1 text-[13px] tabular-nums">
+        <ul className="space-y-1 text-label tabular-nums">
           {changes.length === 0 ? (
             <li className="text-muted-foreground">Same numbers as the one you have.</li>
           ) : (
@@ -101,7 +101,7 @@ export function DuplicateDialog({
           )}
         </ul>
 
-        <p className="text-[13px] text-muted-foreground">
+        <p className="text-label text-muted-foreground">
           Past days keep the numbers they were logged with.
         </p>
 

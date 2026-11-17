@@ -33,8 +33,9 @@ export function ScanFrame({ state, ref }: { state: FrameState; ref: React.Ref<HT
       ref={ref}
       aria-hidden="true"
       // Barcodes are wide, so the frame is too. Capped so it doesn't get
-      // huge on a tablet or laptop.
-      className="relative aspect-[16/10] w-[min(80vw,360px)] rounded-2xl shadow-[0_0_0_9999px_rgb(20_20_20/0.6)]"
+      // huge on a tablet or laptop. The huge shadow dims the camera
+      // picture round the window: the camera colour at 60%.
+      className="relative aspect-16/10 w-[min(80vw,360px)] rounded-2xl shadow-[0_0_0_9999px] shadow-camera/60"
     >
       <motion.div
         className="absolute inset-0"

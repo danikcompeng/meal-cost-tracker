@@ -70,7 +70,7 @@ export function SummaryRings({
                 </>
               )}
             </span>
-            <span className="text-[13px] text-muted-foreground">{slot.word}</span>
+            <span className="text-label text-muted-foreground">{slot.word}</span>
           </li>
         ))}
       </ul>
@@ -85,8 +85,9 @@ export function SummaryRings({
  */
 function BigRing({ p }: { p: Progress }) {
   const { prefix, number, suffix } = kcalHeadline(p);
-  // Six characters ("10,000") don't fit inside the ring at 48 px.
-  const size = number.length >= 6 ? "text-[40px]" : "text-5xl";
+  // Six characters ("10,000") don't fit inside the ring at 48 px, so
+  // they drop one step, to 36 px.
+  const size = number.length >= 6 ? "text-4xl" : "text-5xl";
   return (
     <div className="relative mx-auto mt-3" style={{ width: BIG, height: BIG }}>
       <ProgressRing fraction={p.fraction} size={BIG} stroke={12} />
@@ -95,9 +96,9 @@ function BigRing({ p }: { p: Progress }) {
           p.over ? "text-foreground" : "text-primary"
         }`}
       >
-        {prefix && <span className="text-[13px] font-medium">{prefix}</span>}
+        {prefix && <span className="text-label font-medium">{prefix}</span>}
         <span className={`${size} leading-none font-bold tabular-nums`}>{number}</span>
-        <span className="mt-1 text-[13px] font-medium">{suffix}</span>
+        <span className="mt-1 text-label font-medium">{suffix}</span>
       </p>
     </div>
   );

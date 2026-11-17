@@ -277,7 +277,7 @@ export function SwapStack({
           {pendingLabel ?? pickLabel}
         </Button>
       </div>
-      <p className="mt-2 hidden text-center text-[13px] text-muted-foreground pointer-fine:block">
+      <p className="mt-2 hidden text-center text-label text-muted-foreground pointer-fine:block">
         ← Skip · {pickLabel} →
       </p>
     </div>

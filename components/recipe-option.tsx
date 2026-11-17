@@ -15,7 +15,7 @@ export function RecipeOption({ recipe, onPick }: { recipe: Recipe; onPick: () =>
   return (
     <button type="button" onClick={onPick} className={OPTION_CLASS}>
       <span className="font-medium">{recipe.name}</span>
-      <span className="text-[13px] text-muted-foreground tabular-nums">
+      <span className="text-label text-muted-foreground tabular-nums">
         {macroText(per.kcal, "kcal")} ·{" "}
         <span className={per.protein_g === null ? undefined : "font-medium text-primary"}>
           {macroText(per.protein_g, "g", "protein")}

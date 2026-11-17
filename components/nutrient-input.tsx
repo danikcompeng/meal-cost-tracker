@@ -49,7 +49,7 @@ export function NutrientInput({
           {suffix}
         </span>
       </div>
-      {note && <p className="text-[13px] text-muted-foreground">{note}</p>}
+      {note && <p className="text-label text-muted-foreground">{note}</p>}
     </Field>
   );
 }

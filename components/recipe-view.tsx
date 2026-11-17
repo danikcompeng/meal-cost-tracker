@@ -84,7 +84,7 @@ export function RecipeView({
           Recipes
         </Link>
         <div className="flex items-baseline justify-between gap-3">
-          <h1 className="min-w-0 text-[30px] leading-tight font-bold break-words">{recipe.name}</h1>
+          <h1 className="min-w-0 text-3xl leading-tight font-bold break-words">{recipe.name}</h1>
           <button
             type="button"
             onClick={() => setSheet({ mode: "edit" })}
@@ -105,7 +105,7 @@ export function RecipeView({
       )}
 
       <section aria-labelledby="ingredients" className="mt-8">
-        <h2 id="ingredients" className="mb-1 px-3 text-[13px] font-medium text-muted-foreground tabular-nums">
+        <h2 id="ingredients" className="mb-1 px-3 text-label font-medium text-muted-foreground tabular-nums">
           Ingredients{ingredients.length > 0 && ` · ${ingredients.length}`}
         </h2>
         <ul>

@@ -41,13 +41,13 @@ export function TodaySkeleton({
         {past ? (
           <TextLine line="mt-1 h-12" bar="h-10" width="w-32" shade={onTile} />
         ) : (
-          <div className="mx-auto mt-3 size-44 rounded-full border-[12px] border-background motion-safe:animate-pulse" />
+          <div className="mx-auto mt-3 size-44 rounded-full border-12 border-background motion-safe:animate-pulse" />
         )}
         <div className="mt-6 grid grid-cols-4 gap-3">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex flex-col items-center">
               {!past && (
-                <div className="mb-2 size-13 rounded-full border-[6px] border-background motion-safe:animate-pulse" />
+                <div className="mb-2 size-13 rounded-full border-6 border-background motion-safe:animate-pulse" />
               )}
               <TextLine line="h-6" width="w-10" shade={onTile} />
               <TextLine line="h-5" bar="h-3" width="w-12" shade={onTile} />

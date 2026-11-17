@@ -45,7 +45,7 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
             {swap.reasons.map((reason) => (
               <li
                 key={reason}
-                className="rounded-full bg-background px-2.5 py-1 text-[13px] font-medium text-primary tabular-nums"
+                className="rounded-full bg-background px-2.5 py-1 text-label font-medium text-primary tabular-nums"
               >
                 {reason}
               </li>
@@ -54,13 +54,13 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
         )}
       </div>
 
-      <p className="mt-4 text-[13px] font-medium text-muted-foreground">{costLabel}</p>
+      <p className="mt-4 text-label font-medium text-muted-foreground">{costLabel}</p>
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-5xl leading-tight font-bold text-primary tabular-nums">
           <Value value={shown.cost} format={formatMoney} />
         </p>
         {swap.costChange !== null && (
-          <p className="text-[13px] text-muted-foreground tabular-nums">
+          <p className="text-label text-muted-foreground tabular-nums">
             {signedMoney(swap.costChange)}
             <span className="sr-only"> vs now</span>
           </p>
@@ -82,7 +82,7 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
       </dl>
 
       {swap.notes.map((note) => (
-        <p key={note} className="mt-2 text-[13px] text-muted-foreground">
+        <p key={note} className="mt-2 text-label text-muted-foreground">
           {note}
         </p>
       ))}
@@ -92,13 +92,13 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
           {foods.slice(0, CHIPS).map((food) => (
             <li
               key={food.id}
-              className="max-w-[10rem] truncate rounded-full border border-border px-2.5 py-0.5 text-[13px] text-muted-foreground"
+              className="max-w-40 truncate rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground"
             >
               {food.name}
             </li>
           ))}
           {extra > 0 && (
-            <li className="rounded-full border border-border px-2.5 py-0.5 text-[13px] text-muted-foreground tabular-nums">
+            <li className="rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground tabular-nums">
               +{extra}
               <span className="sr-only"> more</span>
             </li>
@@ -106,7 +106,7 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
         </ul>
       )}
 
-      {swap.lastHad && <p className="mt-3 text-[13px] text-muted-foreground">{swap.lastHad}</p>}
+      {swap.lastHad && <p className="mt-3 text-label text-muted-foreground">{swap.lastHad}</p>}
     </article>
   );
 }
@@ -127,10 +127,10 @@ function Stat({
     // "protein", "+1 g"). Read aloud: "protein, 25 g, +1 g vs now".
     // CSS "order" moves only how it looks; the reading order stays.
     <div className="flex flex-col">
-      <dt className="order-2 text-[13px] text-muted-foreground">{label}</dt>
+      <dt className="order-2 text-label text-muted-foreground">{label}</dt>
       <dd className={`order-1 text-lg font-medium tabular-nums ${className ?? ""}`}>{value}</dd>
       {change && (
-        <dd className="order-3 text-[13px] text-muted-foreground tabular-nums">
+        <dd className="order-3 text-label text-muted-foreground tabular-nums">
           {change}
           <span className="sr-only"> vs now</span>
         </dd>

@@ -38,7 +38,7 @@ export function SwitchRow({
         <span>
           <span className="block font-medium">{label}</span>
           {description && (
-            <span className="block text-[13px] text-muted-foreground">{description}</span>
+            <span className="block text-label text-muted-foreground">{description}</span>
           )}
         </span>
         <span

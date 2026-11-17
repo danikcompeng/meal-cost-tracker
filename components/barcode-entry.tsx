@@ -50,7 +50,7 @@ export function BarcodeEntry({
         <ChevronLeft aria-hidden="true" className="size-4" />
         {backLabel}
       </button>
-      <h1 className="mt-4 text-[30px] leading-tight font-bold">Type the barcode</h1>
+      <h1 className="mt-4 text-3xl leading-tight font-bold">Type the barcode</h1>
       <p className="mt-2 text-muted-foreground">The 8 to 13 digits printed under the lines.</p>
 
       <form onSubmit={submit} className="mt-6 space-y-4 rounded-2xl bg-card p-4" noValidate>

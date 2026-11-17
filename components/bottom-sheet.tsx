@@ -90,7 +90,7 @@ export function BottomSheet({
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
-      className="mx-auto mt-auto mb-0 max-h-[85dvh] w-full max-w-lg overflow-visible bg-transparent p-0 text-foreground backdrop:bg-black/40"
+      className="mx-auto mt-auto mb-0 max-h-[85dvh] w-full max-w-lg overflow-visible bg-transparent p-0 text-foreground backdrop:bg-scrim"
     >
       <motion.div
         initial={{ y: 48, opacity: 0 }}

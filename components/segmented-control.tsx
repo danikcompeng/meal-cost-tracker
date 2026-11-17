@@ -23,7 +23,7 @@ export function SegmentedControl<T extends string>({
 }) {
   return (
     <fieldset>
-      <legend className="mb-1.5 text-[13px] font-medium text-muted-foreground">{label}</legend>
+      <legend className="mb-1.5 text-label font-medium text-muted-foreground">{label}</legend>
       {/* White track, so it stands out on a grey tile. Options are 44px
           tall: the size phones recommend for a comfortable tap. */}
       <div className="flex rounded-lg border border-border bg-background p-1">

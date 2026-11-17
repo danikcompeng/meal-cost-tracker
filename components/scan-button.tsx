@@ -18,7 +18,7 @@ export function ScanButton() {
       <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground ring-4 ring-background transition-transform group-active:scale-95">
         <ScanBarcode aria-hidden="true" className="size-6" />
       </span>
-      <span className="text-[13px] font-medium text-muted-foreground group-hover:text-foreground">
+      <span className="text-label font-medium text-muted-foreground group-hover:text-foreground">
         Scan
       </span>
     </Link>

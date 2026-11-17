@@ -26,7 +26,7 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
 
   return (
     <section aria-labelledby="per-serving" className="mt-6 rounded-2xl bg-card p-4">
-      <h2 id="per-serving" className="text-[13px] font-medium text-muted-foreground">
+      <h2 id="per-serving" className="text-label font-medium text-muted-foreground">
         Per serving
       </h2>
 
@@ -35,7 +35,7 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
           // The word comes first in the code (dt before dd, the order
           // screen readers expect); flex-col-reverse shows the number on top.
           <div key={key} className="flex flex-col-reverse">
-            <dt className="text-[13px] text-muted-foreground">{word}</dt>
+            <dt className="text-label text-muted-foreground">{word}</dt>
             <dd
               className={
                 per[key] === null
@@ -51,7 +51,7 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
         ))}
       </dl>
 
-      <dl className="mt-4 flex flex-wrap gap-x-3 gap-y-1 text-[13px] text-muted-foreground tabular-nums">
+      <dl className="mt-4 flex flex-wrap gap-x-3 gap-y-1 text-label text-muted-foreground tabular-nums">
         {EXTRAS.map(({ key, unit, label }) => (
           <div key={key} className="flex gap-1 whitespace-nowrap">
             <dt>{label}</dt>
@@ -69,7 +69,7 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
       </dl>
 
       {notes.length > 0 && (
-        <ul className="mt-3 space-y-0.5 text-[13px] text-muted-foreground">
+        <ul className="mt-3 space-y-0.5 text-label text-muted-foreground">
           {notes.map((note) => (
             <li key={note}>Unknown because {note}.</li>
           ))}
