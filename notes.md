@@ -187,6 +187,35 @@ If one fails, tell Claude exactly which rule and what to change.
 | Nov 9 | Today | Water with 0 kcal and blank macros shows "+ 1 unknown" under every macro | 0 kcal means 0 protein, carbs and fat, so save blank macros as 0 when kcal is 0. Fix my existing water. | Yes |
 | Nov 11 | Today | Fraunces looked old-fashioned for a fitness app | Compared Fraunces, Figtree, Geist and Manrope side by side on a preview page, chose Figtree bold for one clean font across the app | Yes |
 
+## 2026-11-17: Craft pass (plans/craft.md)
+
+Small details that make the app feel finished, without changing how it
+looks at a glance. Before/after screenshots: `design/ui/craft/before/`
+and `design/ui/craft/after/` (Today, a swap card, a sheet; light and
+dark). Both sets use the same made-up meals from a preview page
+(`design/ui/craft/preview-page.tsx.txt`), so only the design changes
+between them.
+
+| Technique | What changed | Where to look |
+| --- | --- | --- |
+| Dark mode depth | Sheets one step lighter than tiles, tiles inside sheets one more; no shadows in dark | `swap-card-dark.png`: the card no longer melts into the sheet |
+| Concentric corners | Inner radius = outer − gap (border included), e.g. the Meal switch's pill 8 → 5 px | `sheet.png`: the yellow Dinner pill |
+| OKLCH colours | Same colours, rewritten so an accent preset only changes the hue; a test checks every colour and its contrast | no visible change (that's the point) |
+| See-through borders | Edges show the same on white, grey tiles and dark sheets | the ingredient chips and the card edge in `swap-card*.png` |
+| Icon line weight | Icon lines match the text beside them (measured Figtree: medium strokes are 0.094 of the font size) | the shuffle icon and Skip / Swap icons |
+| Blur-and-fade swap | The torch icon blurs between on and off (Android only) | not in the screenshots |
+
+Skipped on purpose: edge fades (nothing scrolls sideways yet), OKLCH
+gradients and mix-blend-mode (no gradients or photos), and the details
+toggle (its chevron rotates, which already says open/closed).
+
+**Lessons:**
+- "Same look" can be proven, not eyeballed. Every colour converted to
+  OKLCH was checked to come back to the exact same hex, in a test and in
+  the browser.
+- The concentric rule counts the border too. The plan said 6 px; it's
+  5 px.
+
 ## Polish later
 
 Found during the polish pass (2026-11-15, plans/polish.md) but not fixed
