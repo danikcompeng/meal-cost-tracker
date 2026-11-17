@@ -50,12 +50,15 @@ It only matters when the gap is smaller than the outer radius. With a
 bigger gap, the inner shape doesn't share the corner, so its radius is
 free.
 
+The gap counts the container's 1 px border too (found while building:
+the first draft of this table said 6 px and 14 px).
+
 | Where | Outer | Gap | Inner now | Inner after |
 | --- | --- | --- | --- | --- |
-| Meal switch (Add and Edit sheets), unit switch (food form): `segmented-control.tsx` | track 10 px (`rounded-lg`) | 4 px (`p-1`) | 8 px (`rounded-md`) | **6 px** (`rounded-sm`, which is exactly 10 − 4) |
-| Recipes / Foods switch: `kitchen-switch.tsx` | 10 px | 4 px | 8 px | **6 px** |
-| Undo message's × button: `undo-toast.tsx` | 18 px (`rounded-2xl`) | 4 px (`py-1 pr-1`) | 10 px (Button's `rounded-lg`, shows on hover and press) | **14 px** |
-| Log-out message's × button: `log-out-button.tsx` | 10 px | 4 px top, 0 right | circle, touching the right edge | **6 px**, and a 4 px gap on the right too (`pr-1`) |
+| Meal switch (Add and Edit sheets), unit switch (food form): `segmented-control.tsx` | track 10 px (`rounded-lg`) | 1 px border + 4 px (`p-1`) | 8 px (`rounded-md`) | **5 px** |
+| Recipes / Foods switch: `kitchen-switch.tsx` | 10 px | 5 px | 8 px | **5 px** |
+| Undo message's × button: `undo-toast.tsx` | 18 px (`rounded-2xl`) | 1 px + 4 px (`py-1 pr-1`) | 10 px (Button's `rounded-lg`, shows on hover and press) | **13 px** |
+| Log-out message's × button: `log-out-button.tsx` | 10 px | 5 px top, 1 px right | circle, touching the right edge | **5 px**, and a 4 px gap on the right too (`pr-1`) |
 
 Already concentric, no change: the switch thumb in its track (a pill in
 a pill), the Scan button's circle in its ring, and Today's row over its
@@ -82,7 +85,8 @@ ever changes. The rule goes into CLAUDE.md → Design → Layout:
 
 > Nested corners are concentric: when a rounded shape sits within a gap
 > smaller than its container's corner, its radius is the container's
-> minus the gap (10 px track, 4 px padding → 6 px). With a bigger gap
+> minus the gap, border included (10 px track, 1 px border, 4 px
+> padding → 5 px). With a bigger gap
 > the inner radius is free. Pills in pills and circles in rings already
 > follow it.
 

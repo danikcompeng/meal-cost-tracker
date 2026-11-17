@@ -140,7 +140,10 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
         // Greyed (not faded, so its focus ring stays solid).
         data-unavailable={undoing || undefined}
         aria-label="Dismiss"
-        className="size-11 shrink-0 text-muted-foreground"
+        // Concentric with the message's corner (CLAUDE.md, Layout): 18 px
+        // corner − 1 px border − 4 px gap = 13 px, so its hover and press
+        // fill runs parallel to the edge.
+        className="size-11 shrink-0 rounded-[calc(var(--radius-2xl)-5px)] text-muted-foreground"
       >
         <X aria-hidden="true" className="size-5" />
       </Button>

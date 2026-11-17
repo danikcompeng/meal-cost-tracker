@@ -201,6 +201,13 @@ Layout
 - Mobile-first, generous spacing. Content in soft rounded tiles with no
   heavy shadows. Use chips for tags and a segmented control for
   Day / Week views.
+- Nested corners are concentric: when a rounded shape sits closer to its
+  container's edge than the container's corner radius, its radius is
+  the container's minus the gap, border included (10 px track, 1 px
+  border, 4 px padding → 5 px). Write it from the outer token, e.g.
+  rounded-[calc(var(--radius-lg)-5px)], so it follows if --radius
+  changes. With a bigger gap the inner radius is free. Pills in pills
+  and circles in rings already follow it.
 
 Motion (Framer Motion)
 - Signature moment: the "I'm tired of this" swap. Your other recipes come
