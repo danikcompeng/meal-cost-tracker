@@ -243,7 +243,10 @@ only that number.
 - hover (accent)  #E8E8E8 / #2A2A2A   hover backgrounds on tiles
 - foreground      #171717 / #EDEDED   near-black ink / off-white text
 - muted-fg (grey) #616161 / #A3A3A3   neutral grey for labels
-- border          #E2E2E2 / #2E2E2E   barely visible
+- border          #E2E2E2 / #2E2E2E   barely visible. See-through (black
+                                      11.5% / white 11%), so it shows the
+                                      same on tiles and sheets; these hex
+                                      are on the page
 - field-border    #858585 / #7A7A7A   edges of boxes you type in only
                                       (3:1, so a box can be found)
 - primary         #4F6B2E / #93C07F   matcha: actions, key numbers, text

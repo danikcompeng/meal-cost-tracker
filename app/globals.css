@@ -74,9 +74,14 @@
   --accent: oklch(93.1% 0 0);             /* #E8E8E8 hover backgrounds */
   --accent-foreground: oklch(20.46% 0 0);
   --destructive: oklch(51.6% 0.1376 33.02); /* #A8432F over budget: muted tomato */
-  --border: oklch(91.28% 0 0);            /* #E2E2E2 */
-  --input: oklch(91.28% 0 0);             /* #E2E2E2 */
-  /* #858585 The edge of a box you type in. Darker than --border, which
+  /* Tile edges and dividers: see-through black, not a fixed grey, so they
+     show the same amount on whatever they sit on: #E2E2E2 on white,
+     #D4D4D4 on a grey tile (a fixed #E2E2E2 nearly vanished there).
+     --input is the outline buttons' edge in dark mode, and a box's fill. */
+  --border: oklch(0% 0 0 / 11.5%);
+  --input: oklch(0% 0 0 / 11.5%);
+  /* #858585 The edge of a box you type in. Solid, never see-through:
+     it must stay 3:1, whatever it sits on. Darker than --border, which
      stays barely visible for tiles: a box's edge is how you find it, so
      it needs 3:1 (3.7:1 on white, 3.2:1 on tiles). */
   --field-border: oklch(61.67% 0 0);
@@ -122,8 +127,10 @@
     --accent: oklch(28.5% 0 0);             /* #2A2A2A */
     --accent-foreground: oklch(94.61% 0 0);
     --destructive: oklch(70.72% 0.1178 33.15); /* #E08470 */
-    --border: oklch(30.12% 0 0);            /* #2E2E2E */
-    --input: oklch(30.12% 0 0);             /* #2E2E2E */
+    /* See-through white: #2E2E2E on the page, #383838 on a tile,
+       #414141 on a sheet (a fixed #2E2E2E would vanish on the sheet). */
+    --border: oklch(100% 0 0 / 11%);
+    --input: oklch(100% 0 0 / 11%);
     --field-border: oklch(57.95% 0 0);      /* #7A7A7A 4.3:1 on the background, 3.8:1 on tiles, 3.3:1 on sheets */
     --matcha-soft: oklch(59.31% 0.0646 calc(var(--accent-h) - 6)); /* #76855A */
     --highlight: oklch(82.83% 0.1297 88.7); /* #E9C25A */

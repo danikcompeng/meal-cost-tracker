@@ -173,6 +173,26 @@ describe("palette: an accent preset only changes the hue", () => {
   });
 });
 
+describe("palette: see-through borders", () => {
+  // Same as the old solid grey on the page, and still visible on tiles
+  // and sheets (a solid grey would match or vanish into them).
+  it.each([
+    ["light", "background", "#E2E2E2"],
+    ["light", "card", "#D4D4D4"],
+    ["dark", "background", "#2E2E2E"],
+    ["dark", "card", "#383838"],
+    ["dark", "popover", "#414141"],
+    ["dark", "raised", "#494949"],
+  ] as const)("%s border on %s shows as %s", (theme, surface, hex) => {
+    expect(rgbToHex(shown(theme, "border", MATCHA_HUE, shown(theme, surface)))).toBe(hex);
+  });
+
+  it("box edges stay solid (they must be 3:1 on every surface)", () => {
+    expect(parseOklch(LIGHT["field-border"])?.alpha).toBe(1);
+    expect(parseOklch(DARK["field-border"])?.alpha).toBe(1);
+  });
+});
+
 describe("color helpers", () => {
   it("round-trips hex", () => {
     expect(rgbToHex(hexToRgb("#4F6B2E"))).toBe("#4F6B2E");
