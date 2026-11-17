@@ -1,0 +1,88 @@
+// TEMPORARY, never committed: Today with made-up meals, for the craft pass's
+// before/after screenshots (plans/craft.md). Under /auth so it needs no
+// login. Delete after the screenshots.
+import { AppHeader } from "@/components/app-header";
+import { DayNav } from "@/components/day-nav";
+import { TabBar } from "@/components/tab-bar";
+import { TodayView } from "@/components/today-view";
+import { dayTitle } from "@/lib/dates";
+import { NO_EXTRAS } from "@/lib/macros";
+import { recipeSnapshotFor, snapshotFor } from "@/lib/nutrition";
+import type { Food, MealEntry, Recipe } from "@/lib/types";
+import type { Meal } from "@/lib/meals";
+
+const TODAY = "2026-11-17";
+
+function food(id: string, name: string, unit: Food["unit"], kcal: number, protein: number, carbs: number, fat: number, price: number, size: number, water = false): Food {
+  return {
+    id, name, brand: null, barcode: null, unit, price, package_size: size,
+    kcal, protein_g: protein, carbs_g: carbs, fat_g: fat, ...NO_EXTRAS,
+    counts_toward_hydration: water,
+  };
+}
+
+const chicken = food("f-chicken", "Chicken thighs", "g", 177, 24, 0, 9, 8.99, 1000);
+const rice = food("f-rice", "Jasmine rice", "g", 360, 7, 79, 0.6, 2.49, 1000);
+const broccoli = food("f-broc", "Frozen broccoli", "g", 34, 2.8, 7, 0.4, 1.99, 340);
+const beans = food("f-beans", "Black beans", "g", 91, 6, 16, 0.4, 1.19, 425);
+const eggs = food("f-eggs", "Eggs", "each", 72, 6.3, 0.4, 4.8, 3.99, 12);
+const oats = food("f-oats", "Rolled oats", "g", 389, 16.9, 66, 6.9, 3.49, 1000);
+const yogurt = food("f-yog", "Greek yogurt", "g", 59, 10, 3.6, 0.4, 4.99, 907);
+const banana = food("f-banana", "Banana", "each", 105, 1.3, 27, 0.4, 0.25, 1);
+const tuna = food("f-tuna", "Canned tuna", "g", 116, 26, 0, 1, 1.29, 142);
+const water = food("f-water", "Water", "ml", 0, 0, 0, 0, 0, 1000, true);
+const foods = [chicken, rice, broccoli, beans, eggs, oats, yogurt, banana, tuna, water];
+
+const recipe = (id: string, name: string, servings: number, items: [Food, number][]): Recipe => ({
+  id, name, servings, ingredients: items.map(([f, amount]) => ({ food: f, amount })),
+});
+const bowl = recipe("r-bowl", "Chicken rice bowl", 4, [[chicken, 800], [rice, 300], [broccoli, 340]]);
+const friedRice = recipe("r-fried", "Egg fried rice", 2, [[eggs, 4], [rice, 160], [broccoli, 170]]);
+const beansRice = recipe("r-beans", "Beans and rice", 3, [[beans, 850], [rice, 240]]);
+const tunaRice = recipe("r-tuna", "Tuna rice", 2, [[tuna, 284], [rice, 180], [broccoli, 170]]);
+const oatsBowl = recipe("r-oats", "Overnight oats", 1, [[oats, 80], [yogurt, 170], [banana, 1]]);
+const recipes = [bowl, friedRice, beansRice, tunaRice, oatsBowl];
+
+let n = 0;
+const entry = (meal: Meal, snap: ReturnType<typeof snapshotFor>, ids: { food_id?: string; recipe_id?: string }): MealEntry => ({
+  id: `e-${++n}`, day: TODAY, meal, food_id: ids.food_id ?? null, recipe_id: ids.recipe_id ?? null, ...snap,
+});
+const entries: MealEntry[] = [
+  entry("breakfast", recipeSnapshotFor(oatsBowl, 1), { recipe_id: oatsBowl.id }),
+  entry("lunch", recipeSnapshotFor(bowl, 1), { recipe_id: bowl.id }),
+  entry("snack", snapshotFor(banana, 1), { food_id: banana.id }),
+  entry("snack", snapshotFor(water, 750), { food_id: water.id }),
+];
+
+export default function CraftPreview() {
+  return (
+    <>
+      <main className="mx-auto w-full max-w-lg px-4 pt-8 pb-above-tab-bar">
+        <AppHeader title={dayTitle(TODAY, TODAY)}>
+          <DayNav day={TODAY} today={TODAY} />
+        </AppHeader>
+        <TodayView
+          day={TODAY}
+          today={TODAY}
+          isToday
+          entries={entries}
+          foods={foods}
+          recipes={recipes}
+          swapRecipes={recipes}
+          history={[
+            { day: "2026-11-16", food_id: null, recipe_id: bowl.id },
+            { day: "2026-11-15", food_id: null, recipe_id: friedRice.id },
+            { day: "2026-11-12", food_id: null, recipe_id: tunaRice.id },
+            { day: "2026-11-16", food_id: broccoli.id, recipe_id: null },
+            { day: "2026-11-15", food_id: eggs.id, recipe_id: null },
+          ]}
+          targets={{ daily_kcal: 2200, daily_protein_g: 150, daily_carbs_g: 230, daily_fat_g: 70, daily_water_ml: 2000, show_water: true }}
+          logFood={null}
+          suggestedMeal="dinner"
+          detailsOpen={false}
+        />
+      </main>
+      <TabBar active="today" />
+    </>
+  );
+}
