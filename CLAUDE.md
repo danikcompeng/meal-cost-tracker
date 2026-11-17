@@ -229,24 +229,35 @@ Fonts (final)
   body 16px (16px also stops iPhones zooming into inputs).
 
 Colors (final): light / dark
+Written in OKLCH in app/globals.css (same colours as these hex values;
+lib/color.test.ts checks every one and its contrast). Every matcha
+colour reads one hue, --accent-h (130), so an accent preset changes
+only that number.
 - background      #FFFFFF / #141414   white / near-black
 - tile (card)     #F0F0F0 / #1F1F1F   light grey, one step off background
-- popover         #FFFFFF / #1F1F1F   menus (bordered, so they show on white)
+- popover         #FFFFFF / #2A2A2A   sheets, dialogs, menus, messages
+                                      (bordered, so they show on white)
+- raised          (none)  / #333333   dark only: tiles, chips, greyed
+                                      buttons and hovers inside a popover
+                                      (surface-raised)
 - hover (accent)  #E8E8E8 / #2A2A2A   hover backgrounds on tiles
 - foreground      #171717 / #EDEDED   near-black ink / off-white text
 - muted-fg (grey) #616161 / #A3A3A3   neutral grey for labels
 - border          #E2E2E2 / #2E2E2E   barely visible
-- field-border    #858585 / #737373   edges of boxes you type in only
+- field-border    #858585 / #7A7A7A   edges of boxes you type in only
                                       (3:1, so a box can be found)
 - primary         #4F6B2E / #93C07F   matcha: actions, key numbers, text
 - primary-fg      #FFFFFF / #141414   text on matcha buttons
 - matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
 - highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it
 - destructive     #A8432F / #E08470   over budget: muted tomato red
-All text colors pass 4.5:1 contrast on background, tiles, popovers and
-hover backgrounds (lowest: destructive on light hover, 4.88:1). Tinted
-buttons are measured separately (lowest: red "Yes" on a food row being
-edited, 4.53:1; white on matcha hover, 4.82:1). Busy buttons stay full
+All text colors pass 4.5:1 contrast on background, tiles, popovers,
+raised and hover backgrounds (lowest: destructive on dark raised,
+4.63:1). Tinted buttons are measured separately (lowest: a red button
+on a dark sheet, 4.51:1; red "Yes" on a food row being edited, 4.53:1;
+white on matcha hover, 4.82:1).
+Dark mode shows depth by lightness, never shadows: page, tile, popover,
+raised, each one step lighter. Busy buttons stay full
 colour; unavailable ones are greyed with muted text on muted (5.4:1),
 never faded with opacity.
 matcha-soft is never used for text or as the only way to show information

@@ -285,8 +285,9 @@ export function SwapStack({
 }
 
 // A card-shaped sliver behind the top card. Empty and hidden from screen
-// readers: it only shows that more cards are waiting. The border keeps it
-// visible in dark mode, where tiles and the sheet are close in colour.
+// readers: it only shows that more cards are waiting. Grey like a hover
+// (bg-accent), so it reads as behind the card; in dark mode that's one
+// step lighter than the sheet (surface-raised, globals.css).
 function Peek({ className }: { className: string }) {
   return <div aria-hidden="true" className={`absolute rounded-2xl border border-border bg-accent ${className}`} />;
 }

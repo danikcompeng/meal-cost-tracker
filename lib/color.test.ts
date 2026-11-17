@@ -62,8 +62,9 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
     foreground: "#EDEDED",
     card: "#1F1F1F",
     "card-foreground": "#EDEDED",
-    popover: "#1F1F1F",
+    popover: "#2A2A2A",
     "popover-foreground": "#EDEDED",
+    raised: "#333333",
     primary: "#93C07F",
     "primary-foreground": "#141414",
     secondary: "#1F1F1F",
@@ -75,7 +76,7 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
     destructive: "#E08470",
     border: "#2E2E2E",
     input: "#2E2E2E",
-    "field-border": "#737373",
+    "field-border": "#7A7A7A",
     ring: "#93C07F",
     "matcha-soft": "#76855A",
     highlight: "#E9C25A",
@@ -95,19 +96,32 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
 });
 
 // Text sits on these. Each text colour must be at least 4.5:1 on each.
-const SURFACES = ["background", "card", "popover", "accent", "muted"];
+// Dark mode has one more: --raised, the step up inside a sheet (tiles,
+// chips, greyed buttons and hovers there; surface-raised in globals.css).
+const SURFACES = { light: ["background", "card", "popover", "accent", "muted"], dark: ["background", "card", "popover", "accent", "muted", "raised"] };
 const TEXT = ["foreground", "muted-foreground", "primary", "destructive"];
 
 function contrastChecks(theme: Theme, hue: number) {
   const c = (a: string, b: string) => contrast(shown(theme, a, hue), shown(theme, b, hue));
   const checks: { what: string; ratio: number; needs: number }[] = [];
-  for (const surface of SURFACES) {
+  for (const surface of SURFACES[theme]) {
     for (const text of TEXT) checks.push({ what: `${text} on ${surface}`, ratio: c(text, surface), needs: 4.5 });
     // A focus ring and a box's edge are shapes, not text: 3:1.
     checks.push({ what: `ring on ${surface}`, ratio: c("ring", surface), needs: 3 });
   }
+  // Boxes you type in sit on the page, tiles and sheets.
   for (const surface of ["background", "card", "popover"]) {
     checks.push({ what: `field-border on ${surface}`, ratio: c("field-border", surface), needs: 3 });
+  }
+  // The red button (Delete, "Yes"): red text on a 10% red tint, on each
+  // surface a red button sits on.
+  for (const surface of ["background", "card", "popover"]) {
+    const tint = over(shown(theme, "destructive", hue), 0.1, shown(theme, surface, hue));
+    checks.push({
+      what: `destructive on its tint over ${surface}`,
+      ratio: contrast(shown(theme, "destructive", hue), tint),
+      needs: 4.5,
+    });
   }
   // The label on a matcha button, and on its hover (matcha at 90%).
   checks.push({ what: "primary-foreground on primary", ratio: c("primary-foreground", "primary"), needs: 4.5 });
@@ -128,13 +142,13 @@ describe("palette: contrast", () => {
     });
   }
 
-  it("the lowest text pair is the one CLAUDE.md names (red on light hover, 4.88:1)", () => {
+  it("the lowest plain text pair is the one CLAUDE.md names (red inside a dark sheet, 4.63:1)", () => {
     const text = [...contrastChecks("light", MATCHA_HUE), ...contrastChecks("dark", MATCHA_HUE)].filter(
-      (check) => check.needs === 4.5 && !check.what.includes("-foreground on"),
+      (check) => check.needs === 4.5 && TEXT.some((t) => check.what.startsWith(`${t} on `)) && !check.what.includes("tint"),
     );
     const lowest = text.reduce((a, b) => (b.ratio < a.ratio ? b : a));
-    expect(lowest.what).toBe("destructive on accent");
-    expect(lowest.ratio).toBeCloseTo(4.88, 2);
+    expect(lowest.what).toBe("destructive on raised");
+    expect(lowest.ratio).toBeCloseTo(4.63, 2);
   });
 });
 

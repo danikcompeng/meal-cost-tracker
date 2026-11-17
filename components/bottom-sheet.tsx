@@ -96,7 +96,9 @@ export function BottomSheet({
         initial={{ y: 48, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ type: "spring", stiffness: 420, damping: 36 }}
-        className="flex max-h-[85dvh] flex-col rounded-t-2xl border border-b-0 border-border bg-popover pb-[env(safe-area-inset-bottom)]"
+        // surface-raised (globals.css): in dark mode, tiles and hovers
+        // inside go one step lighter than the sheet.
+        className="surface-raised flex max-h-[85dvh] flex-col rounded-t-2xl border border-b-0 border-border bg-popover pb-[env(safe-area-inset-bottom)]"
       >
         <div className="flex items-center justify-between px-4 pt-3">
           {/* tabIndex -1: code can focus it (see above), Tab skips it. */}

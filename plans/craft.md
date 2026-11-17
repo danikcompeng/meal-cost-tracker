@@ -272,14 +272,16 @@ Contrast on the new surfaces (dark):
 | Surface | Text | Grey labels | Matcha | Red | Box edge (3:1) |
 | --- | --- | --- | --- | --- | --- |
 | Sheet #2A2A2A | 12.26 | 5.69 | 6.89 | 5.27 | 3.03 → **3.34** |
-| In a sheet #333333 | 10.79 | 5.01 | 6.07 | **4.64** | (no boxes there) |
+| In a sheet #333333 | 10.79 | 5.01 | 6.07 | **4.63** | (no boxes there) |
 
 So:
 - `--field-border` in dark goes from #737373 to **#7A7A7A**. A box on
   the new sheet would otherwise be 3.03:1, a hair from failing. On the
   page it's 4.29:1.
 - The lowest text pair in the app becomes red on a dark in-sheet
-  surface, 4.64:1 (it was red on light hover, 4.88). CLAUDE.md's colour
+  surface, 4.63:1 (it was red on light hover, 4.88). A red button
+  (10% red tint) on a dark sheet is 4.51:1, the new lowest tinted
+  pair. CLAUDE.md's colour
   table and contrast note get updated with both.
 
 Shadows: only two exist, the switch's thumb and the log-out message.

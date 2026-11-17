@@ -50,7 +50,9 @@ export function SwitchRow({
         >
           <span
             className={cn(
-              "size-5 rounded-full shadow-sm transition-transform motion-reduce:transition-none",
+              // No shadow in dark mode (depth there comes from lighter
+              // surfaces, and a shadow on near-black doesn't show).
+              "size-5 rounded-full shadow-sm transition-transform motion-reduce:transition-none dark:shadow-none",
               checked ? "translate-x-6 bg-primary-foreground" : "translate-x-1 bg-muted-foreground",
             )}
           />

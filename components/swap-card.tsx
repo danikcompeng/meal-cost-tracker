@@ -30,8 +30,9 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
   const extra = foods.length - CHIPS;
 
   return (
-    // The border keeps the card visible in dark mode, where a tile and the
-    // sheet behind it are the same grey.
+    // In dark mode the card is one step lighter than the sheet it sits on
+    // (bg-card inside a surface-raised sheet, globals.css). The border is
+    // a quiet edge on top of that.
     <article aria-labelledby={`swap-${swap.id}`} className="rounded-2xl border border-border bg-card p-5">
       {/* Name first in the code, chips first on screen ("order-first"
           moves only how it looks). */}

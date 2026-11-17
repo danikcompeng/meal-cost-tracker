@@ -107,7 +107,7 @@ export function ScanPanel({ children }: { children: React.ReactNode }) {
       initial={{ y: "100%", opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ type: "spring", stiffness: 420, damping: 36 }}
-      className="absolute inset-x-0 bottom-0 mx-auto max-w-lg rounded-t-2xl bg-popover px-4 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-popover-foreground"
+      className="surface-raised absolute inset-x-0 bottom-0 mx-auto max-w-lg rounded-t-2xl bg-popover px-4 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-popover-foreground"
     >
       {children}
     </motion.div>
