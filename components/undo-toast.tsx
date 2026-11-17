@@ -143,9 +143,11 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
         // Concentric with the message's corner (CLAUDE.md, Layout): 18 px
         // corner − 1 px border − 4 px gap = 13 px, so its hover and press
         // fill runs parallel to the edge.
-        className="size-11 shrink-0 rounded-[calc(var(--radius-2xl)-5px)] text-muted-foreground"
+        // text-base: the icon's line follows this size (globals.css), and
+        // icon-semibold matches the semibold "Undo" beside it (1.8 px).
+        className="size-11 shrink-0 rounded-[calc(var(--radius-2xl)-5px)] text-base text-muted-foreground"
       >
-        <X aria-hidden="true" className="size-5" />
+        <X aria-hidden="true" className="icon-semibold size-5" />
       </Button>
     </motion.div>
   );

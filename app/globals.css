@@ -211,4 +211,27 @@
   html {
     @apply font-sans;
   }
+
+  /* Icon lines as thick as the letters next to them. Lucide draws its
+     lines 2 units wide on a 24-unit grid, so how thick they look depended
+     on the icon's size (1.33 px at 16 px, 2 px at 24 px), not on the text
+     beside it. Measured in the browser, Figtree's medium letters (the
+     weight of nearly every button and label) have strokes 0.094 of the
+     font size. So every icon's line is 0.094em of the text it sits in:
+     1.5 px beside 16 px text, 1.22 px beside 13 px. non-scaling-stroke
+     makes that a real screen width, whatever size the icon is. An icon
+     alone in a button gets the button's text size (16 px, 1.5 px), so
+     all of those match. */
+  svg.lucide {
+    stroke-width: 0.094em;
+  }
+  svg.lucide * {
+    vector-effect: non-scaling-stroke;
+  }
+}
+
+/* For an icon beside semibold text (Figtree semibold's strokes are 0.112
+   of the font size), like the Undo message's dismiss button. */
+@utility icon-semibold {
+  stroke-width: 0.112em;
 }
