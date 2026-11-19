@@ -79,7 +79,10 @@ export function DuplicateDialog({
       onClick={(e) => {
         if (e.target === e.currentTarget) cancel();
       }}
-      className="surface-raised m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-border bg-popover p-0 text-popover-foreground transition-[opacity,scale] duration-150 backdrop:bg-scrim starting:opacity-0 motion-safe:starting:scale-97"
+      // Fades in from scale 0.97 (the motion tokens, lib/motion.ts), in
+      // CSS: @starting-style ("starting:") is where it begins when it
+      // appears. With Reduce Motion, only the fade.
+      className="surface-raised m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-border bg-popover p-0 text-popover-foreground transition-[opacity,scale] duration-(--motion-fast) ease-(--motion-ease-out) backdrop:bg-scrim starting:opacity-0 motion-safe:starting:scale-(--motion-scale-from)"
     >
       <div className="space-y-4 p-5">
         <h2 id="duplicate-title" className="text-lg font-semibold">

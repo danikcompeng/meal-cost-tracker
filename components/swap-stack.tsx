@@ -14,7 +14,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "re
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
+import { DURATION, EASE_IN, EASE_OUT, SCALE_FROM, SPRING } from "@/lib/motion";
 import type { RankedSwap } from "@/lib/swap";
 import { SwapCard } from "./swap-card";
 
@@ -217,11 +217,12 @@ export function SwapStack({
           }}
           onDragEnd={handleDragEnd}
           style={{ x, rotate }}
-          // The new top card grows from the stack (or just fades in with
-          // Reduce Motion: MotionProvider then skips the scale and y).
-          initial={{ scale: 0.95, y: 8, opacity: reduceMotion ? 0 : 1 }}
+          // The new top card settles in from scale 0.97, rising the 8 px
+          // from where the first peeking card was, and fades in. With
+          // Reduce Motion, MotionProvider skips the scale and y: a fade.
+          initial={{ scale: SCALE_FROM, y: 8, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
-          transition={reduceMotion ? { duration: DURATION.fast } : SPRING.settle}
+          transition={{ ...SPRING.sheet, opacity: { duration: DURATION.fast, ease: EASE_OUT } }}
           className={`relative z-10 ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
         >
           <SwapCard swap={swap} servings={servings} />

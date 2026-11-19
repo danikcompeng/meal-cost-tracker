@@ -12,8 +12,8 @@ function cssVar(name: string): string {
 }
 
 describe("motion tokens: CSS matches lib/motion.ts", () => {
-  it("press scales", () => {
-    expect(Number(cssVar("motion-press-scale"))).toBe(SCALE_FROM);
+  it("scales: entering and pressed, and pressed wide", () => {
+    expect(Number(cssVar("motion-scale-from"))).toBe(SCALE_FROM);
     expect(Number(cssVar("motion-press-scale-wide"))).toBe(PRESS_SCALE_WIDE);
   });
 
