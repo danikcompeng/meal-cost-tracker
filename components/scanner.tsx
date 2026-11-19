@@ -9,6 +9,7 @@ import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Flashlight, FlashlightOff, X } from "lucide-react";
 import type { CameraProblem } from "@/lib/camera";
+import { DURATION } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 import { IconSwap } from "./icon-swap";
 import { ScanFrame } from "./scan-frame";
@@ -52,7 +53,7 @@ export function Scanner({
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.15 }}
+      transition={{ duration: DURATION.fast }}
       className="fixed inset-0 overflow-hidden bg-camera text-camera-foreground"
     >
       {/* The screen's title, for screen readers only: the camera picture

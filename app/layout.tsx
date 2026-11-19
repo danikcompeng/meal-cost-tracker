@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Figtree } from "next/font/google";
+import { MotionProvider } from "@/components/motion-provider";
 import { OfflineStrip } from "@/components/offline-strip";
 import { TimezoneSync } from "@/components/timezone-sync";
 import {
@@ -63,8 +64,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         <TimezoneSync />
-        <OfflineStrip />
-        {children}
+        {/* Reduce Motion for every screen (components/motion-provider.tsx). */}
+        <MotionProvider>
+          <OfflineStrip />
+          {children}
+        </MotionProvider>
       </body>
     </html>
   );

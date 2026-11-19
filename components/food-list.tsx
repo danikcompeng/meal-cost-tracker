@@ -1,8 +1,9 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { FoodRow } from "./food-row";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { Food } from "@/lib/types";
+import { FoodRow } from "./food-row";
 
 export function FoodList({
   foods,
@@ -32,7 +33,7 @@ export function FoodList({
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: DURATION.base, ease: EASE_OUT }}
           >
             <FoodRow
               food={food}

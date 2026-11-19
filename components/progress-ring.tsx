@@ -15,6 +15,7 @@
 // off by hand here: the ring just appears at its value.
 
 import { motion, useReducedMotion } from "framer-motion";
+import { EASE_OUT, FILL_DURATION } from "@/lib/motion";
 
 export function ProgressRing({
   fraction,
@@ -68,7 +69,7 @@ export function ProgressRing({
         // A round end on an empty ring would still draw a dot, so hide it.
         style={{ opacity: value === 0 ? 0 : 1 }}
         transition={
-          reduceMotion ? { duration: 0 } : { duration: 0.8, ease: "easeOut", delay }
+          reduceMotion ? { duration: 0 } : { duration: FILL_DURATION, ease: EASE_OUT, delay }
         }
       />
     </svg>

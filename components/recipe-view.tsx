@@ -7,9 +7,10 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import { recipeTotals } from "@/lib/recipe-totals";
 import type { EatenRow } from "@/lib/swap";
 import type { Food, Recipe, RecipeIngredient } from "@/lib/types";
@@ -72,9 +73,7 @@ export function RecipeView({
   }
 
   return (
-    // reducedMotion="user": if your phone asks for less motion, Framer
-    // Motion skips movement and keeps only gentle fades.
-    <MotionConfig reducedMotion="user">
+    <>
       <header className="mb-8">
         <Link
           href="/recipes"
@@ -117,7 +116,7 @@ export function RecipeView({
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
+                transition={{ duration: DURATION.base, ease: EASE_OUT }}
               >
                 <IngredientRow
                   ingredient={ingredient}
@@ -221,6 +220,6 @@ export function RecipeView({
           onClose={close}
         />
       )}
-    </MotionConfig>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Plus } from "lucide-react";
 import { dayTotals, totalNumber } from "@/lib/day-totals";
 import { MEAL_LABELS, type Meal } from "@/lib/meals";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { MealEntry } from "@/lib/types";
 import { EntryRow } from "./entry-row";
 
@@ -73,11 +74,11 @@ export function MealSection({
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   // Deleted: it fades and the rows below close up. With
-                  // reduced motion, MotionConfig makes height jump too, so
+                  // Reduce Motion, MotionProvider makes height jump too, so
                   // height: 0 would hide the row at once, fade and all:
                   // only the fade, then the rows below move up.
                   exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={{ duration: DURATION.base, ease: EASE_OUT }}
                   // So a closing row doesn't spill over the one below.
                   className="overflow-hidden"
                 >

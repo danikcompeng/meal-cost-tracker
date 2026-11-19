@@ -7,6 +7,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { SPRING } from "@/lib/motion";
 
 export type LookupState = "looking" | "not_found" | "offline" | "unavailable" | "error";
 export type Lookup = { barcode: string; state: LookupState };
@@ -103,10 +104,10 @@ export function LookupStatus({
 export function ScanPanel({ children }: { children: React.ReactNode }) {
   return (
     <motion.div
-      // With reduced motion, MotionConfig skips the slide and keeps the fade.
+      // With Reduce Motion, MotionProvider skips the slide and keeps the fade.
       initial={{ y: "100%", opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ type: "spring", stiffness: 420, damping: 36 }}
+      transition={SPRING.sheet}
       className="surface-raised absolute inset-x-0 bottom-0 mx-auto max-w-lg rounded-t-2xl bg-popover px-4 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-popover-foreground"
     >
       {children}

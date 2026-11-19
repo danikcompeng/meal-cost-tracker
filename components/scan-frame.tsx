@@ -11,6 +11,7 @@
 // matcha. With reduced motion, neither: only the colour changes.
 
 import { motion, useReducedMotion } from "framer-motion";
+import { SPRING } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 export type FrameState = "starting" | "scanning" | "read";
@@ -48,8 +49,10 @@ export function ScanFrame({ state, ref }: { state: FrameState; ref: React.Ref<HT
         }
         transition={
           breathing
-            ? { opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" } }
-            : { type: "spring", stiffness: 420, damping: 30 }
+            ? // An ambient loop, not an answer to a tap, so not held to
+              // the 150–250 ms rule (plans/motion.md, item 6).
+              { opacity: { duration: 2, repeat: Infinity, ease: "easeInOut" } }
+            : SPRING.settle
         }
       >
         {CORNERS.map((corner) => (

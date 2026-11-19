@@ -6,7 +6,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MotionConfig } from "framer-motion";
 import { dayTotals } from "@/lib/day-totals";
 import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
 import { deletedMessage, swapNotUndoneMessage, swappedMessage } from "@/lib/entry-messages";
@@ -495,9 +494,7 @@ export function TodayView({
   const firstUse = foods.length === 0 && entries.length === 0;
 
   return (
-    // reducedMotion="user": if your phone asks for less motion, Framer
-    // Motion skips the slides and keeps only gentle fades.
-    <MotionConfig reducedMotion="user">
+    <>
       {firstUse ? <FirstUse /> : dayContent()}
       {/* The message stays until dismissed, and it sits over the bottom of
           the page (undo-toast.tsx), so while it's up the page gets this
@@ -509,7 +506,7 @@ export function TodayView({
           entry with no foods left switches to the first-use screen, and
           the same message (with its Undo) has to stay up, not be rebuilt. */}
       <UndoToast toast={toast} onDismiss={() => setToast(null)} />
-    </MotionConfig>
+    </>
   );
 
   // The day itself: summary, meals and their sheets. Called as a plain

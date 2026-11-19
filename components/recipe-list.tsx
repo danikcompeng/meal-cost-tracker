@@ -6,8 +6,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { Recipe } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { BottomSheet } from "./bottom-sheet";
@@ -30,9 +31,7 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
   );
 
   return (
-    // reducedMotion="user": if your phone asks for less motion, Framer
-    // Motion skips movement and keeps only gentle fades.
-    <MotionConfig reducedMotion="user">
+    <>
       {recipes.length === 0 ? (
         <section className="rounded-2xl bg-card px-5 py-10 text-center">
           <h2 className="text-lg font-semibold">Your staple meals go here</h2>
@@ -53,7 +52,7 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
+                  transition={{ duration: DURATION.base, ease: EASE_OUT }}
                 >
                   <RecipeTile recipe={recipe} />
                 </motion.li>
@@ -68,6 +67,6 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
           <RecipeForm onDone={(id) => id && router.push(`/recipes/${id}`)} />
         </BottomSheet>
       )}
-    </MotionConfig>
+    </>
   );
 }

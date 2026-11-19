@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 
 // Swaps one icon for another (the torch's on / off) with a quick blur and
 // fade: the old icon blurs, shrinks a little and fades out while the new
@@ -27,7 +28,7 @@ export function IconSwap({ swapKey, children }: { swapKey: string; children: Rea
           initial={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
           exit={{ opacity: 0, scale: 0.8, filter: "blur(4px)" }}
-          transition={{ duration: 0.15, ease: "easeOut" }}
+          transition={{ duration: DURATION.fast, ease: EASE_OUT }}
         >
           {children}
         </motion.span>

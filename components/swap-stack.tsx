@@ -14,6 +14,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "re
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
 import type { RankedSwap } from "@/lib/swap";
 import { SwapCard } from "./swap-card";
 
@@ -110,7 +111,7 @@ export function SwapStack({
       leaving.current = false;
       // Slides back in from the side it left by (with reduced motion it
       // never left, so it's already there).
-      if (!reduceMotion) animate(x, 0, { type: "spring", stiffness: 380, damping: 32 });
+      if (!reduceMotion) animate(x, 0, SPRING.settle);
     });
   }
 
@@ -126,7 +127,7 @@ export function SwapStack({
     setFlyingId(id);
     const side = direction === "pick" ? 1 : -1;
     // Far enough to be off any phone screen, quick enough to feel snappy.
-    animate(x, side * Math.max(window.innerWidth, 480), { duration: 0.22, ease: "easeIn" }).then(() => {
+    animate(x, side * Math.max(window.innerWidth, 480), { duration: DURATION.base, ease: EASE_IN }).then(() => {
       // Landed: the card is touchable again if you come Back to it.
       setFlyingId(null);
       if (topId.current === id) finish(direction, id);
@@ -141,7 +142,7 @@ export function SwapStack({
   function settle() {
     if (leaving.current) return;
     if (reduceMotion) x.jump(0);
-    else animate(x, 0, { type: "spring", stiffness: 380, damping: 32 });
+    else animate(x, 0, SPRING.settle);
   }
 
   function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) {
@@ -216,11 +217,11 @@ export function SwapStack({
           }}
           onDragEnd={handleDragEnd}
           style={{ x, rotate }}
-          // The new top card grows from the stack (or just fades in when
-          // motion is reduced: MotionConfig then skips the scale and y).
+          // The new top card grows from the stack (or just fades in with
+          // Reduce Motion: MotionProvider then skips the scale and y).
           initial={{ scale: 0.95, y: 8, opacity: reduceMotion ? 0 : 1 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
-          transition={reduceMotion ? { duration: 0.15 } : { type: "spring", stiffness: 380, damping: 30 }}
+          transition={reduceMotion ? { duration: DURATION.fast } : SPRING.settle}
           className={`relative z-10 ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
         >
           <SwapCard swap={swap} servings={servings} />

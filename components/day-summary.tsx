@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { missingNote, type DayTotals } from "@/lib/day-totals";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import { costLine, DETAILS_COOKIE, summarySlots } from "@/lib/summary";
 import { hasAnyTarget, progress, type Targets } from "@/lib/targets";
 import { SummaryDetails } from "./summary-details";
@@ -82,7 +83,7 @@ export function DaySummary({
         <motion.span
           aria-hidden="true"
           animate={{ rotate: open ? 180 : 0 }}
-          transition={{ duration: reduceMotion ? 0 : 0.2 }}
+          transition={{ duration: reduceMotion ? 0 : DURATION.base }}
           className="inline-flex"
         >
           <ChevronDown className="size-4" />
@@ -98,7 +99,7 @@ export function DaySummary({
         id="summary-details"
         initial={false}
         animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+        transition={{ duration: reduceMotion ? 0 : DURATION.base, ease: EASE_OUT }}
         className="overflow-hidden"
         inert={!open}
       >

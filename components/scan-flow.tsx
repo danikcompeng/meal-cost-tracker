@@ -14,10 +14,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { MotionConfig, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import type { CameraProblem } from "@/lib/camera";
 import { draftFromOpenFoodFacts, emptyDraft, type FoodDraft } from "@/lib/food-draft";
+import { SPRING } from "@/lib/motion";
 import { lookupBarcode } from "@/lib/scan-actions";
 import { BarcodeEntry } from "./barcode-entry";
 import { CameraBlocked } from "./camera-blocked";
@@ -138,9 +139,8 @@ export function ScanFlow() {
   const addWithBarcode = (barcode: string) => openForm(emptyDraft(barcode));
 
   return (
-    // reducedMotion="user": if your phone asks for less motion, slides
-    // become fades.
-    <MotionConfig reducedMotion="user">
+    // With Reduce Motion, slides become fades (MotionProvider, layout).
+    <>
       {(step.kind === "camera" || step.kind === "scanned") && (
         <Scanner
           key={scannerKey}
@@ -201,7 +201,7 @@ export function ScanFlow() {
         <motion.main
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 420, damping: 36 }}
+          transition={SPRING.sheet}
           className="mx-auto w-full max-w-lg px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-10"
         >
           <button
@@ -226,6 +226,6 @@ export function ScanFlow() {
           />
         </motion.main>
       )}
-    </MotionConfig>
+    </>
   );
 }

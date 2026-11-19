@@ -10,6 +10,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
+import { SPRING } from "@/lib/motion";
 
 export function BottomSheet({
   title,
@@ -95,7 +96,7 @@ export function BottomSheet({
       <motion.div
         initial={{ y: 48, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ type: "spring", stiffness: 420, damping: 36 }}
+        transition={SPRING.sheet}
         // surface-raised (globals.css): in dark mode, tiles and hovers
         // inside go one step lighter than the sheet.
         className="surface-raised flex max-h-[85dvh] flex-col rounded-t-2xl border border-b-0 border-border bg-popover pb-[env(safe-area-inset-bottom)]"

@@ -11,6 +11,7 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import { NutrientInput } from "./nutrient-input";
 
 export type ExtraField = "sugar" | "fiber" | "saturatedFat" | "sodium";
@@ -62,7 +63,7 @@ export function MoreNutrients({
           <motion.span
             aria-hidden="true"
             animate={{ rotate: isOpen ? 180 : 0 }}
-            transition={{ duration: reduceMotion ? 0 : 0.2 }}
+            transition={{ duration: reduceMotion ? 0 : DURATION.base }}
             className="inline-flex"
           >
             <ChevronDown className="size-4" />
@@ -76,7 +77,7 @@ export function MoreNutrients({
         id="more-nutrients"
         initial={false}
         animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : 0.2, ease: "easeOut" }}
+        transition={{ duration: reduceMotion ? 0 : DURATION.base, ease: EASE_OUT }}
         // The extra px-1 / -mx-1 leaves room for the focus ring, which
         // overflow-hidden would otherwise cut off at the sides.
         className="-mx-1 overflow-hidden"

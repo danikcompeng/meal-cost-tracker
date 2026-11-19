@@ -13,12 +13,10 @@ import {
 } from "framer-motion";
 import { Shuffle } from "lucide-react";
 import { macroText } from "@/lib/macros";
+import { DURATION, EASE_IN, EASE_OUT, SPRING } from "@/lib/motion";
 import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
 import { amountText } from "@/lib/units";
-
-/** Quick, with no bounce past the button. */
-const SNAP = { type: "spring", stiffness: 500, damping: 42 } as const;
 
 // One thing you ate. Tap it to change the amount, move it or delete it.
 //   Rolled oats                       568.5 kcal
@@ -85,7 +83,7 @@ export function EntryRow({
     (toOpen: boolean) => {
       const target = toOpen ? -REVEAL : 0;
       if (reduceMotion) x.jump(target);
-      else animate(x, target, SNAP);
+      else animate(x, target, SPRING.snap);
     },
     [reduceMotion, x],
   );
@@ -126,7 +124,7 @@ export function EntryRow({
     // rows below close up (MealSection). With reduced motion: only the fade.
     if (!reduceMotion) {
       const width = wrapperRef.current?.offsetWidth ?? 320;
-      animate(away, -(width + 32), { duration: 0.2, ease: "easeIn" });
+      animate(away, -(width + 32), { duration: DURATION.base, ease: EASE_IN });
     }
     onDelete();
   }
@@ -208,7 +206,7 @@ export function EntryRow({
                 initial={{ x: 24, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 exit={{ x: -24, opacity: 0 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
+                transition={{ duration: DURATION.slow, ease: EASE_OUT }}
                 className="flex min-w-0 flex-col"
               >
                 <span className="truncate font-medium">{entry.name}</span>

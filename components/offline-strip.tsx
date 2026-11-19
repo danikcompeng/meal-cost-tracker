@@ -5,6 +5,7 @@
 // scroll, and slides away when you're back online.
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import { useOnline } from "./use-online";
 
 export function OfflineStrip() {
@@ -19,13 +20,13 @@ export function OfflineStrip() {
       <AnimatePresence initial={false}>
         {!online && (
           <motion.div
-            // Nothing above this sets MotionConfig, so Framer won't follow
-            // the phone's reduce-motion setting by itself: with reduced
-            // motion it's a plain fade, no growing.
+            // Framer's Reduce Motion setting (MotionProvider) doesn't cover
+            // height, so it's checked here: with reduced motion it's a
+            // plain fade, no growing.
             initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
             animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
+            transition={{ duration: DURATION.base, ease: EASE_OUT }}
             className="overflow-hidden"
           >
             <div className="mx-auto w-full max-w-lg px-4 py-2">

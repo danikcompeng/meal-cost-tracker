@@ -18,6 +18,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 
 /** Why Undo didn't work. `final`: trying again can't help. */
 export type UndoProblem = { message: string; final: boolean };
@@ -103,14 +104,13 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
   const isError = toast.isError || problem !== null;
 
   return (
-    // With reduced motion, MotionConfig (on Today) drops the slide and
-    // keeps the fade.
+    // With Reduce Motion, MotionProvider drops the slide and keeps the fade.
     <motion.div
       ref={ref}
       initial={{ y: 16, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 16, opacity: 0 }}
-      transition={{ duration: 0.2, ease: "easeOut" }}
+      transition={{ duration: DURATION.base, ease: EASE_OUT }}
       className="surface-raised pointer-events-auto flex min-h-13 items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
     >
       <p className={`min-w-0 flex-1 text-sm ${isError ? "text-destructive" : ""}`}>
