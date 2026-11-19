@@ -288,6 +288,13 @@ After:
   the middle carrying your speed, so it doesn't stall.
 - The tilt is worked out from the card's position, so it follows by
   itself.
+- Found while recording the before clips: under `next dev` (not in a
+  production build, not on the live site) the card after a Skip stays
+  off-screen at −480 px, so the stack looks empty. Dev runs React's
+  double-checking mode, so it's probably the fly-off's "then" and the
+  "new card back to the middle" step running in the wrong order there.
+  The new fly-off replaces that code, and is checked under `next dev`
+  too.
 - A pure function in `lib/swipe.ts`, unit tested: given the release
   speed and the direction, the throw speed. At least the minimum, always
   pointing the way the card is going (a flick back towards the middle
@@ -360,6 +367,16 @@ How:
   case study anyway; the scripted ones are the fair side-by-side.
 - GIFs are big. Committed if each is under 2 MB, otherwise kept out of
   Git and I'll say where they are.
+
+How they were actually made (2026-11-18): the GIF recorder only takes a
+frame per action, too few for a 200 ms spring. Instead the page's clock
+is slowed (4× for the swap, 6× for the delete) while the scripted gesture
+plays, screenshots are taken in a burst, and `make_gif.py` plays them back
+at real speed. Against a production build (`next start`), dark mode, your
+Monday Nov 16; everything put back with Undo. Steps and the exact
+gestures: `design/ui/motion/recorder.js.txt`. The before clips: swap
+21 frames, 188 KB; delete 31 frames, 94 KB (it starts with pulling the
+shut row right, which today doesn't move at all).
 
 ## Commits
 

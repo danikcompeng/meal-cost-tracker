@@ -1,0 +1,95 @@
+// How the motion pass clips were recorded (plans/motion.md). Text, never built.
+//
+// Why not a screen recorder: the browser tool takes one screenshot at a
+// time (about 300 ms apart), far too slow for a 200 ms spring. So the page's
+// clock is slowed down (K times) while a scripted gesture plays, frames are
+// taken in a burst, and make_gif.py puts them back together at real speed,
+// holding each frame for the slice of page time it covers.
+//
+// Steps:
+// 1. `next build` then `next start -p 3123` (not `next dev`: in dev mode the
+//    next swap card stays off-screen after a Skip, see plans/motion.md).
+// 2. Log in on localhost (cookies are shared across ports).
+// 3. In Chrome open http://localhost:3123/manifest.webmanifest (a page with
+//    no React of its own) and run SETUP below in it: it frames the app at
+//    390 × 844, slows its clock and defines the clips.
+// 4. In ONE batch: `__g.begin(__g.clipSwap, 4)` (or clipDelete, 6), then
+//    pairs of [zoom region 0,0,318,688 at scale 0.8, save to disk] and
+//    `__g.frame()`. Starting the clip inside the batch matters: a gap
+//    between tool calls is longer than the whole clip.
+// 5. `__g.frames` holds the page time before each frame. Then __g.undo()
+//    puts back what the clip changed.
+// 6. python make_gif.py OUT SHOT_DIR FIRST_SHOT_INDEX END_TIME TIMES.json
+//
+// Same gestures for before and after: same distances, speeds and pauses,
+// same K per clip (swap 4, delete 6).
+
+// ---- SETUP ----
+document.documentElement.innerHTML = '<head><style>html,body{margin:0;background:#000;overflow:hidden}iframe{position:fixed;left:0;top:0;width:390px;height:844px;border:0;background:#141414}</style></head><body><iframe id=f src="/?day=2026-11-16"></iframe></body>';
+const f = document.getElementById('f');
+await new Promise(r => f.addEventListener('load', r, { once: true }));
+await new Promise(r => setTimeout(r, 2500));
+const w = f.contentWindow; const d = w.document;
+const st = d.createElement('style'); st.textContent = 'html{scrollbar-width:none}nextjs-portal{display:none!important}'; d.head.appendChild(st);
+
+// The slowed clock. Framer Motion reads performance.now() every frame, so
+// slowing it slows every JS-driven animation; animations the browser runs
+// itself (Element.animate, CSS transitions) get playbackRate 1/K instead.
+const P = w.performance; const realNow = P.now.bind(P);
+const s = { K: 1, realBase: realNow(), warpBase: 0 }; s.warpBase = s.realBase;
+P.now = () => s.warpBase + (realNow() - s.realBase) / s.K;
+s.setK = (k) => { const r = realNow(); s.warpBase = s.warpBase + (r - s.realBase) / s.K; s.realBase = r; s.K = k; d.getAnimations().forEach(a => { a.playbackRate = 1 / k; }); };
+const EA = w.Element.prototype.animate;
+w.Element.prototype.animate = function (...a) { const an = EA.apply(this, a); if (s.K !== 1) an.playbackRate = 1 / s.K; return an; };
+w.setInterval(() => { if (s.K !== 1) d.getAnimations().forEach(a => { if (a.playbackRate !== 1 / s.K) a.playbackRate = 1 / s.K; }); }, 4);
+w.__warp = s;
+w.scrollTo(0, 9999);
+
+// Scripted pointer gestures, timed in page time.
+const G = window.__g = { w, d };
+const center = (el) => { const b = el.getBoundingClientRect(); return [b.left + b.width / 2, b.top + b.height / 2]; };
+G.sleep = (ms) => new Promise(r => setTimeout(r, ms * s.K));
+G.pe = (type, el, x, y) => el.dispatchEvent(new w.PointerEvent(type, { bubbles: true, cancelable: true, composed: true, clientX: x, clientY: y, pointerId: 1, pointerType: 'mouse', isPrimary: true, button: 0, buttons: type === 'pointerup' ? 0 : 1 }));
+// flick: speeding up until let go (t²); otherwise a push that slows down.
+G.drag = async (x, y, dx, dy, ms, n = 10, flick = true) => {
+  const el = d.elementFromPoint(x, y);
+  G.pe('pointerdown', el, x, y);
+  for (let i = 1; i <= n; i++) { await G.sleep(ms / n); const t = i / n; const e = flick ? t * t : 1 - (1 - t) * (1 - t); G.pe('pointermove', el, x + dx * e, y + dy * e); }
+  G.pe('pointerup', el, x + dx, y + dy);
+  el.dispatchEvent(new w.MouseEvent('click', { bubbles: true, cancelable: true, clientX: x + dx, clientY: y + dy, detail: 1 }));
+};
+G.click = (el) => { const [x, y] = center(el); G.pe('pointerdown', el, x, y); G.pe('pointerup', el, x, y); el.dispatchEvent(new w.MouseEvent('click', { bubbles: true, cancelable: true, clientX: x, clientY: y, detail: 1 })); };
+G.mark = (label) => G.log.push({ label, warped: w.performance.now() });
+G.frame = () => { const t = w.performance.now(); G.frames.push(t); return [Math.round(t), G.done]; };
+G.begin = (fn, k = 4) => { G.done = false; G.log = []; G.frames = []; s.setK(k); G.mark('start'); fn().then(() => { G.mark('end'); s.setK(1); G.done = true; }, (e) => { G.err = String(e); s.setK(1); G.done = true; }); return G.frame(); };
+G.undo = async () => { const b = [...d.querySelectorAll('[role=status] button')].find(b => b.textContent.trim() === 'Undo'); if (b) G.click(b); await new Promise(r => setTimeout(r, 2500)); w.scrollTo(0, 9999); return [...d.querySelectorAll('[data-entry-row]')].map(r => r.innerText.split('\n').slice(0, 2).join(' | ')); };
+
+// ---- CLIPS ----
+// swap.gif, K 4: open the stack on Lunch, flick card 1 left (Skip), flick
+// card 2 right (Swap). Then Undo.
+G.clipSwap = async () => {
+  await G.sleep(300); G.mark('tap swap');
+  G.click(d.querySelector('[data-swap-entry]'));
+  await G.sleep(700);
+  const card = () => d.querySelector('dialog .cursor-grab');
+  let [x, y] = center(card()); G.mark('flick skip');
+  await G.drag(x, y, -150, 6, 130, 8, true);
+  await G.sleep(650);
+  [x, y] = center(card()); G.mark('flick swap');
+  await G.drag(x, y, 150, -6, 130, 8, true);
+  await G.sleep(1300);
+};
+// delete.gif, K 6: pull the shut row right (the limit), flick it open,
+// pull past Delete (the other limit), tap Delete. Then Undo.
+G.clipDelete = async () => {
+  const row = d.querySelector('[data-entry-row]'); const [, y] = center(row);
+  await G.sleep(200); G.mark('pull shut row right');
+  await G.drag(150, y, 90, 0, 400, 12, false);
+  await G.sleep(350); G.mark('flick open');
+  await G.drag(200, y, -110, 0, 140, 8, true);
+  await G.sleep(350); G.mark('pull past delete');
+  await G.drag(200, y, -90, 0, 320, 10, false);
+  await G.sleep(450); G.mark('tap delete');
+  G.click(row.querySelector('[data-row-delete]'));
+  await G.sleep(700);
+};
