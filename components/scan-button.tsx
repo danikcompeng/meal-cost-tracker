@@ -15,7 +15,9 @@ export function ScanButton() {
       // a gap, so it shows even though the circle is matcha too.
       className="group focus-ring -mt-7 flex flex-col items-center gap-1 rounded-full"
     >
-      <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground ring-4 ring-background transition-transform group-active:scale-95">
+      {/* The circle shrinks while pressed, like every button (the press
+          tokens in globals.css), but not the word under it. */}
+      <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground ring-4 ring-background transition-[scale] duration-(--motion-fast) ease-(--motion-ease-out) motion-safe:group-active:scale-(--motion-scale-from)">
         <ScanBarcode aria-hidden="true" className="size-6" />
       </span>
       <span className="text-label font-medium text-muted-foreground group-hover:text-foreground">

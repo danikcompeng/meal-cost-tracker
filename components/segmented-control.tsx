@@ -33,7 +33,8 @@ export function SegmentedControl<T extends string>({
             className={cn(
               // Corners concentric with the track's (CLAUDE.md, Layout):
               // 10 px − 1 px border − 4 px padding = 5 px.
-              "flex h-11 flex-1 cursor-pointer items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-base transition-colors",
+              // press: shrinks a little while pressed (globals.css).
+              "press flex h-11 flex-1 cursor-pointer items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-base",
               // Keyboard focus ring, shown on the label because the real
               // radio button is hidden (focus-ring-within, globals.css).
               // Outside the label, in the track's 4 px padding, so it's on

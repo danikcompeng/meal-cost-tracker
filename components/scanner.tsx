@@ -19,7 +19,7 @@ import { useBarcodeCamera } from "./use-barcode-camera";
 // 80%: over a white counter, the old see-through black (40%) left the
 // light text and icons at about 2.4:1; this keeps them at 8.4:1.
 const ROUND_BUTTON =
-  "flex size-11 items-center justify-center rounded-full bg-camera/80 text-camera-foreground outline-none focus-visible:ring-3 focus-visible:ring-camera-accent";
+  "press flex size-11 items-center justify-center rounded-full bg-camera/80 text-camera-foreground outline-none focus-visible:ring-3 focus-visible:ring-camera-accent";
 
 export function Scanner({
   onDetected,

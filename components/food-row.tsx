@@ -76,7 +76,8 @@ export function FoodRow({
         <button
           type="button"
           onClick={onEdit}
-          className="focus-ring flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md py-3 text-left"
+          // press-wide: shrinks a little while pressed (globals.css).
+          className="focus-ring press-wide flex min-w-0 flex-1 flex-col items-start gap-0.5 rounded-md py-3 text-left"
         >
           <span className="font-medium">
             {name}

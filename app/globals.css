@@ -225,6 +225,41 @@
   }
 }
 
+/* Press feedback (plans/motion.md, item 2): while your finger is down
+   (:active) it shrinks a little, and lets go in 150 ms. CSS, not Framer
+   Motion: it's on dozens of things, and CSS costs nothing until you press.
+   Not on anything that ignores your tap: disabled, busy (our busy buttons
+   are aria-disabled, so focus stays on them) or greyed (data-unavailable).
+   Not while a row is being swiped (data-dragging, set by entry-row.tsx):
+   the press would otherwise stay on for the whole swipe.
+   It also animates colour changes, like transition-colors, so use it
+   instead of that (two transition classes on one element fight, and only
+   one wins).
+   press: buttons, tab bar items, icon buttons, switch options (0.97).
+   press-wide: rows and tiles (0.985, the same visible give on something
+   four times wider). With Reduce Motion: no shrinking. */
+@utility press {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, scale;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease-out);
+  @media (prefers-reduced-motion: no-preference) {
+    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging]) {
+      scale: var(--motion-scale-from);
+    }
+  }
+}
+
+@utility press-wide {
+  transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, scale;
+  transition-duration: var(--motion-fast);
+  transition-timing-function: var(--motion-ease-out);
+  @media (prefers-reduced-motion: no-preference) {
+    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging]) {
+      scale: var(--motion-press-scale-wide);
+    }
+  }
+}
+
 /* The ring on a box whose real control inside is hidden, like a label
    around a hidden radio button (segmented-control.tsx). */
 @utility focus-ring-within {

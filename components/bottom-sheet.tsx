@@ -113,7 +113,7 @@ export function BottomSheet({
             aria-label="Close"
             // Our matcha ring (focus-ring, globals.css), only for keyboard
             // focus, instead of Safari's built-in blue one.
-            className="focus-ring -mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="focus-ring press -mr-2 flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X aria-hidden="true" className="size-5" />
           </button>

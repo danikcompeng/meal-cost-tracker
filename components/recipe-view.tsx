@@ -129,7 +129,7 @@ export function RecipeView({
         <button
           type="button"
           onClick={() => setSheet({ mode: "add", food: null, added: null })}
-          className="focus-ring mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          className="focus-ring press-wide mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Plus aria-hidden="true" className="size-4" />
           Add ingredient

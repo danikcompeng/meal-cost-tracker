@@ -10,7 +10,7 @@ export function DayNav({ day, today }: { day: string; today: string }) {
   const prev = addDays(day, -1);
   const next = addDays(day, 1);
   const arrow =
-    "focus-ring flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground";
+    "focus-ring press flex size-11 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground";
 
   return (
     <nav aria-label="Choose day" className="-ml-3 mt-1 flex items-center">

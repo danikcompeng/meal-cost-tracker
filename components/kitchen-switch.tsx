@@ -24,7 +24,7 @@ export function KitchenSwitch({ current }: { current: (typeof PAGES)[number]["id
             // dark mode).
             // Corners concentric with the track's: 10 px − 1 px border −
             // 4 px padding = 5 px (CLAUDE.md, Layout).
-            "focus-ring flex h-11 flex-1 items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-base transition-colors",
+            "focus-ring press flex h-11 flex-1 items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-base",
             page.id === current
               ? "bg-highlight font-medium text-highlight-foreground"
               : "text-muted-foreground hover:bg-accent",

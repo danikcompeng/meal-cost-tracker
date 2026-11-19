@@ -3,9 +3,12 @@ import { macroText } from "@/lib/macros";
 import { recipeTotals } from "@/lib/recipe-totals";
 import type { Recipe } from "@/lib/types";
 
-/** One tappable row in the picker, shared by recipes and foods so they match. */
+/**
+ * One tappable row in the picker, shared by recipes and foods so they
+ * match. press-wide: shrinks a little while pressed (globals.css).
+ */
 export const OPTION_CLASS =
-  "focus-ring flex min-h-14 w-full flex-col items-start justify-center rounded-lg px-2 py-2 text-left hover:bg-accent";
+  "focus-ring press-wide flex min-h-14 w-full flex-col items-start justify-center rounded-lg px-2 py-2 text-left hover:bg-accent";
 
 // One recipe in Today's "Add to lunch" list, with one serving's numbers.
 //   Overnight oats

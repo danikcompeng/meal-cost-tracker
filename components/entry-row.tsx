@@ -72,6 +72,15 @@ export function EntryRow({
   // tap. (Framer reports the finger's speed even for a scroll, so a quick
   // scroll that drifts a little left would otherwise look like a flick.)
   const sideways = useRef(false);
+  // The sliding part of the row. While it's being swiped it carries
+  // data-dragging, which switches off its press shrink (globals.css):
+  // otherwise the row would stay shrunk for the whole swipe. Set straight
+  // on the element, not with state, so a swipe never redraws the row.
+  const rowRef = useRef<HTMLDivElement>(null);
+  const setDragging = (on: boolean) => {
+    if (on) rowRef.current?.setAttribute("data-dragging", "");
+    else rowRef.current?.removeAttribute("data-dragging");
+  };
   // The latest `open`, for handlers that run before the next redraw.
   const openRef = useRef(open);
   useEffect(() => {
@@ -106,6 +115,7 @@ export function EntryRow({
   }, [isPresent, x, away]);
 
   function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { velocity }: PanInfo) {
+    setDragging(false);
     // Only a gesture locked sideways decides, never one the browser took
     // over to scroll ("pointercancel"): then the row just goes back.
     if (!sideways.current || event.type === "pointercancel") {
@@ -138,6 +148,7 @@ export function EntryRow({
       className="relative overflow-hidden rounded-lg"
     >
       <motion.div
+        ref={rowRef}
         // Not while it's leaving: a touch would stop it halfway.
         drag={isPresent ? "x" : false}
         // Framer sets touch-action: pan-y for a sideways drag, so the day
@@ -152,17 +163,23 @@ export function EntryRow({
         dragMomentum={false}
         onPointerDownCapture={() => {
           sideways.current = false;
+          setDragging(false);
         }}
         // Pressing the row stops a slide that's still running; a tap (no
         // swipe) would otherwise leave it stuck halfway.
         onPointerUp={() => {
+          setDragging(false);
           if (!sideways.current) settle(openRef.current);
         }}
         // Same when the phone takes the press over (a scroll, a long
         // press) before it counts as a drag: nothing else would finish it.
-        onPointerCancel={() => settle(openRef.current)}
+        onPointerCancel={() => {
+          setDragging(false);
+          settle(openRef.current);
+        }}
         onDirectionLock={(axis) => {
           sideways.current = axis === "x";
+          if (sideways.current) setDragging(true);
         }}
         onDragEnd={handleDragEnd}
         onClickCapture={(e) => {
@@ -185,7 +202,10 @@ export function EntryRow({
         style={{ x }}
         // Solid and on top (z-10), so the button only shows where the row
         // has moved away.
-        className="relative z-10 flex items-center rounded-lg bg-background transition-colors hover:bg-accent"
+        // The press shrink (0.985, the wide-row token) is the whole row's,
+        // but only while its main button is pressed (the swap icon has its
+        // own), never while it's being swiped, and not with Reduce Motion.
+        className="relative z-10 flex items-center rounded-lg bg-background transition-[background-color,scale] duration-(--motion-fast) ease-(--motion-ease-out) hover:bg-accent motion-safe:not-data-dragging:has-[>[data-entry-open]:active]:scale-(--motion-press-scale-wide)"
       >
         <button
           type="button"
@@ -236,7 +256,7 @@ export function EntryRow({
             aria-label={`Tired of ${entry.name}? Swap it`}
             // So focus can come back here after Undo (see TodayView).
             data-swap-entry={entry.id}
-            className="focus-ring-inset mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-background hover:text-foreground"
+            className="focus-ring-inset press mr-1 flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground"
           >
             <Shuffle aria-hidden="true" className="size-4" />
           </button>

@@ -47,7 +47,8 @@ function Tab({ tab, active }: { tab: (typeof TABS)[number]; active?: TabId }) {
       className={cn(
         // px-4, not wider: "Kitchen" (about 58 px of text) still fits its
         // third of a 320 px phone, about 96 px, beside Scan.
-        "focus-ring flex h-11 items-center rounded-full px-4 text-base font-medium transition-colors",
+        // press: shrinks a little while pressed (globals.css).
+        "focus-ring press flex h-11 items-center rounded-full px-4 text-base font-medium",
         tab.id === active
           ? "bg-highlight text-highlight-foreground"
           : "text-muted-foreground hover:text-foreground",

@@ -61,7 +61,7 @@ export function LogOutButton({ className }: { className: string }) {
             aria-label="Dismiss"
             // 4 px in from the box's top and right edges, with corners
             // concentric with the box's (10 px − 1 px border − 4 px = 5 px).
-            className="focus-ring flex size-11 shrink-0 items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="focus-ring press flex size-11 shrink-0 items-center justify-center rounded-[calc(var(--radius-lg)-5px)] text-muted-foreground hover:bg-muted hover:text-foreground"
           >
             <X aria-hidden="true" className="size-4" />
           </button>

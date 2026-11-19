@@ -11,8 +11,11 @@ import { cn } from "@/lib/utils"
 // - Unavailable (Save while a delete runs): add data-unavailable too.
 //   Greyed with a colour, not faded with opacity, so the text stays
 //   readable (5.4:1) and the focus ring around it stays solid.
+// press (globals.css): shrinks to 0.97 while pressed, but not in either
+// state above. It replaces transition-all, which would also have animated
+// a change of size or padding (plans/motion.md, item 6).
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all select-none focus-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground data-unavailable:pointer-events-none data-unavailable:border-transparent data-unavailable:bg-muted data-unavailable:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap press select-none focus-ring disabled:pointer-events-none disabled:bg-muted disabled:text-muted-foreground data-unavailable:pointer-events-none data-unavailable:border-transparent data-unavailable:bg-muted data-unavailable:text-muted-foreground aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
