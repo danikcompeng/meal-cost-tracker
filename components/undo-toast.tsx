@@ -15,7 +15,7 @@
 // so a box that appears together with its text may never be read out.
 
 import { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_IN, EASE_OUT, SCALE_FROM } from "@/lib/motion";
@@ -63,6 +63,7 @@ export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss
 function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) {
   const [undoing, setUndoing] = useState(false);
   const [problem, setProblem] = useState<UndoProblem | null>(null);
+  const reduceMotion = useReducedMotion();
   const ref = useRef<HTMLDivElement>(null);
   const dismissButton = useRef<HTMLButtonElement>(null);
 
@@ -103,15 +104,19 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
   const showUndo = toast.undo !== undefined && !problem?.final;
   const isError = toast.isError || problem !== null;
 
+  // With Reduce Motion, no scale at all: Framer would jump it to 0.97 at
+  // the start of the exit (it skips scaling straight to the end), a small
+  // snap before the fade. Fade only.
+  const from = reduceMotion ? 1 : SCALE_FROM;
+
   return (
     // Settles in from scale 0.97, growing from its bottom edge (the side
     // nearest the tab bar), and leaves the same way, a little quicker.
-    // With Reduce Motion, MotionProvider drops the scale and keeps the fade.
     <motion.div
       ref={ref}
-      initial={{ scale: SCALE_FROM, opacity: 0 }}
+      initial={{ scale: from, opacity: 0 }}
       animate={{ scale: 1, opacity: 1, transition: { duration: DURATION.base, ease: EASE_OUT } }}
-      exit={{ scale: SCALE_FROM, opacity: 0, transition: { duration: DURATION.fast, ease: EASE_IN } }}
+      exit={{ scale: from, opacity: 0, transition: { duration: DURATION.fast, ease: EASE_IN } }}
       className="surface-raised pointer-events-auto flex origin-bottom min-h-13 items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
     >
       <p className={`min-w-0 flex-1 text-sm ${isError ? "text-destructive" : ""}`}>

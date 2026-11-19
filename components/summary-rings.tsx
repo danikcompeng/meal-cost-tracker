@@ -92,7 +92,7 @@ function BigRing({ p }: { p: Progress }) {
     <div className="relative mx-auto mt-3" style={{ width: BIG, height: BIG }}>
       <ProgressRing fraction={p.fraction} size={BIG} stroke={12} />
       <p
-        className={`absolute inset-0 flex flex-col items-center justify-center transition-colors duration-150 ${
+        className={`absolute inset-0 flex flex-col items-center justify-center transition-colors duration-(--motion-fast) ${
           p.over ? "text-foreground" : "text-primary"
         }`}
       >

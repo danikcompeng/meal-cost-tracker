@@ -6,7 +6,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { Recipe } from "@/lib/types";
@@ -18,6 +18,7 @@ import { RecipeTile } from "./recipe-tile";
 export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods: boolean }) {
   const router = useRouter();
   const [creating, setCreating] = useState(false);
+  const reduceMotion = useReducedMotion();
 
   // A recipe is made of your foods, so with none there's nothing to use.
   const newButton = hasFoods ? (
@@ -51,7 +52,9 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
                   layout
                   initial={{ opacity: 0, y: -4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, height: 0 }}
+                  // Reduce Motion would jump the height to 0 before the
+                  // fade shows (food-list.tsx): fade only then.
+                  exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                   transition={{ duration: DURATION.base, ease: EASE_OUT }}
                 >
                   <RecipeTile recipe={recipe} />

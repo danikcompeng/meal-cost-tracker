@@ -230,7 +230,8 @@
    Motion: it's on dozens of things, and CSS costs nothing until you press.
    Not on anything that ignores your tap: disabled, busy (our busy buttons
    are aria-disabled, so focus stays on them) or greyed (data-unavailable).
-   Not while a row is being swiped (data-dragging, set by entry-row.tsx):
+   Not while a row is being swiped (data-dragging, set by entry-row.tsx),
+   nor anything inside it (the swap icon, when the swipe starts on it):
    the press would otherwise stay on for the whole swipe.
    It also animates colour changes, like transition-colors, so use it
    instead of that (two transition classes on one element fight, and only
@@ -243,7 +244,7 @@
   transition-duration: var(--motion-fast);
   transition-timing-function: var(--motion-ease-out);
   @media (prefers-reduced-motion: no-preference) {
-    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging]) {
+    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging], [data-dragging] *) {
       scale: var(--motion-scale-from);
     }
   }
@@ -254,7 +255,7 @@
   transition-duration: var(--motion-fast);
   transition-timing-function: var(--motion-ease-out);
   @media (prefers-reduced-motion: no-preference) {
-    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging]) {
+    &:active:not(:disabled, [aria-disabled="true"], [data-unavailable], [data-dragging], [data-dragging] *) {
       scale: var(--motion-press-scale-wide);
     }
   }

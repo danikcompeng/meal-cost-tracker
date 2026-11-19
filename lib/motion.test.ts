@@ -3,12 +3,14 @@ import { describe, expect, it } from "vitest";
 import { DURATION, EASE_IN, EASE_OUT, FILL_DURATION, PRESS_SCALE_WIDE, RUBBER, SCALE_FROM, SHAKE_X, SPRING } from "./motion";
 
 // The CSS copies of the motion tokens, read from app/globals.css, so this
-// fails the moment one side changes without the other.
-const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8");
+// fails the moment one side changes without the other. Comments are
+// stripped first, and each variable must be set exactly once: an old value
+// left in a comment, or a second copy, can't be the one checked.
+const css = readFileSync(new URL("../app/globals.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 function cssVar(name: string): string {
-  const match = css.match(new RegExp(`--${name}:\\s*([^;]+);`));
-  if (!match) throw new Error(`--${name} isn't in globals.css`);
-  return match[1].trim();
+  const matches = [...css.matchAll(new RegExp(`--${name}:\\s*([^;]+);`, "g"))];
+  expect(matches, `--${name} set once in globals.css`).toHaveLength(1);
+  return matches[0][1].trim();
 }
 
 describe("motion tokens: CSS matches lib/motion.ts", () => {
@@ -23,6 +25,12 @@ describe("motion tokens: CSS matches lib/motion.ts", () => {
 
   it("ease-out curve", () => {
     expect(cssVar("motion-ease-out")).toBe(`cubic-bezier(${EASE_OUT.join(", ")})`);
+  });
+
+  it("the press rules read the variables, not typed-in numbers", () => {
+    expect(css).toContain("scale: var(--motion-scale-from);");
+    expect(css).toContain("scale: var(--motion-press-scale-wide);");
+    expect(css).toContain("transition-duration: var(--motion-fast);");
   });
 });
 

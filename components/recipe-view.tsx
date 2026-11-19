@@ -7,7 +7,7 @@
 import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ChevronLeft, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_OUT } from "@/lib/motion";
@@ -52,6 +52,7 @@ export function RecipeView({
 }) {
   const router = useRouter();
   const [sheet, setSheet] = useState<Sheet>(null);
+  const reduceMotion = useReducedMotion();
   const close = () => setSheet(null);
   const { ingredients } = recipe;
   const [opening, startOpening] = useTransition();
@@ -115,7 +116,9 @@ export function RecipeView({
                 layout
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, height: 0 }}
+                // Reduce Motion would jump the height to 0 before the fade
+                // shows (food-list.tsx): fade only then.
+                exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
                 transition={{ duration: DURATION.base, ease: EASE_OUT }}
               >
                 <IngredientRow

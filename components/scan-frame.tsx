@@ -59,7 +59,7 @@ export function ScanFrame({ state, ref }: { state: FrameState; ref: React.Ref<HT
           <span
             key={corner}
             className={cn(
-              "absolute size-8 transition-colors duration-150",
+              "absolute size-8 transition-colors duration-(--motion-fast)",
               corner,
               state === "read" ? "border-camera-accent" : "border-camera-foreground",
             )}

@@ -20,9 +20,9 @@ export function OfflineStrip() {
       <AnimatePresence initial={false}>
         {!online && (
           <motion.div
-            // Framer's Reduce Motion setting (MotionProvider) doesn't cover
-            // height, so it's checked here: with reduced motion it's a
-            // plain fade, no growing.
+            // With Reduce Motion, Framer (MotionProvider) would jump the
+            // height to its end, taking the fade-out with it, so it's
+            // checked here: a plain fade, no growing.
             initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
             animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
             exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}

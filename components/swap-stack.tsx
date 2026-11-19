@@ -190,58 +190,65 @@ export function SwapStack({
         {behind >= 2 && <Peek className="inset-x-6 top-4 -bottom-4" />}
         {behind >= 1 && <Peek className="inset-x-3 top-2 -bottom-2" />}
 
+        {/* Two layers. The outer one plays the entrance; the inner one is
+            the card you drag. Kept apart because a touch stops every
+            animation on the element you touch: pressed while it was still
+            rising, a card that did both would freeze a few px too low.
+            A new outer element per card (key), so each one plays it.
+            The new top card settles in from scale 0.97, rising the 8 px
+            from where the first peeking card was, and fades in. With
+            Reduce Motion, MotionProvider skips the scale and y: a fade. */}
         <motion.div
-          // A new element per card, so each one plays the "grow from the
-          // stack" entrance below.
           key={swap.id}
-          // Not draggable while it flies off: a touch would stop the
-          // flight halfway and leave the card stuck.
-          drag={flying ? false : "x"}
-          // Framer sets touch-action: pan-y for a sideways drag, so you can
-          // still scroll the sheet with your finger on the card; this
-          // decides which way you meant after a few pixels.
-          dragDirectionLock
-          dragElastic={0.9}
-          dragConstraints={{ left: 0, right: 0 }}
-          onPointerDownCapture={() => {
-            sideways.current = false;
-          }}
-          // A press that never became a sideways drag (a tap, a scroll the
-          // phone took over) stops any slide still running: put it back.
-          onPointerUp={() => {
-            if (!sideways.current) settle();
-          }}
-          onPointerCancel={settle}
-          onDirectionLock={(axis) => {
-            sideways.current = axis === "x";
-          }}
-          onDragEnd={handleDragEnd}
-          style={{ x, rotate }}
-          // The new top card settles in from scale 0.97, rising the 8 px
-          // from where the first peeking card was, and fades in. With
-          // Reduce Motion, MotionProvider skips the scale and y: a fade.
           initial={{ scale: SCALE_FROM, y: 8, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
           transition={{ ...SPRING.sheet, opacity: { duration: DURATION.fast, ease: EASE_OUT } }}
-          className={`relative z-10 ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
+          className="relative z-10"
         >
-          <SwapCard swap={swap} servings={servings} />
-          {/* Labels that fade in as you drag. Hidden from screen readers:
-              the buttons below say the same thing. */}
-          <motion.span
-            aria-hidden="true"
-            style={{ opacity: pickOpacity }}
-            className="pointer-events-none absolute top-4 left-4 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
+          <motion.div
+            // Not draggable while it flies off: a touch would stop the
+            // flight halfway and leave the card stuck.
+            drag={flying ? false : "x"}
+            // Framer sets touch-action: pan-y for a sideways drag, so you can
+            // still scroll the sheet with your finger on the card; this
+            // decides which way you meant after a few pixels.
+            dragDirectionLock
+            dragElastic={0.9}
+            dragConstraints={{ left: 0, right: 0 }}
+            onPointerDownCapture={() => {
+              sideways.current = false;
+            }}
+            // A press that never became a sideways drag (a tap, a scroll the
+            // phone took over) stops any slide still running: put it back.
+            onPointerUp={() => {
+              if (!sideways.current) settle();
+            }}
+            onPointerCancel={settle}
+            onDirectionLock={(axis) => {
+              sideways.current = axis === "x";
+            }}
+            onDragEnd={handleDragEnd}
+            style={{ x, rotate }}
+            className={`relative ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
           >
-            {dragLabel}
-          </motion.span>
-          <motion.span
-            aria-hidden="true"
-            style={{ opacity: skipOpacity }}
-            className="pointer-events-none absolute top-4 right-4 rounded-full border border-border bg-background px-3 py-1 text-sm font-semibold text-muted-foreground"
-          >
-            Skip
-          </motion.span>
+            <SwapCard swap={swap} servings={servings} />
+            {/* Labels that fade in as you drag. Hidden from screen readers:
+                the buttons below say the same thing. */}
+            <motion.span
+              aria-hidden="true"
+              style={{ opacity: pickOpacity }}
+              className="pointer-events-none absolute top-4 left-4 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
+            >
+              {dragLabel}
+            </motion.span>
+            <motion.span
+              aria-hidden="true"
+              style={{ opacity: skipOpacity }}
+              className="pointer-events-none absolute top-4 right-4 rounded-full border border-border bg-background px-3 py-1 text-sm font-semibold text-muted-foreground"
+            >
+              Skip
+            </motion.span>
+          </motion.div>
         </motion.div>
       </div>
 
