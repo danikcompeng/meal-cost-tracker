@@ -343,13 +343,16 @@ How:
 - Recorded in Chrome with its GIF recorder. The gestures are scripted
   (same start, distance and speed both times), so before and after
   differ only in the motion. Fair for a comparison, and repeatable.
-- With made-up meals (decision D), never your real ones: a demo login
-  (a second address of yours) that you log in to yourself on
-  `localhost:3000`. Its meals come from `design/ui/motion/seed-demo.sql`,
-  which you run in Supabase's SQL Editor after pasting in the demo
+- On your own account (decision D changed to its second option on
+  2026-11-18: Supabase's login email failed with a 500 for the new demo
+  address). You log in yourself on `localhost:3000`. Your real meals
+  show in the clips. Anything a clip changes (a swap, a delete) is put
+  back with Undo straight away.
+- Kept for later: `design/ui/motion/seed-demo.sql`, made-up meals for a
+  demo account, run in Supabase's SQL Editor after pasting in that
   account's user id. It only ever writes rows for that one id, refuses
   to run on an account that already has foods, and holds no keys: the
-  SQL Editor is already logged in as you.
+  SQL Editor is already logged in as you. Not run yet.
 - If the GIF recorder's frame rate turns out too low to show a spring
   (it captures frames, it isn't a video), I'll tell you, and give you a
   shot list to record on your iPhone instead (Control Centre → Screen
