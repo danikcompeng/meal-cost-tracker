@@ -6,6 +6,7 @@ import {
   motion,
   useIsPresent,
   useMotionValue,
+  usePresenceData,
   useReducedMotion,
   useTransform,
   type PanInfo,
@@ -99,15 +100,29 @@ export function EntryRow({
     settle(open);
   }, [open, settle]);
 
-  // false while the row leaves after a delete. If it comes back before
-  // it's gone (the delete failed, or a quick Undo), it's the same row, so
-  // put it back in place, shut.
+  // false while the row leaves after a delete.
   const isPresent = useIsPresent();
+  // Today's answer to "does this deleted row slide off?" (MealSection
+  // passes it to every leaving row): yes after either Delete, the row's
+  // red one or the edit sheet's.
+  const willSlide = usePresenceData() as ((id: string) => boolean) | undefined;
   useEffect(() => {
-    if (!isPresent) return;
+    if (!isPresent) {
+      // Like iPhone Mail: the row slides left, off the screen, from
+      // wherever it is (open after a swipe, shut after the edit sheet),
+      // and the red glued to its right edge fills the space it leaves.
+      // Then the red closes up (MealSection waits DURATION.slow for that:
+      // change both together). With reduced motion: no slide, it fades.
+      if (reduceMotion || !willSlide?.(entry.id)) return;
+      const width = wrapperRef.current?.offsetWidth ?? 320;
+      animate(x, -width, { duration: DURATION.slow, ease: EASE_IN });
+      return;
+    }
+    // Back before it's gone (the delete failed, or a quick Undo): it's the
+    // same row, so put it back in place, shut.
     x.jump(0);
     leaving.current = false;
-  }, [isPresent, x]);
+  }, [isPresent, x, reduceMotion, willSlide, entry.id]);
 
   function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { velocity }: PanInfo) {
     setDragging(false);
@@ -125,14 +140,7 @@ export function EntryRow({
   function handleDelete() {
     if (leaving.current) return;
     leaving.current = true;
-    // Like iPhone Mail: the row keeps sliding left, off the screen, and
-    // the red behind it fills the space it leaves. Then, once it's gone,
-    // the red closes up (MealSection waits DURATION.slow for that: change
-    // both together). With reduced motion: no slide, the row just fades.
-    if (!reduceMotion) {
-      const width = wrapperRef.current?.offsetWidth ?? 320;
-      animate(x, -width, { duration: DURATION.slow, ease: EASE_IN });
-    }
+    // Today hides the row; it slides off as it leaves (the effect above).
     onDelete();
   }
 

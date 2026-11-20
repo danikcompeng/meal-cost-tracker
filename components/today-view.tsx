@@ -4,7 +4,7 @@
 // (adding to a meal, editing an entry, or swapping one), if any, and the
 // "Lunch is now Lentil dal · Undo" message after a swap.
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { dayTotals } from "@/lib/day-totals";
 import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
@@ -16,6 +16,7 @@ import {
   type DeletedEntry,
   type SwappedFrom,
 } from "@/lib/entry-validation";
+import { holdEntry, withHeld, type Held } from "@/lib/held-entries";
 import { waterTotal } from "@/lib/hydration";
 import { showsWater } from "@/lib/summary";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
@@ -259,7 +260,33 @@ export function TodayView({
     setEntriesSeen(entries);
     setHidden((current) => new Set([...current].filter((id) => entries.some((e) => e.id === id))));
   }
-  const visible = useMemo(() => entries.filter((e) => !hidden.has(e.id)), [entries, hidden]);
+  // Entries held on screen while the edit sheet deletes them, so they
+  // slide away only once the sheet has closed (lib/held-entries.ts). A
+  // held entry shows even if it's hidden or the server already dropped it.
+  const [held, setHeld] = useState<readonly Held[]>([]);
+  const visible = useMemo(() => {
+    const heldIds = new Set(held.map((h) => h.entry.id));
+    return withHeld(
+      entries.filter((e) => !hidden.has(e.id) || heldIds.has(e.id)),
+      held,
+    );
+  }, [entries, hidden, held]);
+  function release(id: string) {
+    setHeld((current) => current.filter((h) => h.entry.id !== id));
+  }
+
+  // Deleted entries that slide off to the left as they leave, red filling
+  // in behind (EntryRow), before the gap closes (MealSection). Read at
+  // the moment a row starts leaving, so a ref, not state: nothing on
+  // screen depends on it until then.
+  const slideOut = useRef(new Set<string>());
+  const willSlide = useCallback((id: string) => slideOut.current.has(id), []);
+  // The mark is taken off exactly where a row comes back: a delete that
+  // failed, or Undo. Not by watching what's on screen: the edit sheet
+  // deletes inside a React transition, whose changes ("hide it", "hold
+  // it") only apply once the whole delete is done, so for one redraw the
+  // row is on screen, not yet hidden, and already marked.
+
   function setHiddenFor(id: string, hide: boolean) {
     setHidden((current) => {
       const next = new Set(current);
@@ -379,6 +406,7 @@ export function TodayView({
     if (document.activeElement?.matches("[data-row-delete]")) {
       focusLater.current = afterDeleteSelector(entry.meal);
     }
+    slideOut.current.add(entry.id);
     setHiddenFor(entry.id, true);
     const result = await removeEntry(entry);
     if (!result.ok) {
@@ -386,6 +414,7 @@ export function TodayView({
         showAlreadyDeleted(entry);
         return;
       }
+      slideOut.current.delete(entry.id);
       setHiddenFor(entry.id, false);
       showToast({
         text: result.message,
@@ -411,13 +440,16 @@ export function TodayView({
     // meal's "+ Add" afterwards. A plain tap on iPhone never focuses a
     // button, and focus moved by code after a tap draws Safari's ring.
     const pressedWithFocus = document.activeElement?.matches("dialog button") ?? false;
-    // Hidden before the server answers, like a swipe (it's behind the
-    // sheet anyway): its fresh list may arrive first, and hiding it after
-    // that would keep an entry that comes back later hidden.
+    // Hidden before the server answers, like a swipe: its fresh list may
+    // arrive first, and hiding it after that would keep an entry that
+    // comes back later hidden. But held on screen meanwhile, so it can
+    // slide away where you see it, once the sheet has closed.
+    setHeld((current) => [...current, holdEntry(visible, entry)]);
     setHiddenFor(entry.id, true);
     const result = await removeEntry(entry);
     if (!result.ok && !result.gone) {
       setHiddenFor(entry.id, false);
+      release(entry.id);
       if (result.reached) router.refresh();
       // The sheet was closed meanwhile: say it where you can see it.
       if (openSheet.current !== mine) {
@@ -431,7 +463,11 @@ export function TodayView({
     }
     // Deleted now, or already: either way the sheet's job is done.
     if (pressedWithFocus) focusLater.current = afterDeleteSelector(entry.meal);
+    // The sheet closes and, in the same redraw, the row is let go: it
+    // slides off to the left like a swiped row's Delete.
     finish(mine);
+    slideOut.current.add(entry.id);
+    release(entry.id);
     if (result.ok) showDeleteUndo(entry, result.deleted, deletedMessage(entry.name, entry.meal));
     else showAlreadyDeleted(entry);
     return null;
@@ -482,6 +518,8 @@ export function TodayView({
       }
       return problem;
     }
+    // Back: a normal row again (it slides only if deleted again).
+    slideOut.current.delete(entry.id);
     setHiddenFor(entry.id, false);
     // Only this message: a newer one stays.
     setToast((t) => (t?.id === id ? null : t));
@@ -546,6 +584,7 @@ export function TodayView({
             openRow={openRow}
             onOpenRow={openOrShutRow}
             onDelete={(entry) => void rowDelete(entry)}
+            willSlide={willSlide}
           />
         ))}
       </div>

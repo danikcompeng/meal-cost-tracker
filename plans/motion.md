@@ -440,6 +440,28 @@ judge them). Then the code-reviewer once on the whole branch.
   mid-slide; as one strip it's 0 px on every frame. Undo plays it too.
   Reduce Motion: the new meal fades in.
 
+## Preview report (2026-11-20, after phone check 2 was announced)
+
+- "Delete just disappears" on iPhone: the preview was still on d9e4961.
+  The commits after phone check 1 had never been pushed. Pushed now.
+- The edit sheet's Delete now plays the same slide, once the sheet has
+  closed: Today holds the row on screen while the sheet waits
+  (`lib/held-entries.ts`), then lets it go, and the row slides off as it
+  leaves. Both Deletes go through one path: the row slides whenever
+  Today has marked it (`willSlide`, read through AnimatePresence's
+  `custom` by the list and by the row itself).
+- Found while building it: the sheet deletes inside a React transition,
+  whose "hide"/"hold" only apply once the delete is done. A cleanup that
+  forgot marks for rows it saw on screen fired in between and wiped the
+  mark. Marks are now taken off only where a row comes back: a failed
+  delete, or Undo.
+- "Nothing animates in Safari, not even the press": the code can't cause
+  that. The press is plain CSS asking Safari `prefers-reduced-motion`
+  directly, and Framer only reads the same question in the browser
+  (`matchMedia`), never on the server. If Safari answers "reduce", check
+  Settings → Accessibility → Per-App Settings → Safari → Reduce Motion,
+  which overrides the main switch.
+
 ## Decisions for you (I'd pick the first option each time)
 
 - **A. Press on wide rows:** rows and tiles scale to 0.985, buttons to
