@@ -5,13 +5,14 @@
 // an iPhone's home screen, typing the code is the way that works
 // (lib/login-code.ts says why).
 
-import { useActionState, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { verifyLoginCode } from "@/lib/auth-actions";
 import { errorId } from "./form-field";
+import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LoginCodeForm({
   email,
@@ -35,9 +36,13 @@ export function LoginCodeForm({
   // fields after its action runs, even when it comes back with an error.
   const [code, setCode] = useState("");
   const error = state.fieldErrors?.code;
+  // A wrong code: focus goes back to the box and it shakes, each time
+  // (the same wrong code twice shakes twice). No connection: Log in shakes.
+  const formRef = useRef<HTMLFormElement>(null);
+  useFocusFirstInvalid(formRef, state);
 
   return (
-    <form action={formAction} className="space-y-4" noValidate>
+    <form ref={formRef} action={formAction} className="space-y-4" noValidate>
       {/* break-words: a long address still fits a narrow phone. */}
       <p id="code-hint" className="break-words">
         {sent ? `Check ${email} for your login code.` : `Type the code we sent to ${email}.`}
