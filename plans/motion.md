@@ -489,6 +489,15 @@ After phone check 2, round two:
   and level. Skip slides the card straight left while it shrinks to
   `PUSH_SCALE` and fades to `PUSH_FADE`, like Today's carousel, then the
   next card comes up. CLAUDE.md's Motion section says the same now.
+- **Sheets close with a slide down** (all of them, through
+  `bottom-sheet.tsx`; before, every sheet disappeared at once, see "Not
+  in this plan"). Each sheet sits in an `AnimatePresence`. The moment the
+  page closes it, the `<dialog>` really closes (so focus can go back and
+  the page scrolls again) and is only drawn for the slide: fixed at the
+  bottom, its own dim layer fading, taps going through. Reduce Motion: a
+  fade. After a swap, Today's row waits until the sheet has gone
+  (`untilSheetClosed()`), then plays its carousel: one move, then the
+  other.
 
 ## Decisions for you (I'd pick the first option each time)
 

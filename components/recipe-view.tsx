@@ -139,15 +139,20 @@ export function RecipeView({
         </button>
       </section>
 
-      {sheet?.mode === "edit" && (
-        <BottomSheet title="Edit recipe" onClose={close}>
-          <RecipeForm recipe={recipe} onDone={close} />
-          <DeleteRecipe recipeId={recipe.id} />
-        </BottomSheet>
-      )}
+      {/* Each sheet in an AnimatePresence, which keeps it on the page
+          while it slides down (bottom-sheet.tsx). */}
+      <AnimatePresence>
+        {sheet?.mode === "edit" && (
+          <BottomSheet key="edit" title="Edit recipe" onClose={close}>
+            <RecipeForm recipe={recipe} onDone={close} />
+            <DeleteRecipe recipeId={recipe.id} />
+          </BottomSheet>
+        )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {sheet?.mode === "add" && (
-        <BottomSheet title="Add ingredient" onClose={close} step={adding ? `food:${adding.id}` : "pick"}>
+        <BottomSheet key="add" title="Add ingredient" onClose={close} step={adding ? `food:${adding.id}` : "pick"}>
           {adding ? (
             <IngredientForm
               recipeId={recipe.id}
@@ -188,9 +193,11 @@ export function RecipeView({
           )}
         </BottomSheet>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {sheet?.mode === "ingredient" && (
-        <BottomSheet title="Edit ingredient" onClose={close}>
+        <BottomSheet key="ingredient" title="Edit ingredient" onClose={close}>
           <IngredientForm
             recipeId={recipe.id}
             food={sheet.ingredient.food}
@@ -201,9 +208,12 @@ export function RecipeView({
           />
         </BottomSheet>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {sheet?.mode === "swap" && (
         <SwapSheet
+          key="swap"
           current={swapCurrent}
           recipes={recipes}
           history={history}
@@ -223,6 +233,7 @@ export function RecipeView({
           onClose={close}
         />
       )}
+      </AnimatePresence>
     </>
   );
 }

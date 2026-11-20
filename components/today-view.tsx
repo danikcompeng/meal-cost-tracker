@@ -6,6 +6,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { AnimatePresence } from "framer-motion";
 import { dayTotals } from "@/lib/day-totals";
 import { deleteEntry, restoreEntry, swapEntry, undoSwap, type SwapResult } from "@/lib/entry-actions";
 import { deletedMessage, swapNotUndoneMessage, swappedMessage } from "@/lib/entry-messages";
@@ -589,8 +590,12 @@ export function TodayView({
         ))}
       </div>
 
+      {/* Each sheet in an AnimatePresence, which keeps it on the page
+          while it slides down (bottom-sheet.tsx). */}
+      <AnimatePresence>
       {sheet?.mode === "add" && (
         <BottomSheet
+          key="add"
           title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`}
           onClose={close}
           // The list, a recipe's servings or a food's amount: switching
@@ -624,9 +629,11 @@ export function TodayView({
           )}
         </BottomSheet>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {sheet?.mode === "edit" && (
-        <BottomSheet title="Edit entry" onClose={close}>
+        <BottomSheet key="edit" title="Edit entry" onClose={close}>
           <EditEntryForm
             entry={sheet.entry}
             onDone={close}
@@ -635,9 +642,12 @@ export function TodayView({
           />
         </BottomSheet>
       )}
+      </AnimatePresence>
 
+      <AnimatePresence>
       {sheet?.mode === "swap" && swapCurrent && (
         <SwapSheet
+          key="swap"
           current={swapCurrent}
           recipes={swapRecipes}
           history={history}
@@ -656,6 +666,7 @@ export function TodayView({
           onClose={close}
         />
       )}
+      </AnimatePresence>
       </>
     );
   }

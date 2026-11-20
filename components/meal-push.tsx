@@ -6,6 +6,7 @@ import { macroText } from "@/lib/macros";
 import { DURATION, EASE_OUT, PUSH_FADE, PUSH_SCALE } from "@/lib/motion";
 import type { MealEntry } from "@/lib/types";
 import { amountText } from "@/lib/units";
+import { untilSheetClosed } from "./bottom-sheet";
 
 // What a Today row shows: name, amount · protein, and kcal on the right.
 //
@@ -81,6 +82,9 @@ export function MealPush({ entry }: { entry: MealEntry }) {
     const controls = animate(progress, 0, {
       duration: reduceMotion ? DURATION.base : DURATION.slow,
       ease: EASE_OUT,
+      // After a swap the sheet slides down first: the old meal waits in
+      // place until it's gone, so the two moves don't overlap.
+      delay: untilSheetClosed() / 1000,
     });
     controls.then(() => {
       if (!stopped) setLeaving(null);

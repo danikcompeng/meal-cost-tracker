@@ -65,11 +65,14 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
         </div>
       )}
 
-      {creating && (
-        <BottomSheet title="New recipe" onClose={() => setCreating(false)}>
-          <RecipeForm onDone={(id) => id && router.push(`/recipes/${id}`)} />
-        </BottomSheet>
-      )}
+      {/* Keeps the sheet on the page while it slides down (bottom-sheet.tsx). */}
+      <AnimatePresence>
+        {creating && (
+          <BottomSheet key="new" title="New recipe" onClose={() => setCreating(false)}>
+            <RecipeForm onDone={(id) => id && router.push(`/recipes/${id}`)} />
+          </BottomSheet>
+        )}
+      </AnimatePresence>
     </>
   );
 }
