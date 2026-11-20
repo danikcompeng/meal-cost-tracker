@@ -26,11 +26,27 @@ export const DURATION = {
 } as const;
 
 /**
- * The one exception to 150–250 ms (decision C): the progress rings
- * filling. It isn't an answer to a tap but the day's numbers being drawn,
- * and at 250 ms it's over before you've looked at it.
+ * An exception to 150–250 ms (decision C): the progress rings filling. It
+ * isn't an answer to a tap but the day's numbers being drawn, and at
+ * 250 ms it's over before you've looked at it. 1.1 s since phone check 2,
+ * with FILL_EASE: most of it is the slow landing.
  */
-export const FILL_DURATION = 0.8;
+export const FILL_DURATION = 1.1;
+/**
+ * The rings' curve (phone check 2): a strong ease-out, "expo-out". It
+ * covers most of the way in the first split second, then slows down a lot
+ * as it reaches the number, so the end is where your eye lands.
+ */
+export const FILL_EASE = [0.16, 1, 0.3, 1] as const;
+
+/**
+ * A swap on Today, like a carousel moving to the next item (phone check
+ * 2): the replaced meal shrinks to PUSH_SCALE and fades to PUSH_FADE as it
+ * slides out to the left; the new one grows from PUSH_SCALE as it comes
+ * in from the right. Scale only, never up or down.
+ */
+export const PUSH_SCALE = 0.9;
+export const PUSH_FADE = 0.5;
 
 /**
  * The second exception (phone check 1, 2026-11-20): the Undo message

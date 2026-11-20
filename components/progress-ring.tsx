@@ -22,7 +22,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { EASE_OUT, FILL_DURATION } from "@/lib/motion";
+import { FILL_DURATION, FILL_EASE } from "@/lib/motion";
 
 // Outside the component, so it lasts as long as the page: a new visit
 // loads the code again and starts at false. Set only in the browser (in
@@ -88,7 +88,8 @@ export function ProgressRing({
         // A round end on an empty ring would still draw a dot, so hide it.
         style={{ opacity: value === 0 ? 0 : 1 }}
         transition={
-          reduceMotion ? { duration: 0 } : { duration: FILL_DURATION, ease: EASE_OUT, delay }
+          // Fast first, then a long slow landing on the number (FILL_EASE).
+          reduceMotion ? { duration: 0 } : { duration: FILL_DURATION, ease: FILL_EASE, delay }
         }
       />
     </svg>

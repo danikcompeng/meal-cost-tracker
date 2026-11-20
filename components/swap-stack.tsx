@@ -7,8 +7,10 @@
 // How the swipe works: the card's sideways position is a "motion value"
 // (x) that follows your finger. Tilt and the Swap / Skip labels are worked
 // out from x, so they move with it on every frame without React redrawing.
-// Let go far enough (or flick fast) and the card flies off that side;
-// otherwise it springs back to the middle.
+// Let go far enough (or flick fast) and it counts: to the left, Skip, and
+// the card flies off; to the right, pick, and the card springs back while
+// the sheet closes (no fly-off, see commit). Otherwise it springs back to
+// the middle.
 
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
@@ -109,8 +111,8 @@ export function SwapStack({
     void result.then((ok) => {
       if (ok || !alive.current || topId.current !== id) return;
       leaving.current = false;
-      // Slides back in from the side it left by (with reduced motion it
-      // never left, so it's already there).
+      // A pick never leaves (see commit), so the card is already in the
+      // middle; this only makes sure it's settled there.
       if (!reduceMotion) animate(x, 0, SPRING.settle);
     });
   }
@@ -119,15 +121,27 @@ export function SwapStack({
     if (leaving.current || pending) return;
     leaving.current = true;
     const id = swap.id;
+    // Picking (Swap, or swiped right): no fly-off (phone check 2). Thrown
+    // to the right, the card read as the meal going up and right, while on
+    // Today the swap moves left. So a card you swiped springs back to the
+    // middle while it saves; then the sheet closes and the only movement
+    // is Today's row sliding left (meal-push.tsx). If the save fails, the
+    // card is already where you can try again.
+    if (direction === "pick") {
+      if (reduceMotion) x.jump(0);
+      else if (x.get() !== 0) animate(x, 0, SPRING.settle);
+      finish(direction, id);
+      return;
+    }
     if (reduceMotion) {
       // No fly-off: the next card cross-fades in instead.
       finish(direction, id);
       return;
     }
     setFlyingId(id);
-    const side = direction === "pick" ? 1 : -1;
-    // Far enough to be off any phone screen, quick enough to feel snappy.
-    animate(x, side * Math.max(window.innerWidth, 480), { duration: DURATION.base, ease: EASE_IN }).then(() => {
+    // Skip: off to the left. Far enough to be off any phone screen, quick
+    // enough to feel snappy.
+    animate(x, -Math.max(window.innerWidth, 480), { duration: DURATION.base, ease: EASE_IN }).then(() => {
       // Landed: the card is touchable again if you come Back to it.
       setFlyingId(null);
       if (topId.current === id) finish(direction, id);

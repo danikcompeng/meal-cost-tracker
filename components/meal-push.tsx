@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform } from "framer-motion";
 import { macroText } from "@/lib/macros";
-import { DURATION, EASE_OUT } from "@/lib/motion";
+import { DURATION, EASE_OUT, PUSH_FADE, PUSH_SCALE } from "@/lib/motion";
 import type { MealEntry } from "@/lib/types";
 import { amountText } from "@/lib/units";
 
@@ -25,7 +25,12 @@ import { amountText } from "@/lib/units";
 // It plays only when the meal itself changes (another recipe or food),
 // not when you edit the servings.
 //
-// Reduce Motion: no slide. The new meal fades in where the old one was.
+// Like a carousel moving to the next item (phone check 2): the old meal
+// also shrinks a little and fades as it goes, the new one grows in. Only
+// sideways and scale, never up or down.
+//
+// Reduce Motion: no slide, no scale. The old meal crossfades into the new
+// one in the same spot.
 export function MealPush({ entry }: { entry: MealEntry }) {
   const reduceMotion = useReducedMotion();
   // Which recipe or food this is. null once that recipe or food has been
@@ -49,10 +54,20 @@ export function MealPush({ entry }: { entry: MealEntry }) {
   }
 
   // How far along: 1 = the old meal fully in view, 0 = the new one in
-  // place (and where it rests). The strip's x is that share of its width.
+  // place (and where it rests). Everything below is worked out from this
+  // one number, so the slide, the shrinking and the fading can't drift
+  // apart:
+  // - the strip's x is that share of its width;
+  // - like a carousel, the old meal shrinks to PUSH_SCALE and fades to
+  //   PUSH_FADE as it goes, and the new one grows from PUSH_SCALE. Scale
+  //   is from each meal's centre, so nothing moves up or down.
   const progress = useMotionValue(0);
   const x = useTransform(progress, (p) => `${p * 100}%`);
-  const opacity = useTransform(progress, (p) => 1 - p);
+  const newScale = useTransform(progress, (p) => 1 - (1 - PUSH_SCALE) * p);
+  const oldScale = useTransform(progress, (p) => PUSH_SCALE + (1 - PUSH_SCALE) * p);
+  const oldFade = useTransform(progress, (p) => PUSH_FADE + (1 - PUSH_FADE) * p);
+  // Reduce Motion: a crossfade in place.
+  const newOpacity = useTransform(progress, (p) => 1 - p);
 
   // A meal just left: start from 1 and run to 0, then drop the old meal.
   // A layout effect runs before the browser paints, so no frame shows the
@@ -64,7 +79,7 @@ export function MealPush({ entry }: { entry: MealEntry }) {
     let stopped = false;
     progress.jump(1);
     const controls = animate(progress, 0, {
-      duration: reduceMotion ? DURATION.fast : DURATION.slow,
+      duration: reduceMotion ? DURATION.base : DURATION.slow,
       ease: EASE_OUT,
     });
     controls.then(() => {
@@ -80,15 +95,23 @@ export function MealPush({ entry }: { entry: MealEntry }) {
 
   return (
     <span className="relative flex min-w-0 flex-1 overflow-hidden rounded-lg">
-      <motion.span
-        style={reduceMotion ? { opacity } : { x }}
-        className="relative flex min-w-0 flex-1"
-      >
-        <MealText entry={entry} />
-        {leaving && !reduceMotion && (
-          <span aria-hidden="true" className="absolute inset-y-0 right-full flex w-full">
+      <motion.span style={reduceMotion ? undefined : { x }} className="relative flex min-w-0 flex-1">
+        <motion.span
+          style={reduceMotion ? { opacity: newOpacity } : { scale: newScale }}
+          className="flex min-w-0 flex-1"
+        >
+          <MealText entry={entry} />
+        </motion.span>
+        {leaving && (
+          <motion.span
+            aria-hidden="true"
+            style={reduceMotion ? { opacity: progress } : { scale: oldScale, opacity: oldFade }}
+            // Glued to the new meal's left edge; with Reduce Motion, right
+            // on top of it, for the crossfade.
+            className={`absolute inset-y-0 flex w-full ${reduceMotion ? "left-0" : "right-full"}`}
+          >
             <MealText entry={leaving} />
-          </span>
+          </motion.span>
         )}
       </motion.span>
     </span>

@@ -5,7 +5,10 @@ import {
   EASE_IN,
   EASE_OUT,
   FILL_DURATION,
+  FILL_EASE,
   PRESS_SCALE_WIDE,
+  PUSH_FADE,
+  PUSH_SCALE,
   RUBBER,
   SCALE_FROM,
   SETTLE_DURATION,
@@ -62,9 +65,17 @@ describe("motion tokens: short (150–250 ms)", () => {
     expect(spring.bounce).toBeLessThanOrEqual(0.2);
   });
 
-  it("the ring fill is a named exception, and still under a second", () => {
-    expect(FILL_DURATION).toBeGreaterThan(0.25);
-    expect(FILL_DURATION).toBeLessThan(1);
+  it("the ring fill is a named exception, 1–1.2 s (phone check 2)", () => {
+    expect(FILL_DURATION).toBeGreaterThanOrEqual(1);
+    expect(FILL_DURATION).toBeLessThanOrEqual(1.2);
+  });
+
+  it("the ring curve is a strong ease-out: fast start, long landing", () => {
+    const [x1, y1, x2, y2] = FILL_EASE;
+    // Starts much steeper than the shared EASE_OUT, and lands flat (y2 = 1).
+    expect(y1 / x1).toBeGreaterThan(EASE_OUT[1] / EASE_OUT[0]);
+    expect(y2).toBe(1);
+    expect(x2).toBeGreaterThan(0);
   });
 
   it("the Undo message settling in is the other, slower than a tap but quicker than the rings", () => {
@@ -74,6 +85,13 @@ describe("motion tokens: short (150–250 ms)", () => {
 });
 
 describe("motion tokens: sane values", () => {
+  it("the swap carousel shrinks and fades a little, never away", () => {
+    expect(PUSH_SCALE).toBeGreaterThanOrEqual(0.85);
+    expect(PUSH_SCALE).toBeLessThan(1);
+    expect(PUSH_FADE).toBeGreaterThan(0.3);
+    expect(PUSH_FADE).toBeLessThan(1);
+  });
+
   it("scales shrink a little, never to nothing", () => {
     for (const scale of [SCALE_FROM, PRESS_SCALE_WIDE]) {
       expect(scale).toBeGreaterThan(0.9);

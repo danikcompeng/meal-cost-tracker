@@ -11,7 +11,7 @@ import {
   useTransform,
   type PanInfo,
 } from "framer-motion";
-import { Shuffle } from "lucide-react";
+import { Shuffle, Trash2 } from "lucide-react";
 import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
 import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
@@ -259,11 +259,14 @@ export function EntryRow({
           data-row-delete=""
           style={{ opacity: buttonOpacity }}
           // text-primary-foreground: white on the light red, near-black on
-          // dark mode's lighter red (both pass 4.5:1; see plans/polish.md).
-          // The focus ring is the same colour: matcha wouldn't show on red.
-          className="flex-1 bg-destructive font-medium text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-primary-foreground focus-visible:ring-inset"
+          // dark mode's lighter red (both pass 4.5:1; see plans/polish.md),
+          // for the trash can too. The focus ring is the same colour:
+          // matcha wouldn't show on red.
+          className="flex flex-1 items-center justify-center bg-destructive text-primary-foreground outline-none focus-visible:ring-3 focus-visible:ring-primary-foreground focus-visible:ring-inset"
         >
-          Delete
+          {/* A trash can, not the word (phone check 2). The button's label
+              still says it in words: "Delete Beef and rice". */}
+          <Trash2 aria-hidden="true" className="size-5" />
         </motion.button>
       </div>
     </div>

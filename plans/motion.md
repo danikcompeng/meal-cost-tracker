@@ -462,6 +462,24 @@ judge them). Then the code-reviewer once on the whole branch.
   Settings → Accessibility → Per-App Settings → Safari → Reduce Motion,
   which overrides the main switch.
 
+## Phone check 2 (2026-11-20): what changed
+
+- **Rings:** fill over `FILL_DURATION` 1.1 s on `FILL_EASE`
+  ([0.16, 1, 0.3, 1], "expo-out"): most of the way in a split second,
+  then a long slow landing. Instant with Reduce Motion, as before.
+- **Swiped row:** the red button shows a trash can instead of the word;
+  its label still reads "Delete Beef and rice".
+- **Swap:** the "up and right" was the picked card being thrown right
+  with its tilt. Decided with you: picking no longer throws the card.
+  Swipe right or Swap still picks; a swiped card springs back while it
+  saves, the sheet closes, and the only movement is Today's row. Skip
+  still flies the card left, tilt kept (it follows your finger).
+- **Today's row on a swap:** a carousel. The replaced meal slides left
+  while shrinking to `PUSH_SCALE` (0.9) and fading to `PUSH_FADE` (0.5);
+  the new one comes in from the right growing from 0.9. All from one
+  number, scale from each meal's centre: measured perfectly level.
+  Reduce Motion: a crossfade in place.
+
 ## Decisions for you (I'd pick the first option each time)
 
 - **A. Press on wide rows:** rows and tiles scale to 0.985, buttons to
