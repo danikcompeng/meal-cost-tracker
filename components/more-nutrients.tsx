@@ -72,11 +72,11 @@ export function MoreNutrients({
         </span>
       </button>
 
-      {/* Opens smoothly (collapse.tsx). The extra px-1 / -mx-1 leaves
-          room for the focus ring, which the opening box would otherwise
-          cut off at the sides. */}
-      <Collapse open={isOpen} id="more-nutrients" className="-mx-1">
-        <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
+      {/* Opens smoothly (collapse.tsx). The extra px-2.5 / -mx-2.5 leaves
+          room at the sides for a box's focus ring (3 px) and its shake
+          (6 px), which the opening box would otherwise cut off. */}
+      <Collapse open={isOpen} id="more-nutrients" className="-mx-2.5">
+        <div className="grid grid-cols-2 gap-3 px-2.5 pt-2 pb-1">
           {EXTRA_FIELDS.map(({ key, label, suffix }) => (
             <NutrientInput
               key={key}

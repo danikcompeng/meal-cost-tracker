@@ -83,8 +83,16 @@ export function DaySlide({
     return () => slide?.complete();
   }, [day, reduceMotion]);
   // ...and only then is it updated (plain effects run after all of them).
+  // When Today goes away (another tab; the app keeps it hidden), it's
+  // forgotten: coming back with the tab bar is like opening the app, no
+  // slide, just as Kitchen from the tab bar doesn't slide. Changing day
+  // forgets the old day too, but only after every piece has already
+  // compared against it (layout effects first).
   useEffect(() => {
     lastDay = day;
+    return () => {
+      if (lastDay === day) lastDay = null;
+    };
   }, [day]);
   return (
     <Box inline={inline} boxRef={ref}>

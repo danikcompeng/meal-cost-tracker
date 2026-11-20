@@ -141,7 +141,7 @@ export function SwapSheet({
       // A card with more ingredient chips than the last: the sheet's top
       // glides to the new height instead of jumping. No fade: the card
       // has its own entrance.
-      step={swap?.id ?? "end"}
+      step={swap?.id ?? END}
       stepFade={false}
     >
       {/* A card flying off the side would otherwise make the sheet scroll

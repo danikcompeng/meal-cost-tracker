@@ -14,7 +14,8 @@
 // readers only watch a "status" box for changes if it was already there,
 // so a box that appears together with its text may never be read out.
 
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -39,7 +40,28 @@ export type Toast = {
   focusAfter?: () => void;
 };
 
+// True in the browser once the page is running, false on the server (and
+// while the page first comes alive, so both draw the same thing).
+const noSubscribe = () => () => {};
+function useInBrowser() {
+  return useSyncExternalStore(
+    noSubscribe,
+    () => true,
+    () => false,
+  );
+}
+
 export function UndoToast({ toast, onDismiss }: { toast: Toast | null; onDismiss: () => void }) {
+  // Moved to the end of <body> (a portal) once the page is running.
+  // Today's content slides when you change day (slide-in.tsx), and while
+  // something is moving, a "fixed" box inside it is placed against that
+  // moving box instead of the screen: the message would jump for 200 ms.
+  const inBrowser = useInBrowser();
+  const box = <MessageBox toast={toast} onDismiss={onDismiss} />;
+  return inBrowser ? createPortal(box, document.body) : box;
+}
+
+function MessageBox({ toast, onDismiss }: { toast: Toast | null; onDismiss: () => void }) {
   return (
     <div
       role="status"

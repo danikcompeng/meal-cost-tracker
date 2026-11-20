@@ -28,20 +28,24 @@ import { amountText } from "@/lib/units";
 // Reduce Motion: no slide. The new meal fades in where the old one was.
 export function MealPush({ entry }: { entry: MealEntry }) {
   const reduceMotion = useReducedMotion();
-  const mealKey = `${entry.recipe_id ?? entry.food_id ?? ""}:${entry.name}`;
+  // Which recipe or food this is. null once that recipe or food has been
+  // deleted (the entry keeps its copied name and numbers).
+  const mealId = entry.recipe_id ?? entry.food_id;
   // The entry shown last time, and the meal leaving, if one is.
   // Following a prop by setting state while rendering is React's own
   // pattern for this ("storing information from previous renders"): the
   // old meal and the new one appear in the same frame, no flicker.
-  const [shown, setShown] = useState({ key: mealKey, entry });
+  const [shown, setShown] = useState({ mealId, entry });
   const [leaving, setLeaving] = useState<MealEntry | null>(null);
-  if (mealKey !== shown.key) {
+  // Only a real other recipe or food is a new meal. Deleting the food
+  // turns its id to null: same meal on screen, no slide.
+  if (mealId !== null && mealId !== shown.mealId) {
     setLeaving(shown.entry);
-    setShown({ key: mealKey, entry });
+    setShown({ mealId, entry });
   } else if (entry !== shown.entry) {
-    // Same meal, new numbers (servings edited): keep the latest, so it's
-    // the one that leaves on the next swap.
-    setShown({ key: mealKey, entry });
+    // Same meal, new numbers (servings edited) or its food just deleted:
+    // keep the latest, so it's the one that leaves on the next swap.
+    setShown({ mealId, entry });
   }
 
   // How far along: 1 = the old meal fully in view, 0 = the new one in

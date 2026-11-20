@@ -3,9 +3,9 @@
 // Use these, never a number typed into a component (plans/motion.md).
 //
 // Framer Motion measures time in seconds, so these are seconds too.
-// CSS can't import this file, so the two values CSS needs (the press
-// scale and its duration) are also written in globals.css as --motion-*
-// variables; lib/motion.test.ts checks they match.
+// CSS can't import this file, so the values CSS needs (the two press
+// scales, DURATION.fast and .slow, the ease-out curve) are also written in
+// globals.css as --motion-* variables; lib/motion.test.ts checks they match.
 //
 // The rule: anything that answers a tap lasts 150–250 ms. Springs are
 // written as "visually done in this long, this bouncy" (visualDuration +
@@ -18,7 +18,10 @@ export const DURATION = {
   fast: 0.15,
   /** Most things: messages, slides, opening and closing. */
   base: 0.2,
-  /** The longest allowed: the shake. */
+  /**
+   * The longest allowed: the shake, a deleted row sliding off, the meal
+   * pushed out by a swap, the camera picture fading in.
+   */
   slow: 0.25,
 } as const;
 

@@ -5,8 +5,12 @@
 // its final size, so text doesn't re-wrap on every frame; it's just
 // uncovered. 200 ms, with a fade.
 //
-// Reduce Motion: heights change at once. Framer Motion's own Reduce Motion
-// setting doesn't cover height, so these check it themselves.
+// Reduce Motion: heights change at once. Two kinds of animation here, and
+// they need it handled differently: a <motion.div> goes through
+// MotionProvider, which jumps height straight to its end (so CollapseIn
+// fades instead, or the fade-out would be cut short); a plain element
+// moved with animate() (AutoHeight) skips MotionProvider entirely, so it
+// checks the setting itself.
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
@@ -140,6 +144,10 @@ export function AutoHeight({
     // "hidden", can leave the sides alone): a swap card you're already
     // dragging isn't cut off at the sheet's sides.
     outer.style.overflowY = "clip";
+    // Pinned at the old height now, not when animate() first runs (its
+    // next frame): after a swap card's fly-off this change can land just
+    // after that frame, and the new card would be drawn once full height.
+    outer.style.height = `${from}px`;
     const controls = animate(outer, { height: [from, to] }, transition);
     running.current = controls;
     controls.then(() => {
@@ -196,7 +204,10 @@ export function ErrorLine({
   children,
 }: {
   show: boolean;
-  /** The gap of the stack it's in, as in space-y-4 → "4". None outside a stack. */
+  /**
+   * The space it keeps below it (or above, when it's the last item):
+   * usually its stack's gap, as in space-y-4 → "4". None outside a stack.
+   */
   gap?: keyof typeof GAP;
   /** So a box can point at it (aria-describedby). */
   id?: string;

@@ -453,6 +453,9 @@ export function FoodForm({
       <ErrorLine
         show={Boolean(!pending && state.message)}
         gap="6"
+        // Room at the sides for "Log that one" (it sits 8 px out to the
+        // left) and its focus ring, which the opening box would cut off.
+        boxClassName="-mx-3 px-3"
         after={
           // Its own line, 44 px tall, not a small link inside the
           // sentence.

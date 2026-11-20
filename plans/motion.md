@@ -246,8 +246,10 @@ audit (item 6) has no surprises: **More nutrients** (food form) and the
 **offline strip**.
 
 Reduce Motion: heights change at once, no animation (as the details
-toggle does today). Framer's own Reduce Motion setting doesn't cover
-height, so `<Collapse>` and `<AutoHeight>` check it themselves.
+toggle does today). Corrected while building: Framer's setting does jump
+height to its end on a `<motion.div>` (which would cut a fade-out short,
+so things that appear and go fade only), but an element moved with
+`animate()` skips it, so `<AutoHeight>` checks the setting itself.
 
 ### 6. Audit: transform and opacity only
 

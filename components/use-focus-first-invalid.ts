@@ -35,7 +35,14 @@ export function useFocusFirstInvalid(form: RefObject<HTMLFormElement | null>, an
     return () => element.removeEventListener("submit", remember, { capture: true });
   }, [form]);
 
+  // The answer already acted on. The app keeps pages you visited alive but
+  // hidden, and showing one again re-runs its effects with the same old
+  // answer: without this, coming back to Settings would focus and shake
+  // the red box again. A ref survives the page being hidden.
+  const handled = useRef(answer);
   useEffect(() => {
+    if (answer === handled.current) return;
+    handled.current = answer;
     if (answer.ok) return;
     const element = form.current;
     if (!element) return;
@@ -47,6 +54,5 @@ export function useFocusFirstInvalid(form: RefObject<HTMLFormElement | null>, an
       const button = submitter.current ?? element.querySelector<HTMLElement>('[type="submit"]');
       if (button) shake([button]);
     }
-    // Only for a new answer from the server, not on every redraw.
   }, [answer, form]);
 }
