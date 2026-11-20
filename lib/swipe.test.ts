@@ -1,5 +1,22 @@
 import { describe, expect, it } from "vitest";
-import { FLICK_SPEED, REVEAL, restsOpen } from "./swipe";
+import { FLICK_SPEED, REVEAL, restsOpen, throwVelocity } from "./swipe";
+
+describe("throwVelocity", () => {
+  it("keeps a hard flick's own speed", () => {
+    expect(throwVelocity(-3000, -1, 1500)).toBe(-3000);
+    expect(throwVelocity(2400, 1, 1500)).toBe(2400);
+  });
+
+  it("is at least the minimum: a tap or an arrow key has no speed", () => {
+    expect(throwVelocity(0, -1, 1500)).toBe(-1500);
+    expect(throwVelocity(-200, -1, 1500)).toBe(-1500);
+  });
+
+  it("never flies the wrong way after a flick back towards the middle", () => {
+    expect(throwVelocity(900, -1, 1500)).toBe(-1500);
+    expect(throwVelocity(-900, 1, 1500)).toBe(1500);
+  });
+});
 
 describe("restsOpen", () => {
   const third = REVEAL / 3;

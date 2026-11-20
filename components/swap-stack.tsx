@@ -17,7 +17,8 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "re
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DURATION, EASE_IN, EASE_OUT, PUSH_FADE, PUSH_SCALE, SCALE_FROM, SPRING } from "@/lib/motion";
+import { DURATION, EASE_OUT, PUSH_FADE, PUSH_SCALE, RUBBER, SCALE_FROM, SPRING, THROW_SPEED } from "@/lib/motion";
+import { throwVelocity } from "@/lib/swipe";
 import type { RankedSwap } from "@/lib/swap";
 import { SwapCard } from "./swap-card";
 
@@ -60,11 +61,16 @@ export function SwapStack({
   const reduceMotion = useReducedMotion();
   const pending = pendingLabel !== null;
   const x = useMotionValue(0);
+  // Up and down: only ever a rubber-band stretch that springs back (item
+  // 10), never a move of its own.
+  const y = useMotionValue(0);
   // The card stays flat: no tilt, ever (phone check 2). It only moves
   // sideways, and on Skip also shrinks and fades a little as it slides off,
   // like the Today row's carousel (PUSH_SCALE, PUSH_FADE).
   const scale = useMotionValue(1);
   const opacity = useMotionValue(1);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const canStretchY = useCanStretchY(cardRef);
   const pickOpacity = useTransform(x, [16, COMMIT_DISTANCE], [0, 1]);
   const skipOpacity = useTransform(x, [-COMMIT_DISTANCE, -16], [1, 0]);
 
@@ -90,10 +96,11 @@ export function SwapStack({
   useLayoutEffect(() => {
     topId.current = swap.id;
     x.jump(0);
+    y.jump(0);
     scale.jump(1);
     opacity.jump(1);
     leaving.current = false;
-  }, [swap.id, x, scale, opacity]);
+  }, [swap.id, x, y, scale, opacity]);
 
   // Closing the sheet mid-flight: stop the animation, so it can't open a
   // recipe (or, on Today, swap your meal) after you said no. `alive` stops
@@ -104,10 +111,28 @@ export function SwapStack({
     return () => {
       alive.current = false;
       x.stop();
+      y.stop();
       scale.stop();
       opacity.stop();
     };
-  }, [x, scale, opacity]);
+  }, [x, y, scale, opacity]);
+
+  /**
+   * Back to the middle, carrying your finger's speed so it doesn't stall
+   * (item 9); with reduced motion, at once. Also after a gesture that
+   * doesn't count: Framer only springs the card back by itself after a
+   * drag, and after a scroll or a tap that caught it mid-slide it would
+   * stay part-way off.
+   */
+  function toMiddle(velocity = { x: 0, y: 0 }) {
+    if (reduceMotion) {
+      x.jump(0);
+      y.jump(0);
+      return;
+    }
+    animate(x, 0, { ...SPRING.settle, velocity: velocity.x });
+    animate(y, 0, { ...SPRING.settle, velocity: velocity.y });
+  }
 
   /** Hand the card over; if a save says it didn't work, bring it back. */
   function finish(direction: SwapDirection, id: string) {
@@ -118,11 +143,12 @@ export function SwapStack({
       leaving.current = false;
       // A pick never leaves (see commit), so the card is already in the
       // middle; this only makes sure it's settled there.
-      if (!reduceMotion) animate(x, 0, SPRING.settle);
+      toMiddle();
     });
   }
 
-  function commit(direction: SwapDirection) {
+  /** `velocity`: your finger's speed when you let go; 0 for a tap or a key. */
+  function commit(direction: SwapDirection, velocity = { x: 0, y: 0 }) {
     if (leaving.current || pending) return;
     leaving.current = true;
     const id = swap.id;
@@ -133,8 +159,7 @@ export function SwapStack({
     // is Today's row sliding left (meal-push.tsx). If the save fails, the
     // card is already where you can try again.
     if (direction === "pick") {
-      if (reduceMotion) x.jump(0);
-      else if (x.get() !== 0) animate(x, 0, SPRING.settle);
+      toMiddle(velocity);
       finish(direction, id);
       return;
     }
@@ -144,29 +169,41 @@ export function SwapStack({
       return;
     }
     setFlyingId(id);
-    // Skip: straight off to the left, flat, shrinking and fading a little
-    // as it goes, like the Today row's carousel. Far enough to be off any
-    // phone screen, quick enough to feel snappy. The three run on the same
-    // timing, so they finish together.
-    const leave = { duration: DURATION.base, ease: EASE_IN };
-    animate(scale, PUSH_SCALE, leave);
-    animate(opacity, PUSH_FADE, leave);
-    animate(x, -Math.max(window.innerWidth, 480), leave).then(() => {
-      // Landed: the card is touchable again if you come Back to it.
+    // Any up/down stretch goes back as it leaves: it leaves level.
+    animate(y, 0, { ...SPRING.settle, velocity: velocity.y });
+    // Skip: straight off to the left, flat (item 9). A spring that starts
+    // at your finger's speed, so a hard flick doesn't slow down as you let
+    // go, and at least THROW_SPEED, so a tap on Skip or ← still sends it
+    // off briskly. It counts as gone the moment it's fully past the
+    // screen's left edge, not when the spring finally comes to rest, so
+    // the next card isn't kept waiting.
+    const card = cardRef.current?.getBoundingClientRect();
+    const offScreen = x.get() - (card?.right ?? 480);
+    // Shrinking and fading a little as it goes, like the Today row's
+    // carousel: worked out from how far it has travelled, so the three
+    // can't drift apart.
+    const stopFollowing = x.on("change", (now) => {
+      const share = Math.min(Math.max(now / offScreen, 0), 1);
+      scale.set(1 - (1 - PUSH_SCALE) * share);
+      opacity.set(1 - (1 - PUSH_FADE) * share);
+      if (now > offScreen) return;
+      stopFollowing();
+      // Stopped here, so nothing moves the card once the next one is up
+      // (the old "then" that ran late under next dev and left the next
+      // card off-screen, plans/motion.md item 9).
+      x.stop();
+      // Gone: the card is touchable again if you come Back to it.
       setFlyingId(null);
       if (topId.current === id) finish(direction, id);
     });
+    // Aims well past the edge, so it's still going full speed when it
+    // crosses it.
+    animate(x, offScreen * 2, { ...SPRING.sheet, velocity: throwVelocity(velocity.x, -1, THROW_SPEED) });
   }
 
-  /**
-   * Back to the middle after a gesture that doesn't count. Framer only
-   * springs the card back by itself after a sideways drag; after a scroll
-   * or a tap that caught it mid-slide it would stay part-way off.
-   */
   function settle() {
     if (leaving.current) return;
-    if (reduceMotion) x.jump(0);
-    else animate(x, 0, SPRING.settle);
+    toMiddle();
   }
 
   function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) {
@@ -175,15 +212,19 @@ export function SwapStack({
     // finger's speed even for a scroll, so a quick scroll that drifts a
     // little sideways would otherwise look like a flick and skip a card
     // or swap your meal. Same fix as Today's swipe row (entry-row.tsx).
+    // Up/down (the rubber band) or a scroll: back to the middle, carrying
+    // the speed of an up/down pull.
     if (!sideways.current || event.type === "pointercancel") {
-      settle();
+      if (!leaving.current) toMiddle({ x: 0, y: velocity.y });
       return;
     }
     // A fast flick only counts towards the side the card is on: pulling
     // back quickly towards the middle means "never mind".
-    if (offset.x > COMMIT_DISTANCE || (offset.x > 0 && velocity.x > COMMIT_SPEED)) commit("pick");
-    else if (offset.x < -COMMIT_DISTANCE || (offset.x < 0 && velocity.x < -COMMIT_SPEED)) commit("skip");
-    // Otherwise nothing to do: dragConstraints (0, 0) springs it back.
+    if (offset.x > COMMIT_DISTANCE || (offset.x > 0 && velocity.x > COMMIT_SPEED)) commit("pick", velocity);
+    else if (offset.x < -COMMIT_DISTANCE || (offset.x < 0 && velocity.x < -COMMIT_SPEED))
+      commit("skip", velocity);
+    // "Never mind": springs back to the middle with your speed.
+    else toMiddle(velocity);
   }
 
   // Arrow keys: ← skip, → pick. Only while this stack is on screen, not
@@ -232,13 +273,19 @@ export function SwapStack({
           <motion.div
             // Not draggable while it flies off: a touch would stop the
             // flight halfway and leave the card stuck.
-            drag={flying ? false : "x"}
-            // Framer sets touch-action: pan-y for a sideways drag, so you can
-            // still scroll the sheet with your finger on the card; this
-            // decides which way you meant after a few pixels.
+            // Sideways it follows your finger. Up and down it stretches on
+            // a rubber band (RUBBER) and springs back, but only when the
+            // sheet has nothing to scroll (or with a mouse): dragging up
+            // and down makes the browser stop scrolling the sheet when your
+            // finger is on the card, and on a small phone the swap sheet
+            // can be taller than the screen. Then up/down keeps scrolling
+            // it (Framer sets touch-action: pan-y for a sideways-only drag).
+            drag={flying ? false : canStretchY ? true : "x"}
+            // Decides which way you meant after a few pixels, and sticks
+            // to it: a sideways swipe never drifts up or down.
             dragDirectionLock
-            dragElastic={0.9}
-            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={{ left: 0.9, right: 0.9, top: RUBBER, bottom: RUBBER }}
+            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
             onPointerDownCapture={() => {
               sideways.current = false;
             }}
@@ -252,7 +299,8 @@ export function SwapStack({
               sideways.current = axis === "x";
             }}
             onDragEnd={handleDragEnd}
-            style={{ x, scale, opacity }}
+            ref={cardRef}
+            style={{ x, y, scale, opacity }}
             className={`relative ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
           >
             <SwapCard swap={swap} servings={servings} />
@@ -315,6 +363,40 @@ export function SwapStack({
       </p>
     </div>
   );
+}
+
+/**
+ * May the card stretch up and down (item 10)? With a mouse, always. With a
+ * finger, only while the sheet it's in has nothing to scroll: otherwise an
+ * up/down drag on the card has to keep scrolling the sheet. Measured again
+ * whenever the sheet or its content changes size.
+ */
+function useCanStretchY(cardRef: RefObject<HTMLElement | null>) {
+  const [canStretch, setCanStretch] = useState(false);
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+    // The nearest box around the card that scrolls up and down: the sheet.
+    let scroller: HTMLElement | null = card.parentElement;
+    while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) {
+      scroller = scroller.parentElement;
+    }
+    const mouse = window.matchMedia("(pointer: fine)");
+    const measure = () =>
+      setCanStretch(mouse.matches || !scroller || scroller.scrollHeight <= scroller.clientHeight);
+    measure();
+    const observer = new ResizeObserver(measure);
+    if (scroller) {
+      observer.observe(scroller);
+      if (scroller.firstElementChild) observer.observe(scroller.firstElementChild);
+    }
+    mouse.addEventListener("change", measure);
+    return () => {
+      observer.disconnect();
+      mouse.removeEventListener("change", measure);
+    };
+  }, [cardRef]);
+  return canStretch;
 }
 
 // A card-shaped sliver behind the top card. Empty and hidden from screen

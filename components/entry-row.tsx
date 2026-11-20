@@ -12,7 +12,7 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { Shuffle, Trash2 } from "lucide-react";
-import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
+import { DURATION, EASE_IN, RUBBER, SPRING } from "@/lib/motion";
 import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
 import { MealPush } from "./meal-push";
@@ -84,12 +84,30 @@ export function EntryRow({
     openRef.current = open;
   });
 
-  /** Slide to open or shut; with reduced motion, jump there. */
+  /**
+   * Slide to open or shut; with reduced motion, jump there.
+   * `velocity`: your finger's speed when you let go (px/s). The spring
+   * starts at that speed (plans/motion.md, item 9), so a quick flick shoots
+   * open and settles while a slow push eases in. Past a limit (pulled right
+   * of shut, or left of Delete) it springs back with a hint of bounce
+   * (SPRING.settle); otherwise it snaps (SPRING.snap).
+   * Already heading there (the page confirming the open you just swiped):
+   * left alone, because starting again would measure the speed afresh and
+   * lose the flick.
+   */
+  const heading = useRef<number | null>(null);
   const settle = useCallback(
-    (toOpen: boolean) => {
+    (toOpen: boolean, velocity?: number) => {
       const target = toOpen ? -REVEAL : 0;
-      if (reduceMotion) x.jump(target);
-      else animate(x, target, SPRING.snap);
+      if (reduceMotion) {
+        x.jump(target);
+        return;
+      }
+      if (velocity === undefined && x.isAnimating() && heading.current === target) return;
+      heading.current = target;
+      const now = x.get();
+      const pastLimit = now > 0 || now < -REVEAL;
+      animate(x, target, { ...(pastLimit ? SPRING.settle : SPRING.snap), velocity: velocity ?? x.getVelocity() });
     },
     [reduceMotion, x],
   );
@@ -132,8 +150,8 @@ export function EntryRow({
       settle(openRef.current);
       return;
     }
-    const toOpen = restsOpen(x.get(), velocity.x);
-    settle(toOpen);
+    const toOpen = restsOpen(x.get(), velocity.x);    // Carries your finger's speed into the spring.
+    settle(toOpen, velocity.x);
     if (toOpen !== openRef.current) onOpenChange(toOpen);
   }
 
@@ -159,10 +177,14 @@ export function EntryRow({
         // still scrolls with your finger on a row; this decides which way
         // you meant after a few pixels.
         dragDirectionLock
-        // Between shut (0) and open (the button's width), with a little
-        // give past the button and none to the right: no full swipe.
+        // Between shut (0) and open (the button's width). Past either end
+        // it still follows your finger, but on a rubber band (RUBBER: 1 px
+        // for every 5), and springs back when you let go (settle): pulled
+        // right while shut, or left past Delete. No full swipe to delete.
+        // With Reduce Motion it still stretches (your finger moves it) and
+        // goes back at once.
         dragConstraints={{ left: -REVEAL, right: 0 }}
-        dragElastic={{ left: 0.1, right: 0 }}
+        dragElastic={RUBBER}
         // No coasting after you let go: settle() decides where it rests.
         dragMomentum={false}
         onPointerDownCapture={() => {

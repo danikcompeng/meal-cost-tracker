@@ -16,6 +16,19 @@ export const FLICK_SPEED = 500;
  * past a third of the button's width stays open, less snaps shut. The same
  * rule from either end, so swiping an open row back closes it.
  */
+/**
+ * How fast (px per second, signed) a card is thrown off towards `side`
+ * (-1 left, 1 right) when you let go: your finger's own speed, so a hard
+ * flick keeps its pace instead of slowing as you let go, but at least
+ * `min`, so a tap on Skip or an arrow key (speed 0) still sends it off
+ * briskly. Only speed towards that side counts: a flick back towards the
+ * middle just before letting go never makes it fly the wrong way.
+ */
+export function throwVelocity(release: number, side: -1 | 1, min: number): number {
+  const towardsSide = release * side;
+  return side * Math.max(towardsSide, min);
+}
+
 export function restsOpen(position: number, velocity: number): boolean {
   if (velocity < -FLICK_SPEED) return true;
   if (velocity > FLICK_SPEED) return false;
