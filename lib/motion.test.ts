@@ -1,6 +1,17 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { DURATION, EASE_IN, EASE_OUT, FILL_DURATION, PRESS_SCALE_WIDE, RUBBER, SCALE_FROM, SHAKE_X, SPRING } from "./motion";
+import {
+  DURATION,
+  EASE_IN,
+  EASE_OUT,
+  FILL_DURATION,
+  PRESS_SCALE_WIDE,
+  RUBBER,
+  SCALE_FROM,
+  SETTLE_DURATION,
+  SHAKE_X,
+  SPRING,
+} from "./motion";
 
 // The CSS copies of the motion tokens, read from app/globals.css, so this
 // fails the moment one side changes without the other. Comments are
@@ -47,9 +58,14 @@ describe("motion tokens: short (150–250 ms)", () => {
     expect(spring.bounce).toBeLessThanOrEqual(0.2);
   });
 
-  it("the ring fill is the one named exception, and still under a second", () => {
+  it("the ring fill is a named exception, and still under a second", () => {
     expect(FILL_DURATION).toBeGreaterThan(0.25);
     expect(FILL_DURATION).toBeLessThan(1);
+  });
+
+  it("the Undo message settling in is the other, slower than a tap but quicker than the rings", () => {
+    expect(SETTLE_DURATION).toBeGreaterThan(DURATION.slow);
+    expect(SETTLE_DURATION).toBeLessThan(FILL_DURATION);
   });
 });
 

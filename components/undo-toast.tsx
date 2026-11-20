@@ -18,7 +18,7 @@ import { useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DURATION, EASE_IN, EASE_OUT, SCALE_FROM } from "@/lib/motion";
+import { DURATION, EASE_IN, EASE_OUT, SCALE_FROM, SETTLE_DURATION } from "@/lib/motion";
 
 /** Why Undo didn't work. `final`: trying again can't help. */
 export type UndoProblem = { message: string; final: boolean };
@@ -111,11 +111,12 @@ function Message({ toast, onDismiss }: { toast: Toast; onDismiss: () => void }) 
 
   return (
     // Settles in from scale 0.97, growing from its bottom edge (the side
-    // nearest the tab bar), and leaves the same way, a little quicker.
+    // nearest the tab bar), slowly (SETTLE_DURATION), and leaves the same
+    // way, quickly.
     <motion.div
       ref={ref}
       initial={{ scale: from, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1, transition: { duration: DURATION.base, ease: EASE_OUT } }}
+      animate={{ scale: 1, opacity: 1, transition: { duration: SETTLE_DURATION, ease: EASE_OUT } }}
       exit={{ scale: from, opacity: 0, transition: { duration: DURATION.fast, ease: EASE_IN } }}
       className="surface-raised pointer-events-auto flex origin-bottom min-h-13 items-center gap-1 rounded-2xl border border-border bg-popover py-1 pr-1 pl-4"
     >

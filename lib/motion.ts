@@ -29,6 +29,14 @@ export const DURATION = {
  */
 export const FILL_DURATION = 0.8;
 
+/**
+ * The second exception (phone check 1, 2026-11-20): the Undo message
+ * settling in above the tab bar. At 200 ms it popped in. It doesn't answer
+ * the tap itself (the row sliding away does that); it's a message arriving
+ * beside it, so it can take its time. Leaving stays DURATION.fast.
+ */
+export const SETTLE_DURATION = 0.4;
+
 /** Things arriving: start fast, land softly. */
 export const EASE_OUT = [0.22, 1, 0.36, 1] as const;
 /** Things leaving: start slow, speed away. */
