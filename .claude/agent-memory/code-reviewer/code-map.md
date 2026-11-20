@@ -53,7 +53,7 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   Step 2: swap-sheet.tsx (index, Back, counter, live region, end/empty), swap-stack.tsx (shared
   x motion value, leaving ref, animate().then -> onCommit, window arrow keys), swap-card.tsx,
   swap-empty.tsx (SwapEmpty, SwapEnd), swap-button.tsx; recipe-view "swap" sheet, onPick =
-  router.push. MotionConfig reducedMotion="user" in recipe-view, recipe-list, scan-flow, today-view.
+  router.push. (MotionConfig now once in app/layout.tsx via components/motion-provider.tsx.)
   Step 3: swapEntry / undoSwap in entry-actions.ts (SwapResult type), validateSwap / swappedFrom /
   validateUndoSwap / UNDO_CHANGED in entry-validation.ts, isUuid in lib/ids.ts,
   swapCurrentFromEntry in swap.ts. today-view.tsx pickSwap (useTransition, returns
@@ -77,6 +77,10 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   (oklchToRgb, contrast, over, parseOklch, propertiesIn) + color.test.ts parses globals.css.
   components/icon-swap.tsx (torch). Every bg-popover (sheet, duplicate dialog, toast, log-out
   box, ScanPanel) carries surface-raised.
+- Motion pass (plans/motion.md, branch motion, 2026-11-18): lib/motion.ts tokens (DURATION, SPRING
+  as visualDuration+bounce, SCALE_FROM 0.97, PRESS_SCALE_WIDE 0.985, FILL_DURATION 0.8 exception) +
+  --motion-* in globals.css :root, checked by lib/motion.test.ts. @utility press / press-wide
+  (globals.css); entry-row sets data-dragging by ref. MotionProvider in app/layout.tsx.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

@@ -365,3 +365,16 @@ metadata:
   vs icon-semibold, plan -4px example (Tailwind compiles it from the .md); CLAUDE.md greyed 5.4
   -> 5.0 in dark sheets; stale swap-empty/Peek comments; segmented track #141414 in #2A2A2A sheet
   (design question); WHY-comment for @theme inline dependency.
+- 2026-11-18 motion pass commits 33de7f5/24a95ca/09357e8 (tokens, entering 0.97, press): Minor issues.
+  Verified: compiled CSS (.next) has press :not(...) list + entry-row :not([data-dragging]):has(>
+  [data-entry-open]:active) inside no-preference media; every busy Button = disabled +
+  focusableWhenDisabled (aria-disabled), log-out/error/Start over aria-disabled; no press element has a
+  second transition-*; motion-dom gestures never preventDefault pointerdown (:active still works);
+  data-dragging cleared on pointerdown/up/cancel/dragEnd, stuck only disables press; swap icon doesn't
+  shrink the row; toast status box + mode="wait" fine. Raised: food-list exit height (and recipe-list,
+  recipe-view) now jumps under Reduce Motion -> row vanishes, no fade (Foods newly under MotionConfig);
+  swap icon stays 0.97 through a swipe started on it (data-dragging on parent only); toast exit snaps
+  to 0.97 under Reduce Motion; swap card y entrance frozen by a press (drag stopAnimation stops x AND y,
+  pre-existing y 8); "MotionConfig doesn't cover height" comment 3rd time (motion-provider:9-10,
+  offline-strip:23, plan item 5); duration-150 left in scan-frame/summary-rings; test regex = first
+  match anywhere. Couldn't diff: old spring mapping unknown (gave zeta/overshoot table).

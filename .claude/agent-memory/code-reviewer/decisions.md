@@ -52,5 +52,10 @@ Per feature (all approved, don't re-raise)
   edit-form deleteError precedence + Yes-delete focus/role=alert, last row in a meal has no exit,
   first-use return hides the toast, VoiceOver activeElement (phone test). Already-deleted = no Undo.
 
+- Motion (2026-11-18, plans/motion.md, decisions A-F first option except D = own account): rows
+  press 0.985, buttons 0.97 (all Buttons, full-width ones too); row exit keeps height (B); ring fill
+  800 ms is the one exception (C); no press on swap card, Delete strip, text links, rings, switch,
+  inputs. Items 3-10 built later, one commit each; reviewer runs before each phone check.
+
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).
