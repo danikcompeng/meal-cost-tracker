@@ -4,37 +4,29 @@
 // save isn't the first you hear of it. It stays at the top while you
 // scroll, and slides away when you're back online.
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { DURATION, EASE_OUT } from "@/lib/motion";
+import { AnimatePresence } from "framer-motion";
+import { CollapseIn } from "./collapse";
 import { useOnline } from "./use-online";
 
 export function OfflineStrip() {
   const online = useOnline();
-  const reduceMotion = useReducedMotion();
 
   return (
     // The status is always on the page (empty and 0 px tall while online),
     // so screen readers notice when the words appear inside it and read
     // them out once. sticky: it stays in view however far you've scrolled.
     <div role="status" className="sticky top-0 z-20 bg-background">
+      {/* Opens its space as it fades in, and closes as it goes; with
+          Reduce Motion, a plain fade (collapse.tsx). */}
       <AnimatePresence initial={false}>
         {!online && (
-          <motion.div
-            // With Reduce Motion, Framer (MotionProvider) would jump the
-            // height to its end, taking the fade-out with it, so it's
-            // checked here: a plain fade, no growing.
-            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-            animate={reduceMotion ? { opacity: 1 } : { opacity: 1, height: "auto" }}
-            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-            transition={{ duration: DURATION.base, ease: EASE_OUT }}
-            className="overflow-hidden"
-          >
+          <CollapseIn>
             <div className="mx-auto w-full max-w-lg px-4 py-2">
               <p className="rounded-lg bg-card px-3 py-2 text-center text-label text-muted-foreground">
                 You’re offline. Nothing can be saved or loaded until you’re back online.
               </p>
             </div>
-          </motion.div>
+          </CollapseIn>
         )}
       </AnimatePresence>
     </div>

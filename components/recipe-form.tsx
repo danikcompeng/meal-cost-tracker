@@ -13,6 +13,7 @@ import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
 import { createRecipe, updateRecipe } from "@/lib/recipe-actions";
 import type { FormState } from "@/lib/types";
 import { unitWordForTyped } from "@/lib/units";
+import { ErrorLine } from "./collapse";
 import { Field, errorId } from "./form-field";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
@@ -96,11 +97,9 @@ export function RecipeForm({
 
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. */}
-      {!pending && state.message && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message}
-        </p>
-      )}
+      <ErrorLine show={Boolean(!pending && state.message)} gap="5">
+        {state.message}
+      </ErrorLine>
 
       {/* Keeps keyboard focus while it works. */}
       <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">

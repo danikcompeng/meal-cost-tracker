@@ -15,6 +15,7 @@ import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { nutrientsForAmount } from "@/lib/nutrition";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
+import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
@@ -104,11 +105,9 @@ export function LogFoodForm({
 
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. */}
-      {!pending && (state.message ?? errors.day ?? errors.foodId ?? errors.meal) && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message ?? errors.day ?? errors.foodId ?? errors.meal}
-        </p>
-      )}
+      <ErrorLine show={Boolean(!pending && (state.message ?? errors.day ?? errors.foodId ?? errors.meal))} gap="5">
+        {state.message ?? errors.day ?? errors.foodId ?? errors.meal}
+      </ErrorLine>
 
       {/* Keeps keyboard focus while it works. */}
       <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">

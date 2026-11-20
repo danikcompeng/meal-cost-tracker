@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
 import { verifyLoginCode } from "@/lib/auth-actions";
+import { ErrorLine } from "./collapse";
 import { errorId } from "./form-field";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
@@ -76,20 +77,16 @@ export function LoginCodeForm({
           aria-invalid={Boolean(error)}
           aria-describedby={!pending && error ? `code-hint ${errorId("code")}` : "code-hint"}
         />
-        {!pending && error && (
-          <p id={errorId("code")} role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        <ErrorLine show={Boolean(!pending && error)} gap="1.5" id={errorId("code")}>
+          {error}
+        </ErrorLine>
       </div>
       {/* Not about the code itself: no connection, or Supabase down.
           Hidden while trying again, so a second failure with the same
           words still shows up and is read out. */}
-      {!pending && state.message && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message}
-        </p>
-      )}
+      <ErrorLine show={Boolean(!pending && state.message)} gap="4">
+        {state.message}
+      </ErrorLine>
       {/* Keeps keyboard focus while it works. */}
       <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full">
         {pending ? "Logging in…" : "Log in"}

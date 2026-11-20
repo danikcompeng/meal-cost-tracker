@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { keepOnFailure } from "@/lib/action-call";
 import { deleteRecipe } from "@/lib/recipe-actions";
+import { ErrorLine } from "./collapse";
 
 export function DeleteRecipe({ recipeId }: { recipeId: string }) {
   const router = useRouter();
@@ -40,12 +41,10 @@ export function DeleteRecipe({ recipeId }: { recipeId: string }) {
 
   return (
     <div className="mt-3 space-y-2">
-      {/* role="alert": read out as soon as it appears. */}
-      {error && (
-        <p role="alert" className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      {/* Read out as soon as it appears; opens its space smoothly. */}
+      <ErrorLine show={Boolean(error)} gap="2">
+        {error}
+      </ErrorLine>
       {confirming ? (
         <div className="space-y-2 text-center">
           <p className="text-sm">

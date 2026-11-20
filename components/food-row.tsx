@@ -8,6 +8,7 @@ import { pricePerUnit, unitPriceLabel } from "@/lib/cost";
 import { basisLabel, hasAnyMacro, macroText } from "@/lib/macros";
 import type { Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { ErrorLine } from "./collapse";
 
 export function FoodRow({
   food,
@@ -165,12 +166,11 @@ export function FoodRow({
         </div>
       )}
       {/* Outside the row's button (inside, it was read as part of the
-          button's name), and read out as soon as it appears. */}
-      {error && (
-        <p role="alert" className="-mt-2 pb-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
+          button's name), and read out as soon as it appears. Tucked 8 px
+          up under the row, as before, and opens its space smoothly. */}
+      <ErrorLine show={Boolean(error)} boxClassName="relative -top-2" className="pb-1">
+        {error}
+      </ErrorLine>
     </div>
   );
 }

@@ -5,9 +5,10 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { missingNote, type DayTotals } from "@/lib/day-totals";
-import { DURATION, EASE_OUT } from "@/lib/motion";
+import { DURATION } from "@/lib/motion";
 import { costLine, DETAILS_COOKIE, summarySlots } from "@/lib/summary";
 import { hasAnyTarget, progress, type Targets } from "@/lib/targets";
+import { Collapse } from "./collapse";
 import { SummaryDetails } from "./summary-details";
 import { SummaryRings } from "./summary-rings";
 
@@ -90,23 +91,14 @@ export function DaySummary({
         </motion.span>
       </button>
 
-      {/* Height can't be skipped by Framer Motion's reduced-motion setting
-          (it only skips movement like slides), so it's turned off here.
-          initial={false}: if the cookie says open, it starts open with no
-          animation. inert keeps the folded rows out of Tab and screen
+      {/* Opens smoothly (collapse.tsx). If the cookie says open, it starts
+          open with no animation; folded, its rows are out of Tab and screen
           readers. */}
-      <motion.div
-        id="summary-details"
-        initial={false}
-        animate={{ height: open ? "auto" : 0, opacity: open ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : DURATION.base, ease: EASE_OUT }}
-        className="overflow-hidden"
-        inert={!open}
-      >
+      <Collapse open={open} id="summary-details">
         <div className="pt-2 pb-4">
           <SummaryDetails totals={totals} kcal={kcal} slots={slots} />
         </div>
-      </motion.div>
+      </Collapse>
 
       <p className="text-center text-label text-muted-foreground tabular-nums">
         {costLine(totals.cost, isToday)}

@@ -1,4 +1,5 @@
 import { Label } from "@/components/ui/label";
+import { ErrorLine } from "./collapse";
 
 /**
  * The id of a field's error line, so its box can point at it:
@@ -30,11 +31,11 @@ export function Field({
         {label}
       </Label>
       {children}
-      {error && (
-        <p id={errorId(htmlFor)} className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      {/* Opens its space smoothly (collapse.tsx). Not an alert: after
+          Save, focus moves to the box, which reads this line with it. */}
+      <ErrorLine show={Boolean(error)} gap="1.5" id={errorId(htmlFor)} alert={false}>
+        {error}
+      </ErrorLine>
     </div>
   );
 }

@@ -11,7 +11,8 @@
 import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { DURATION, EASE_OUT } from "@/lib/motion";
+import { DURATION } from "@/lib/motion";
+import { Collapse } from "./collapse";
 import { NutrientInput } from "./nutrient-input";
 
 export type ExtraField = "sugar" | "fiber" | "saturatedFat" | "sodium";
@@ -71,18 +72,10 @@ export function MoreNutrients({
         </span>
       </button>
 
-      {/* Height can't be skipped by Framer Motion's reduced-motion setting
-          (it only skips movement like slides), so it's turned off here. */}
-      <motion.div
-        id="more-nutrients"
-        initial={false}
-        animate={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
-        transition={{ duration: reduceMotion ? 0 : DURATION.base, ease: EASE_OUT }}
-        // The extra px-1 / -mx-1 leaves room for the focus ring, which
-        // overflow-hidden would otherwise cut off at the sides.
-        className="-mx-1 overflow-hidden"
-        inert={!isOpen}
-      >
+      {/* Opens smoothly (collapse.tsx). The extra px-1 / -mx-1 leaves
+          room for the focus ring, which the opening box would otherwise
+          cut off at the sides. */}
+      <Collapse open={isOpen} id="more-nutrients" className="-mx-1">
         <div className="grid grid-cols-2 gap-3 px-1 pt-2 pb-1">
           {EXTRA_FIELDS.map(({ key, label, suffix }) => (
             <NutrientInput
@@ -98,7 +91,7 @@ export function MoreNutrients({
             />
           ))}
         </div>
-      </motion.div>
+      </Collapse>
     </div>
   );
 }

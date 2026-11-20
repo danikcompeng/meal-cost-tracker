@@ -13,6 +13,7 @@ import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { scaleSnapshot } from "@/lib/nutrition";
 import type { FormState, MealEntry } from "@/lib/types";
 import { AmountField } from "./amount-field";
+import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
 import { SwapButton } from "./swap-button";
@@ -117,12 +118,10 @@ export function EditEntryForm({
         onChange={setMeal}
       />
 
-      {/* role="alert": read out as soon as it appears. */}
-      {message && (
-        <p role="alert" className="text-sm text-destructive">
-          {message}
-        </p>
-      )}
+      {/* Read out as soon as it appears; opens its space smoothly. */}
+      <ErrorLine show={Boolean(message)} gap="5">
+        {message}
+      </ErrorLine>
 
       {/* focusableWhenDisabled: while it works the button waits but keeps
           keyboard focus (plain disabled would drop it to the page). */}

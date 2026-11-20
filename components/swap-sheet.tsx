@@ -22,6 +22,7 @@ import {
   type SwapCurrent,
 } from "@/lib/swap";
 import { BottomSheet } from "./bottom-sheet";
+import { ErrorLine } from "./collapse";
 import { SwapEmpty, SwapEnd } from "./swap-empty";
 import { SwapStack } from "./swap-stack";
 
@@ -134,7 +135,15 @@ export function SwapSheet({
   }
 
   return (
-    <BottomSheet title={`Instead of ${current.name}`} onClose={onClose}>
+    <BottomSheet
+      title={`Instead of ${current.name}`}
+      onClose={onClose}
+      // A card with more ingredient chips than the last: the sheet's top
+      // glides to the new height instead of jumping. No fade: the card
+      // has its own entrance.
+      step={swap?.id ?? "end"}
+      stepFade={false}
+    >
       {/* A card flying off the side would otherwise make the sheet scroll
           sideways. "clip" (not "hidden") cuts it off at the sheet's edge
           without turning this box into a scroll area of its own; -mx-4
@@ -197,11 +206,9 @@ export function SwapSheet({
 
             {/* role="alert": read out straight away, since the card that
                 came back looks just like before. */}
-            {error && (
-              <p role="alert" className="mt-3 text-center text-sm text-destructive">
-                {error}
-              </p>
-            )}
+            <ErrorLine show={Boolean(error)} className="pt-3 text-center">
+              {error}
+            </ErrorLine>
           </>
         )}
         <p role="status" className="sr-only">

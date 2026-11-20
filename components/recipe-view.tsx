@@ -147,7 +147,7 @@ export function RecipeView({
       )}
 
       {sheet?.mode === "add" && (
-        <BottomSheet title="Add ingredient" onClose={close}>
+        <BottomSheet title="Add ingredient" onClose={close} step={adding ? `food:${adding.id}` : "pick"}>
           {adding ? (
             <IngredientForm
               recipeId={recipe.id}

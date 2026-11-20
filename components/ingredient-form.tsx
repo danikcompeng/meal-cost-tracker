@@ -15,6 +15,7 @@ import { removeIngredient, saveIngredient } from "@/lib/recipe-actions";
 import { validateIngredient } from "@/lib/recipe-validation";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
+import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
@@ -143,12 +144,10 @@ export function IngredientForm({
         )}
       </div>
 
-      {/* role="alert": read out as soon as it appears. */}
-      {message && (
-        <p role="alert" className="text-sm text-destructive">
-          {message}
-        </p>
-      )}
+      {/* Read out as soon as it appears; opens its space smoothly. */}
+      <ErrorLine show={Boolean(message)} gap="5">
+        {message}
+      </ErrorLine>
 
       {/* focusableWhenDisabled: keeps keyboard focus while it works. */}
       <Button

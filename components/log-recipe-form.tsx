@@ -15,6 +15,7 @@ import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { recipeSnapshotFor } from "@/lib/nutrition";
 import type { FormState, Recipe } from "@/lib/types";
 import { AmountField } from "./amount-field";
+import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
@@ -92,11 +93,9 @@ export function LogRecipeForm({
 
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. */}
-      {!pending && message && (
-        <p role="alert" className="text-sm text-destructive">
-          {message}
-        </p>
-      )}
+      <ErrorLine show={Boolean(!pending && message)} gap="5">
+        {message}
+      </ErrorLine>
 
       {/* Focus starts here, not in the Servings box: it's already 1, and
           focusing a box would pop up the phone keyboard and get in the way

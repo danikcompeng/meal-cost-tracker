@@ -11,14 +11,25 @@ import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { X } from "lucide-react";
 import { SPRING } from "@/lib/motion";
+import { AutoHeight } from "./collapse";
 
 export function BottomSheet({
   title,
   onClose,
+  step,
+  stepFade,
   children,
 }: {
   title: string;
   onClose: () => void;
+  /**
+   * Which step the sheet is on ("pick", a food's id...). When it changes,
+   * the sheet's top edge glides to the new height instead of jumping,
+   * and the new step fades in (AutoHeight in collapse.tsx).
+   */
+  step?: string;
+  /** Off where the new step has its own entrance (the next swap card). */
+  stepFade?: boolean;
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -118,7 +129,11 @@ export function BottomSheet({
             <X aria-hidden="true" className="size-5" />
           </button>
         </div>
-        <div className="overflow-y-auto px-4 pb-4">{children}</div>
+        <div className="overflow-y-auto px-4 pb-4">
+          <AutoHeight step={step} fade={stepFade}>
+            {children}
+          </AutoHeight>
+        </div>
       </motion.div>
     </dialog>
   );

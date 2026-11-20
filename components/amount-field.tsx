@@ -1,5 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ErrorLine } from "./collapse";
 import { errorId } from "./form-field";
 import { unitWordForTyped, type EntryUnit } from "@/lib/units";
 
@@ -49,11 +50,9 @@ export function AmountField({
           {unitWordForTyped(value, unit, placeholder)}
         </span>
       </div>
-      {error && (
-        <p id={errorId("amount")} className="text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      <ErrorLine show={Boolean(error)} gap="1.5" id={errorId("amount")} alert={false}>
+        {error}
+      </ErrorLine>
     </div>
   );
 }

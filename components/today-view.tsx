@@ -551,7 +551,13 @@ export function TodayView({
       </div>
 
       {sheet?.mode === "add" && (
-        <BottomSheet title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`} onClose={close}>
+        <BottomSheet
+          title={`Add to ${MEAL_LABELS[sheet.meal].toLowerCase()}`}
+          onClose={close}
+          // The list, a recipe's servings or a food's amount: switching
+          // between them glides the sheet's height.
+          step={sheet.recipe ? `recipe:${sheet.recipe.id}` : sheet.food ? `food:${sheet.food.id}` : "pick"}
+        >
           {sheet.recipe ? (
             <LogRecipeForm
               recipe={sheet.recipe}

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoginCodeForm } from "@/components/login-code-form";
+import { ErrorLine } from "./collapse";
 import { errorId } from "./form-field";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
@@ -112,19 +113,15 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
           aria-describedby={!pending && error ? errorId("email") : undefined}
         />
         {/* Hidden while sending again, so a repeat is read out too. */}
-        {!pending && error && (
-          <p id={errorId("email")} role="alert" className="text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        <ErrorLine show={Boolean(!pending && error)} gap="1.5" id={errorId("email")}>
+          {error}
+        </ErrorLine>
       </div>
       {/* Hidden while trying again, so a second failure with the same
           words still shows up and is read out. */}
-      {!pending && state.message && (
-        <p role="alert" className="text-sm text-destructive">
-          {state.message}
-        </p>
-      )}
+      <ErrorLine show={Boolean(!pending && state.message)} gap="4">
+        {state.message}
+      </ErrorLine>
       {/* Keeps keyboard focus while it works. */}
       <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full">
         {pending ? "Sending…" : "Email me a login code"}

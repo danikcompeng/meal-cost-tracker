@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ErrorLine } from "./collapse";
 import { Field, errorId } from "./form-field";
 import { DuplicateDialog } from "./duplicate-dialog";
 import { HydrationSwitch } from "./hydration-switch";
@@ -277,11 +278,12 @@ export function FoodForm({
       )}
       {/* Errors that belong to no single box are read out when they
           appear, and hidden while saving again so a repeat is read too. */}
-      {!pending && errors.barcode && (
-        <p role="alert" className="-mt-3 text-sm text-destructive">
-          {errors.barcode}
-        </p>
-      )}
+      {/* This and the "Measured by" line are tucked up under what's above
+          them: gap 3 below, drawn 12 px higher, makes 12 px above and 24
+          below, as before. */}
+      <ErrorLine show={Boolean(!pending && errors.barcode)} gap="3" boxClassName="relative -top-3">
+        {errors.barcode}
+      </ErrorLine>
 
       <SegmentedControl
         name="measuredBy"
@@ -292,11 +294,13 @@ export function FoodForm({
       />
       {/* "It's in Overnight oats, so its unit can't change." Hidden again
           once you switch back to the unit it's saved with. */}
-      {!pending && errors.measuredBy && measuredBy !== editing?.unit && (
-        <p role="alert" className="-mt-3 text-sm text-destructive">
-          {errors.measuredBy}
-        </p>
-      )}
+      <ErrorLine
+        show={Boolean(!pending && errors.measuredBy && measuredBy !== editing?.unit)}
+        gap="3"
+        boxClassName="relative -top-3"
+      >
+        {errors.measuredBy}
+      </ErrorLine>
 
       {/* Only ml foods can count: their amount IS the water. For g or each
           the switch disappears and the food is saved as not counting. */}
@@ -351,11 +355,9 @@ export function FoodForm({
         {/* An alert only for the server's answer after Save. After a scan
             the same check also runs live as you type, and an alert then
             would interrupt your typing every time the total crossed 100 g. */}
-        {!pending && errors.macros && (
-          <p role={state.fieldErrors?.macros ? "alert" : undefined} className="text-sm text-destructive">
-            {errors.macros}
-          </p>
-        )}
+        <ErrorLine show={Boolean(!pending && errors.macros)} gap="3" alert={Boolean(state.fieldErrors?.macros)}>
+          {errors.macros}
+        </ErrorLine>
 
         <MoreNutrients
           values={fields}
@@ -446,24 +448,26 @@ export function FoodForm({
       </fieldset>
 
       {/* Read out as soon as it appears; hidden while trying again so a
-          second failure with the same words still shows. */}
-      {!pending && state.message && (
-        <div>
-          <p role="alert" className="text-sm text-destructive">
-            {state.message}
-          </p>
-          {/* Its own line, 44 px tall, not a small link inside the
-              sentence. */}
-          {state.existingId && (
+          second failure with the same words still shows. Opens its space
+          smoothly (collapse.tsx). */}
+      <ErrorLine
+        show={Boolean(!pending && state.message)}
+        gap="6"
+        after={
+          // Its own line, 44 px tall, not a small link inside the
+          // sentence.
+          state.existingId && (
             <Link
               href={`/?log=${state.existingId}`}
               className="focus-ring -ml-2 inline-flex h-11 items-center rounded-md px-2 font-medium text-primary"
             >
               Log that one
             </Link>
-          )}
-        </div>
-      )}
+          )
+        }
+      >
+        {state.message}
+      </ErrorLine>
 
       <div className="flex gap-2">
         <Button
