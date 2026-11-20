@@ -69,12 +69,13 @@ export function Scanner({
         aria-hidden="true"
         className={cn("absolute inset-0 size-full object-cover", read && "invisible")}
       />
-      {/* The frozen picture after a read (same size and crop as the video). */}
+      {/* The frozen picture after a read (same size and crop as the video),
+          fading in over DURATION.slow (250 ms, the longest allowed). */}
       <canvas
         ref={snapshotRef}
         aria-hidden="true"
         className={cn(
-          "absolute inset-0 size-full object-cover transition-opacity duration-300",
+          "absolute inset-0 size-full object-cover transition-opacity duration-(--motion-slow) ease-(--motion-ease-out)",
           read ? "opacity-50" : "invisible",
         )}
       />

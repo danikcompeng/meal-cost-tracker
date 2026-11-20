@@ -34,6 +34,10 @@ describe("motion tokens: CSS matches lib/motion.ts", () => {
     expect(cssVar("motion-fast")).toBe(`${DURATION.fast * 1000}ms`);
   });
 
+  it("the camera picture's fade is DURATION.slow", () => {
+    expect(cssVar("motion-slow")).toBe(`${DURATION.slow * 1000}ms`);
+  });
+
   it("ease-out curve", () => {
     expect(cssVar("motion-ease-out")).toBe(`cubic-bezier(${EASE_OUT.join(", ")})`);
   });
