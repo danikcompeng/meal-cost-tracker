@@ -303,3 +303,15 @@ its own. Plan both before building, like every feature.
    colour picker, so no choice can make the app unreadable. Things to
    decide: which tokens change with it (primary, ring, matcha-soft) and
    where the choice is saved (user_settings).
+
+   ## 2026-11-20: Learning: JavaScript
+
+   -swap.ts is a javascript file that handles how the recipe switcher works.
+   -It determines which recipes are similar to the recipe that needs to be switched, and it orders them using 2 main facts: Price similarity, and macro similarity(protein and for now by default)
+   -By comparing these nutrient facts of the other logged meals, the swap.ts file assigns values to rank each meal(Decorating)
+   -It then undecorates the recipes and returns the most similar recipes in order of most similar to least.
+
+   ## 2026-11-20: Learning: React
+
+   -entry-row.tsx is purely UI with almost no logic. It just takes the user's action input and calls a function to do it
+   -Like when a user swipes across the screen to signal a meal swap, entry-row.tsx calls the function "onSwap", which then uses data from swap.ts which only runs once, and then displays the next recipe
