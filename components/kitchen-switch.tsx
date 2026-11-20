@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { noteKitchenMove } from "./slide-in";
 
 const PAGES = [
   { id: "recipes", href: "/recipes", label: "Recipes" },
@@ -10,13 +13,19 @@ const PAGES = [
 // segmented control, but each side is a link to its own page, so the
 // back button, bookmarks and old /foods links all keep working.
 // aria-current tells screen readers which page you're on.
+// A client component only for its tap: it tells the next page's list which
+// side to slide in from (Foods is on the right, so it comes from the
+// right; Recipes from the left). See slide-in.tsx.
 export function KitchenSwitch({ current }: { current: (typeof PAGES)[number]["id"] }) {
   return (
     <nav aria-label="Kitchen" className="mt-4 flex rounded-lg border border-border bg-background p-1">
-      {PAGES.map((page) => (
+      {PAGES.map((page, i) => (
         <Link
           key={page.id}
           href={page.href}
+          onClick={() => {
+            if (page.id !== current) noteKitchenMove(page.id, i === 0 ? -1 : 1);
+          }}
           aria-current={page.id === current ? "page" : undefined}
           className={cn(
             // The ring sits in the track's 4 px padding, on white, never

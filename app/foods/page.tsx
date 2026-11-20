@@ -6,6 +6,7 @@ import { TabBar } from "@/components/tab-bar";
 import { FoodManager } from "@/components/food-manager";
 import { FoodsSkeleton } from "@/components/foods-skeleton";
 import { KitchenSwitch } from "@/components/kitchen-switch";
+import { KitchenSlide } from "@/components/slide-in";
 import { getFoods } from "@/lib/foods";
 
 export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
@@ -21,10 +22,14 @@ export default function FoodsPage() {
         </AppHeader>
         {/* Loading your foods needs your login cookie, which is only
             known per request, so that part streams in behind Suspense while
-            the header shows instantly. */}
-        <Suspense fallback={<FoodsSkeleton />}>
-          <Foods />
-        </Suspense>
+            the header shows instantly.
+            KitchenSlide: from the right when you came from Recipes with
+            the switch (whatever shows first, skeleton or list). */}
+        <KitchenSlide page="foods">
+          <Suspense fallback={<FoodsSkeleton />}>
+            <Foods />
+          </Suspense>
+        </KitchenSlide>
       </main>
       {/* Foods lives in the Kitchen tab, next to Recipes. */}
       <TabBar active="kitchen" />

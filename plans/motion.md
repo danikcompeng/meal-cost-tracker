@@ -208,6 +208,15 @@ animation would only delay the new one.
 
 Reduce Motion: a plain fade, no sideways move.
 
+Found while building (2026-11-20): with `cacheComponents` on, Next.js
+keeps pages you visited alive but hidden and shows them again on the way
+back, without building them anew. So a slide that decides its direction
+when it's first built went wrong on the second visit (Foods → Recipes
+didn't slide, browser back did). `components/slide-in.tsx` decides in a
+layout effect instead, which runs every time the piece is shown, before
+the browser draws it. Answer to "does Next show the skeleton between
+days": no, the title, date and food arrive together and slide together.
+
 ### 5. Smooth height
 
 What "the cheap way" means here: one wrapper with `overflow: hidden`

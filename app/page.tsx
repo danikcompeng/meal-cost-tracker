@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { AppHeader } from "@/components/app-header";
 import { DayNav } from "@/components/day-nav";
 import { DayRollover } from "@/components/day-rollover";
+import { DaySlide } from "@/components/slide-in";
 import { TabBar } from "@/components/tab-bar";
 import { TodaySkeleton } from "@/components/today-skeleton";
 import { TodayView } from "@/components/today-view";
@@ -53,10 +54,24 @@ async function Day({ searchParams }: Pick<PageProps<"/">, "searchParams">) {
   return (
     <>
       <DayRollover today={today} />
-      <AppHeader title={dayTitle(day, today)}>
+      {/* DaySlide: going to another day, its title, date and everything
+          under them slide in from that side (slide-in.tsx). */}
+      <AppHeader
+        title={
+          <DaySlide day={day} inline>
+            {dayTitle(day, today)}
+          </DaySlide>
+        }
+      >
         <DayNav day={day} today={today} />
       </AppHeader>
-      <Suspense fallback={<TodaySkeleton past={day !== today} withHeader={false} />}>
+      <Suspense
+        fallback={
+          <DaySlide day={day}>
+            <TodaySkeleton past={day !== today} withHeader={false} />
+          </DaySlide>
+        }
+      >
         <DayContent day={day} today={today} searchParams={searchParams} />
       </Suspense>
     </>
@@ -89,7 +104,7 @@ async function DayContent({
   const logId = (await searchParams).log;
   const logFood = typeof logId === "string" ? (foods.find((f) => f.id === logId) ?? null) : null;
 
-  return (
+  const view = (
     <TodayView
       // A fresh view per day, so an open sheet doesn't follow you to
       // another day. The scanned food is part of the key too, so arriving
@@ -115,4 +130,7 @@ async function DayContent({
       detailsOpen={cookieStore.get(DETAILS_COOKIE)?.value === "1"}
     />
   );
+  // Slides in from the side you moved towards, with the title and date
+  // (or doesn't, if the skeleton already did).
+  return <DaySlide day={day}>{view}</DaySlide>;
 }

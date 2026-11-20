@@ -5,6 +5,7 @@ import { AppHeader } from "@/components/app-header";
 import { KitchenSwitch } from "@/components/kitchen-switch";
 import { RecipeList } from "@/components/recipe-list";
 import { RecipesSkeleton } from "@/components/recipes-skeleton";
+import { KitchenSlide } from "@/components/slide-in";
 import { TabBar } from "@/components/tab-bar";
 import { getRecentRecipeIds } from "@/lib/entries";
 import { getFoods } from "@/lib/foods";
@@ -24,10 +25,14 @@ export default function RecipesPage() {
           <KitchenSwitch current="recipes" />
         </AppHeader>
         {/* Your recipes need your login cookie, only known per request, so
-            they stream in behind Suspense while the header shows at once. */}
-        <Suspense fallback={<RecipesSkeleton />}>
-          <Recipes />
-        </Suspense>
+            they stream in behind Suspense while the header shows at once.
+            KitchenSlide: from the left when you came from Foods with the
+            switch (whatever shows first, skeleton or list). */}
+        <KitchenSlide page="recipes">
+          <Suspense fallback={<RecipesSkeleton />}>
+            <Recipes />
+          </Suspense>
+        </KitchenSlide>
       </main>
       <TabBar active="kitchen" />
     </>

@@ -8,7 +8,8 @@ export function AppHeader({
   showSettingsLink = true,
   children,
 }: {
-  title: string;
+  /** Words, or on Today the day's name sliding in (DaySlide). */
+  title: React.ReactNode;
   /** Off on the Settings screen itself. */
   showSettingsLink?: boolean;
   children?: React.ReactNode;
