@@ -213,8 +213,14 @@ Motion (Framer Motion)
 - Signature moment: the "I'm tired of this" swap. Your other recipes come
   up as a card stack, best match first, each card showing its
   ingredients as chips. Swipe right (or tap Swap) to swap, left (Skip)
-  for the next card; the card tilts and flies off, and the new meal
-  slides into Today's row. This should feel delightful.
+  for the next card. Everything stays flat and level, moving only
+  sideways: no tilt or rotation, nothing up or down. Skip slides the
+  card straight off to the left, shrinking and fading a little, and the
+  next card comes up. Swap doesn't throw the card: the sheet closes and
+  the swap is one move left on Today's row, like a carousel (the old
+  meal slides out left, shrinking to 0.9 and fading; the new one grows
+  in from the right). With Reduce Motion: a crossfade. This should feel
+  delightful.
 - Everything else is subtle: progress rings and the budget bar fill
   smoothly, lists fade in.
 - Respect prefers-reduced-motion.

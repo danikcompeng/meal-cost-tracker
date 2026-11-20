@@ -65,15 +65,18 @@ describe("motion tokens: short (150–250 ms)", () => {
     expect(spring.bounce).toBeLessThanOrEqual(0.2);
   });
 
-  it("the ring fill is a named exception, 1–1.2 s (phone check 2)", () => {
-    expect(FILL_DURATION).toBeGreaterThanOrEqual(1);
-    expect(FILL_DURATION).toBeLessThanOrEqual(1.2);
+  it("the ring fill is a named exception, 1.3–1.5 s: long enough to watch it sweep", () => {
+    expect(FILL_DURATION).toBeGreaterThanOrEqual(1.3);
+    expect(FILL_DURATION).toBeLessThanOrEqual(1.5);
   });
 
-  it("the ring curve is a strong ease-out: fast start, long landing", () => {
+  it("the ring curve is a soft ease-out: a start you can follow, a flat landing", () => {
     const [x1, y1, x2, y2] = FILL_EASE;
-    // Starts much steeper than the shared EASE_OUT, and lands flat (y2 = 1).
-    expect(y1 / x1).toBeGreaterThan(EASE_OUT[1] / EASE_OUT[0]);
+    // How steep it starts (y1 / x1): easeOutCubic is 3, easeOutQuart 4.
+    // Expo-out (6.25) started so fast the ring seemed to jump.
+    expect(y1 / x1).toBeGreaterThanOrEqual(3);
+    expect(y1 / x1).toBeLessThanOrEqual(4);
+    // Lands flat (y2 = 1), slowing down as it reaches the number.
     expect(y2).toBe(1);
     expect(x2).toBeGreaterThan(0);
   });

@@ -5,18 +5,19 @@
 // through commit(), so the card always leaves the same way.
 //
 // How the swipe works: the card's sideways position is a "motion value"
-// (x) that follows your finger. Tilt and the Swap / Skip labels are worked
-// out from x, so they move with it on every frame without React redrawing.
+// (x) that follows your finger. The Swap / Skip labels are worked out from
+// x, so they fade with it on every frame without React redrawing. The card
+// stays flat and level: it only ever moves sideways (no tilt).
 // Let go far enough (or flick fast) and it counts: to the left, Skip, and
-// the card flies off; to the right, pick, and the card springs back while
-// the sheet closes (no fly-off, see commit). Otherwise it springs back to
-// the middle.
+// the card slides straight off, shrinking and fading a little; to the
+// right, pick, and the card springs back while the sheet closes (no
+// fly-off, see commit). Otherwise it springs back to the middle.
 
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DURATION, EASE_IN, EASE_OUT, SCALE_FROM, SPRING } from "@/lib/motion";
+import { DURATION, EASE_IN, EASE_OUT, PUSH_FADE, PUSH_SCALE, SCALE_FROM, SPRING } from "@/lib/motion";
 import type { RankedSwap } from "@/lib/swap";
 import { SwapCard } from "./swap-card";
 
@@ -24,8 +25,6 @@ import { SwapCard } from "./swap-card";
 const COMMIT_DISTANCE = 96;
 /** Or a flick this fast (px per second) away from the middle. */
 const COMMIT_SPEED = 600;
-/** Most the card tilts, in degrees, at a full drag. */
-const MAX_TILT = 8;
 
 export type SwapDirection = "skip" | "pick";
 
@@ -61,9 +60,11 @@ export function SwapStack({
   const reduceMotion = useReducedMotion();
   const pending = pendingLabel !== null;
   const x = useMotionValue(0);
-  // With reduced motion the card still follows your finger (you're moving
-  // it yourself), but it doesn't tilt.
-  const rotate = useTransform(x, [-200, 200], reduceMotion ? [0, 0] : [-MAX_TILT, MAX_TILT]);
+  // The card stays flat: no tilt, ever (phone check 2). It only moves
+  // sideways, and on Skip also shrinks and fades a little as it slides off,
+  // like the Today row's carousel (PUSH_SCALE, PUSH_FADE).
+  const scale = useMotionValue(1);
+  const opacity = useMotionValue(1);
   const pickOpacity = useTransform(x, [16, COMMIT_DISTANCE], [0, 1]);
   const skipOpacity = useTransform(x, [-COMMIT_DISTANCE, -16], [1, 0]);
 
@@ -89,8 +90,10 @@ export function SwapStack({
   useLayoutEffect(() => {
     topId.current = swap.id;
     x.jump(0);
+    scale.jump(1);
+    opacity.jump(1);
     leaving.current = false;
-  }, [swap.id, x]);
+  }, [swap.id, x, scale, opacity]);
 
   // Closing the sheet mid-flight: stop the animation, so it can't open a
   // recipe (or, on Today, swap your meal) after you said no. `alive` stops
@@ -101,8 +104,10 @@ export function SwapStack({
     return () => {
       alive.current = false;
       x.stop();
+      scale.stop();
+      opacity.stop();
     };
-  }, [x]);
+  }, [x, scale, opacity]);
 
   /** Hand the card over; if a save says it didn't work, bring it back. */
   function finish(direction: SwapDirection, id: string) {
@@ -139,9 +144,14 @@ export function SwapStack({
       return;
     }
     setFlyingId(id);
-    // Skip: off to the left. Far enough to be off any phone screen, quick
-    // enough to feel snappy.
-    animate(x, -Math.max(window.innerWidth, 480), { duration: DURATION.base, ease: EASE_IN }).then(() => {
+    // Skip: straight off to the left, flat, shrinking and fading a little
+    // as it goes, like the Today row's carousel. Far enough to be off any
+    // phone screen, quick enough to feel snappy. The three run on the same
+    // timing, so they finish together.
+    const leave = { duration: DURATION.base, ease: EASE_IN };
+    animate(scale, PUSH_SCALE, leave);
+    animate(opacity, PUSH_FADE, leave);
+    animate(x, -Math.max(window.innerWidth, 480), leave).then(() => {
       // Landed: the card is touchable again if you come Back to it.
       setFlyingId(null);
       if (topId.current === id) finish(direction, id);
@@ -151,7 +161,7 @@ export function SwapStack({
   /**
    * Back to the middle after a gesture that doesn't count. Framer only
    * springs the card back by itself after a sideways drag; after a scroll
-   * or a tap that caught it mid-slide it would stay tilted part-way off.
+   * or a tap that caught it mid-slide it would stay part-way off.
    */
   function settle() {
     if (leaving.current) return;
@@ -242,7 +252,7 @@ export function SwapStack({
               sideways.current = axis === "x";
             }}
             onDragEnd={handleDragEnd}
-            style={{ x, rotate }}
+            style={{ x, scale, opacity }}
             className={`relative ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
           >
             <SwapCard swap={swap} servings={servings} />

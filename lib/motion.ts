@@ -28,16 +28,17 @@ export const DURATION = {
 /**
  * An exception to 150–250 ms (decision C): the progress rings filling. It
  * isn't an answer to a tap but the day's numbers being drawn, and at
- * 250 ms it's over before you've looked at it. 1.1 s since phone check 2,
- * with FILL_EASE: most of it is the slow landing.
+ * 250 ms it's over before you've looked at it. 1.4 s with FILL_EASE, so
+ * you can see it sweep round from empty before it slows down.
  */
-export const FILL_DURATION = 1.1;
+export const FILL_DURATION = 1.4;
 /**
- * The rings' curve (phone check 2): a strong ease-out, "expo-out". It
- * covers most of the way in the first split second, then slows down a lot
- * as it reaches the number, so the end is where your eye lands.
+ * The rings' curve: easeOutQuart, a soft ease-out. It sweeps round from
+ * empty at a pace you can follow, then slows down as it reaches the
+ * number. (After phone check 2 it was expo-out, whose first split second
+ * was so fast the ring seemed to jump instead of fill.)
  */
-export const FILL_EASE = [0.16, 1, 0.3, 1] as const;
+export const FILL_EASE = [0.25, 1, 0.5, 1] as const;
 
 /**
  * A swap on Today, like a carousel moving to the next item (phone check

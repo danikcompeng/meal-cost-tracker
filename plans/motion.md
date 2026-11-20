@@ -480,6 +480,16 @@ judge them). Then the code-reviewer once on the whole branch.
   number, scale from each meal's centre: measured perfectly level.
   Reduce Motion: a crossfade in place.
 
+After phone check 2, round two:
+- **Rings:** expo-out started so fast the ring seemed to jump. Now
+  easeOutQuart ([0.25, 1, 0.5, 1]) over 1.4 s: you see it sweep round
+  from empty, then slow down at the number. The test keeps the start
+  between easeOutCubic and easeOutQuart and the time 1.3–1.5 s.
+- **Swap cards: no tilt at all**, dragging or skipping; they stay flat
+  and level. Skip slides the card straight left while it shrinks to
+  `PUSH_SCALE` and fades to `PUSH_FADE`, like Today's carousel, then the
+  next card comes up. CLAUDE.md's Motion section says the same now.
+
 ## Decisions for you (I'd pick the first option each time)
 
 - **A. Press on wide rows:** rows and tiles scale to 0.985, buttons to
