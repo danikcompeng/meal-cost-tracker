@@ -389,6 +389,35 @@ gestures: `design/ui/motion/recorder.js.txt`. The before clips: swap
 21 frames, 188 KB; delete 31 frames, 94 KB (it starts with pulling the
 shut row right, which today doesn't move at all).
 
+The after clips (2026-11-20), same gestures, same Monday, everything put
+back with Undo: swap 24 frames, 157 KB; delete 42 frames, 120 KB;
+rubber-band 40 frames, 312 KB (after only: the before delete clip already
+shows the hard stop). The swap clip now shows Skip sliding the card off
+flat, the picked card staying put while it saves, the sheet sliding down
+and the carousel on Today. Two recorder fixes were needed (stepped clock,
+browser-animation start times), written up in `recorder.js.txt`.
+
+## Items 9 and 10 as built (2026-11-20)
+
+- **Row velocity:** the snap spring starts at your finger's speed when you
+  let go (measured: a flick arrives at about -490 px/s, a slow push at
+  -67, both released at the same spot). When the page then confirms the
+  open, the spring already heading there is left alone.
+- **Card velocity:** Skip throws the card with your finger's speed, at
+  least `THROW_SPEED` (`throwVelocity` in `lib/swipe.ts`, tested), and it
+  counts as gone the moment it's past the screen's left edge. Its shrink
+  and fade are worked out from how far it has travelled. "Never mind" and
+  a picked card spring back to the middle with your speed. Picking still
+  never throws the card (phone check 2).
+- **The next dev bug** (card left at -480 after a Skip): the fly-off now
+  stops itself before the next card comes up, so nothing can move it
+  afterwards. Not re-checked under `next dev`.
+- **Rubber band:** a shut row pulled right and an open row pulled past
+  the trash can both stretch at `RUBBER` and spring back with a hint of
+  bounce. The swap card stretches up and down at `RUBBER` only with a
+  mouse or when the sheet has nothing to scroll, so on a small phone
+  up/down still scrolls the sheet. No tilt anywhere.
+
 ## Commits
 
 One per group, each with its tests passing:

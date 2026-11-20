@@ -315,3 +315,27 @@ its own. Plan both before building, like every feature.
 
    -entry-row.tsx is purely UI with almost no logic. It just takes the user's action input and calls a function to do it
    -Like when a user swipes across the screen to signal a meal swap, entry-row.tsx calls the function "onSwap", which then uses data from swap.ts which only runs once, and then displays the next recipe
+
+## 2026-11-20: Motion pass (branch `motion`, plans/motion.md)
+
+The app does the same things, and feels more physical. Every timing is a
+token in lib/motion.ts (tested to stay 150–250 ms for anything that
+answers a tap). What changed, in short: buttons and rows press in
+(0.97 / 0.985); the Undo message settles in; wrong boxes shake; days and
+Recipes | Foods slide from the side you moved to; error lines and sheets
+open their space smoothly and sheets slide down when they close; a
+deleted row slides off like iPhone Mail; a swap on Today is one carousel
+move left; rings fill on an easeOutQuart curve once per visit; swap cards
+stay flat, Skip throws them with your finger's speed, and rows and cards
+stretch on a rubber band past their limits. Reduce Motion: fades or
+jumps everywhere. Before / after clips: design/ui/motion/before and
+after.
+
+Lessons:
+- A preview only shows what's pushed. Push, wait for Ready on that
+  commit, then test.
+- Measure motion frame by frame (positions, gaps), not by eye: the first
+  swap slide looked fine and was 40 px apart mid-move.
+- Next.js cacheComponents keeps visited pages alive but hidden. Anything
+  that decides "on first appear" must decide each time it's shown
+  (layout effects), and remember handled answers in refs.

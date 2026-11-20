@@ -23,6 +23,24 @@
 //
 // Same gestures for before and after: same distances, speeds and pauses,
 // same K per clip (swap 4, delete 6).
+//
+// The AFTER clips (2026-11-20) needed three changes, all in AFTER below:
+// - Screenshots now took anywhere from 0.3 s to 4 s each (the Chrome window
+//   was covered and drew 3 frames a second), so a fixed K gave frames 10 ms
+//   to 1 s of page time apart. swap.gif was still made the old way at K 30
+//   (frames ~110-150 ms apart). delete.gif and rubber-band.gif use a STEPPED
+//   clock: frozen, then moved on exactly 70 / 80 ms of page time before each
+//   screenshot. The clip's pauses run on page time too (G.sleep), so the
+//   gestures keep their timing and nothing happens between batches.
+// - Framer hands some fades (opacity) to the browser and sets their start
+//   time from its own clock, the slowed one: the browser took that as long
+//   ago and finished them at once (the deleted row vanished instead of
+//   sliding). The patched Element.animate translates that start time to
+//   the browser's real timeline.
+// - The window was a different size: zoom region 0,0,345,747 at scale
+//   0.45 (307 x 666, about the before clips' 311 x 674).
+// rubber-band.gif is after only: the before delete.gif already starts with
+// the shut row pulled right, where it didn't move at all.
 
 // ---- SETUP ----
 document.documentElement.innerHTML = '<head><style>html,body{margin:0;background:#000;overflow:hidden}iframe{position:fixed;left:0;top:0;width:390px;height:844px;border:0;background:#141414}</style></head><body><iframe id=f src="/?day=2026-11-16"></iframe></body>';
@@ -92,4 +110,53 @@ G.clipDelete = async () => {
   await G.sleep(450); G.mark('tap delete');
   G.click(row.querySelector('[data-row-delete]'));
   await G.sleep(700);
+};
+
+// ---- AFTER (run once after SETUP) ----
+// rubber-band.gif: pull the shut row right and let go, then open the swap
+// stack, pull the card up and let go, then close the sheet. Saves nothing.
+G.clipRubber = async () => {
+  const row = d.querySelector('[data-entry-row]'); const [, y] = center(row);
+  await G.sleep(200); G.mark('pull shut row right');
+  await G.drag(150, y, 90, 0, 400, 12, false);
+  await G.sleep(500); G.mark('open swap');
+  G.click(d.querySelector('[data-swap-entry]'));
+  await G.sleep(700);
+  const [cx, cy] = center(d.querySelector('dialog .cursor-grab')); G.mark('pull card up');
+  await G.drag(cx, cy, 0, -110, 400, 12, false);
+  await G.sleep(600); G.mark('close');
+  G.click(d.querySelector('dialog [aria-label="Close"]'));
+  await G.sleep(400);
+};
+
+// Stepped clock. In ONE batch: `__g.beginStepped(__g.clipDelete)`, then pairs
+// of [zoom region 0,0,345,747 at scale 0.45, save to disk] and
+// `await __g.step(70)` (80 for clipRubber), until __g.done.
+const FROZEN = 1e6;
+G.sleep = (ms) => new Promise(res => { const target = w.performance.now() + ms; const tick = () => (w.performance.now() >= target ? res() : setTimeout(tick, 2)); tick(); });
+G.beginStepped = (fn) => { G.done = false; G.log = []; G.frames = []; s.setK(FROZEN); G.mark('start'); fn().then(() => { G.mark('end'); G.done = true; }, (e) => { G.err = String(e); G.done = true; }); return G.frame(); };
+G.step = async (dt) => {
+  s.setK(4);
+  await new Promise(r => setTimeout(r, dt * 4));
+  s.setK(FROZEN);
+  await new Promise(r => w.requestAnimationFrame(() => w.requestAnimationFrame(r)));
+  return G.frame();
+};
+
+// Browser-run animations: translate Framer's start time (slowed clock) to
+// the browser's real timeline.
+const EA2 = w.Element.prototype.animate;
+const startDesc = Object.getOwnPropertyDescriptor(w.Animation.prototype, 'startTime');
+w.Element.prototype.animate = function (...a) {
+  const an = EA2.apply(this, a);
+  Object.defineProperty(an, 'startTime', {
+    configurable: true,
+    get() { return startDesc.get.call(an); },
+    set(v) {
+      if (v == null) { startDesc.set.call(an, v); return; }
+      const ranForPage = Math.max(0, w.performance.now() - v);
+      startDesc.set.call(an, d.timeline.currentTime - ranForPage * s.K);
+    },
+  });
+  return an;
 };
