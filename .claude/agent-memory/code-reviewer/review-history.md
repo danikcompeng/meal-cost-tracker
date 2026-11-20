@@ -378,3 +378,19 @@ metadata:
   pre-existing y 8); "MotionConfig doesn't cover height" comment 3rd time (motion-provider:9-10,
   offline-strip:23, plan item 5); duration-150 left in scan-frame/summary-rings; test regex = first
   match anywhere. Couldn't diff: old spring mapping unknown (gave zeta/overshoot table).
+- 2026-11-20 motion items 3-6 + phone-check-1 changes (d9e4961..HEAD, read file by file, no diff):
+  Minor issues. Verified fine: every ErrorLine gap matches its parent stack (food-form barcode /
+  measuredBy gap 3 in a 6 stack on purpose), compiled CSS has group-not-last/error selectors, logical
+  vs physical margins cascade by specificity; ErrorLine count/key + Line id/role handoff; AnimatePresence
+  custom read at exit (slidOff added before onDelete, pruned on return); module vars only written in
+  effects/handlers (server-safe, SSR = hydration); ring Activity re-show; AutoHeight RO/mid-glide/.then
+  guard (offsetHeight forces layout, so a scrolled list clamps scroll before the pin: no blank);
+  Reduce Motion paths; motion.test covers --motion-slow. Raised: use-focus-first-invalid re-runs on
+  Activity re-show (refocus + scroll + reshake on Settings/Foods; food-row/delete focus effects same);
+  MealPush mealKey changes when the food/recipe is deleted (id -> null) = phantom swap slide; fixed
+  UndoToast inside DaySlide transform (if it survives in Activity); AutoHeight pin 1 frame late when
+  step changes in fly-off .then -> flushSync; DaySlide slides on tab-bar return after another day
+  (lastDay kept; fix: passive cleanup nulls it) - design call; StrictMode dev one-shot reads (unsure);
+  "Log that one" -ml-2 link clipped by CollapseIn overflow (ring + 8 px tap); shake 6 px clipped in
+  More nutrients (4 px room); collapse.tsx header comment 4th time; motion.ts "two values" stale; GAP
+  doc; swap-sheet "end" literal vs END; login client email error repeat not re-read (pre-existing).

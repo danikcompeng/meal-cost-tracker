@@ -81,6 +81,12 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   as visualDuration+bounce, SCALE_FROM 0.97, PRESS_SCALE_WIDE 0.985, FILL_DURATION 0.8 exception) +
   --motion-* in globals.css :root, checked by lib/motion.test.ts. @utility press / press-wide
   (globals.css); entry-row sets data-dragging by ref. MotionProvider in app/layout.tsx.
+  Items 3-6 (2026-11-20): components/shake.ts (WAAPI, shakeTarget) called from
+  use-focus-first-invalid.ts; slide-in.tsx (DaySlide module `lastDay`, KitchenSlide one-shot
+  `kitchenNote` set by kitchen-switch onClick); collapse.tsx (Collapse, CollapseIn, AutoHeight via
+  bottom-sheet `step`, ErrorLine with GAP class table + key-per-appearance); meal-push.tsx (swap strip
+  inside entry-row's button); meal-section leaveVariants + AnimatePresence custom=wasSlidOff;
+  progress-ring module `filledThisVisit`; cn class group press/press-wide in lib/utils.ts.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

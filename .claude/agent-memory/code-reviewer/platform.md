@@ -17,6 +17,13 @@ Next.js 16
 - Action redirect("/"): internal GET with the action's Set-Cookie merged (getForwardedHeaders).
 - Action reducer resolves BEFORE the revalidated tree commits: code after `await action()` sees
   OLD server props first.
+- cacheComponents keeps visited pages in React Activity: hide = display:none + effects destroyed
+  (layout + passive, refs detached), show = effects re-created, state/refs kept. So Undo toast,
+  form answers, open sheets survive leaving a page. A transformed ancestor (DaySlide/KitchenSlide
+  mid-slide) becomes the containing block for `position: fixed` children (UndoToast in TodayView).
+- Dev StrictMode (on by default in App Router) double-invokes effects of fresh mounts: one-shot
+  reads in layout effects (kitchenNote, lastDay) are used up by the first run (unsure if it hides
+  the slides under next dev; plan recordings use next start).
 
 React 19.3
 - setState AFTER an await in a transition = urgent update, commits BEFORE isPending flips false.

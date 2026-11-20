@@ -17,7 +17,15 @@ Reduced motion
   own release animation (animateMotionValue) ignore it. Projection `layout` animations jump too.
 - CSS press (globals.css @utility press / press-wide) has its own prefers-reduced-motion media.
 
+- animate(plainElement, ...) (no motion component owns it) goes through styleEffect with NO
+  VisualElement (framer-motion animation/animate/subject.mjs:40-48), so MotionConfig never applies:
+  AutoHeight / slideIn must check reduce themselves (they do). A VisualElement with no config
+  follows the OS (VisualElement.mjs:220-231).
+
 Motion values / animate()
+- JS (non-WAAPI, e.g. height) animate() starts in framer's next frame batch. From a normal React
+  commit (task) that's before paint; from a commit inside an animate().then microtask (flushSync)
+  it's ONE FRAME LATE -> pin the start value synchronously.
 - MotionValue.stop()/jump() stop an animate(x) run and its .then NEVER fires; x.set() does NOT stop
   it. So "commit in .then + a latch" can get stuck; check for it.
 

@@ -10,7 +10,12 @@ Repeat offenders (explain in a new way each time; concrete walk-throughs work be
   cancelled flag / card id. Raised 6+ times (camera, scan-flow, recipe-view, today-view, swap fly-off,
   shared swap status, toast Undo replaced). "Had focus" read before an await is stale after it.
 - Comments promising another function's behaviour: verify. "Framer reduced motion leaves height
-  alone" raised 3x (it JUMPS it; see [[framer-motion]]); 3rd in motion-provider.tsx, offline-strip.tsx.
+  alone" raised 4x (it JUMPS it on motion components; see [[framer-motion]]); 4th = collapse.tsx
+  header + plans/motion.md:249, contradicting CollapseIn's own (correct) docstring.
+- "Once per answer / once per show" effects vs cacheComponents Activity: hidden pages re-run ALL
+  effects on re-show with unchanged state (2026-11-20: use-focus-first-invalid refocus + reshake).
+  Guard with a ref holding the last handled value. Module-level "last seen" vars also persist
+  while you're on another page (DaySlide lastDay).
   "Change one, change the other" notes: check the OTHER file has the matching note.
 
 Data
