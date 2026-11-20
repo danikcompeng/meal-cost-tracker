@@ -133,7 +133,7 @@ export function EditEntryForm({
         // Greyed while a delete runs (it can't be used then); full
         // colour while it's saving itself.
         data-unavailable={deleting || undefined}
-        className="h-11 w-full text-base"
+        className="press-wide h-11 w-full text-base"
       >
         {pending ? "Saving…" : "Save changes"}
       </Button>
@@ -174,7 +174,7 @@ export function EditEntryForm({
           disabled={pending}
           focusableWhenDisabled
           data-unavailable={pending || undefined}
-          className="h-11 w-full text-base text-destructive"
+          className="press-wide h-11 w-full text-base text-destructive"
         >
           Delete
         </Button>

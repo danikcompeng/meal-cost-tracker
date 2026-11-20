@@ -103,7 +103,7 @@ export function RecipeForm({
       )}
 
       {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
         {recipe ? (pending ? "Saving…" : "Save changes") : pending ? "Creating…" : "Create"}
       </Button>
     </form>

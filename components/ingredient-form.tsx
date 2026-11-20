@@ -157,7 +157,7 @@ export function IngredientForm({
         focusableWhenDisabled
         // Greyed while a remove runs; full colour while it saves itself.
         data-unavailable={removing || undefined}
-        className="h-11 w-full text-base"
+        className="press-wide h-11 w-full text-base"
       >
         {isNew ? (pending ? "Adding…" : "Add") : pending ? "Saving…" : "Save changes"}
       </Button>
@@ -197,7 +197,7 @@ export function IngredientForm({
             disabled={pending || removing}
             focusableWhenDisabled
             data-unavailable={pending || removing || undefined}
-            className="h-11 w-full text-base text-destructive"
+            className="press-wide h-11 w-full text-base text-destructive"
           >
             Remove
           </Button>

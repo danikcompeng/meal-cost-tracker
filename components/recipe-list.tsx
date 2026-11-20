@@ -22,11 +22,11 @@ export function RecipeList({ recipes, hasFoods }: { recipes: Recipe[]; hasFoods:
 
   // A recipe is made of your foods, so with none there's nothing to use.
   const newButton = hasFoods ? (
-    <Button onClick={() => setCreating(true)} className="h-11 w-full text-base">
+    <Button onClick={() => setCreating(true)} className="press-wide h-11 w-full text-base">
       New recipe
     </Button>
   ) : (
-    <Link href="/foods" className={cn(buttonVariants(), "h-11 w-full text-base")}>
+    <Link href="/foods" className={cn(buttonVariants(), "press-wide h-11 w-full text-base")}>
       Add foods first
     </Link>
   );

@@ -86,7 +86,7 @@ export function LoginCodeForm({
         </p>
       )}
       {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full">
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full">
         {pending ? "Logging in…" : "Log in"}
       </Button>
       <Button
@@ -102,7 +102,7 @@ export function LoginCodeForm({
         }}
         // Greyed with a colour, not faded, so its focus ring stays solid.
         data-unavailable={pending || undefined}
-        className="h-11 w-full"
+        className="press-wide h-11 w-full"
       >
         Start over (new email or new code)
       </Button>

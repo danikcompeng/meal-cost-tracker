@@ -69,7 +69,7 @@ export function BarcodeEntry({
             aria-invalid={Boolean(error)}
           />
         </Field>
-        <Button type="submit" className="h-11 w-full text-base">
+        <Button type="submit" className="press-wide h-11 w-full text-base">
           Look it up
         </Button>
       </form>

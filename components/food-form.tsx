@@ -472,7 +472,8 @@ export function FoodForm({
           disabled={pending}
           // Keeps keyboard focus while it works.
           focusableWhenDisabled
-          className="h-11 flex-1 text-base"
+          // Nearly full width (Cancel sits beside it only when editing).
+          className="press-wide h-11 flex-1 text-base"
         >
           {pending ? "Saving…" : saveLabel}
         </Button>

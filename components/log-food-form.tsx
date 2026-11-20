@@ -111,7 +111,7 @@ export function LogFoodForm({
       )}
 
       {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
         {pending ? "Logging…" : "Log it"}
       </Button>
     </form>

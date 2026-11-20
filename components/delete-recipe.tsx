@@ -79,7 +79,7 @@ export function DeleteRecipe({ recipeId }: { recipeId: string }) {
           type="button"
           variant="ghost"
           onClick={() => setConfirming(true)}
-          className="h-11 w-full text-base text-destructive"
+          className="press-wide h-11 w-full text-base text-destructive"
         >
           Delete recipe
         </Button>

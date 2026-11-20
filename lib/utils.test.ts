@@ -12,6 +12,11 @@ describe("cn", () => {
     );
   });
 
+  it("lets a full-width Button's press-wide replace the press every Button has", () => {
+    expect(cn("press focus-ring", "h-11 w-full press-wide")).toBe("focus-ring h-11 w-full press-wide");
+    expect(cn("press-wide", "press")).toBe("press");
+  });
+
   it("lets text-label replace another size, and another size replace it", () => {
     expect(cn("text-sm", "text-label")).toBe("text-label");
     expect(cn("text-label", "text-base")).toBe("text-base");

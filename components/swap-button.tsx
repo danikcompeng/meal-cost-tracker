@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 // form, a plain button would submit it.
 export function SwapButton({ onClick, className }: { onClick: () => void; className?: string }) {
   return (
-    <Button type="button" variant="outline" onClick={onClick} className={cn("h-11 w-full text-base", className)}>
+    <Button type="button" variant="outline" onClick={onClick} className={cn("press-wide h-11 w-full text-base", className)}>
       <Shuffle aria-hidden="true" className="size-4" />
       Tired of this?
     </Button>

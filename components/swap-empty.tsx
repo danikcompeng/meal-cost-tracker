@@ -56,10 +56,10 @@ export function SwapEnd({
     <section className="flex min-h-72 flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border px-5 py-8 text-center">
       <h3 className="text-lg font-semibold tabular-nums">{all}</h3>
       <div className="mt-6 flex w-full flex-col gap-3">
-        <Button ref={restartRef} variant="outline" onClick={onRestart} className="h-12 text-base">
+        <Button ref={restartRef} variant="outline" onClick={onRestart} className="press-wide h-12 text-base">
           Start over
         </Button>
-        <Button onClick={onKeep} className="h-12 text-base">
+        <Button onClick={onKeep} className="press-wide h-12 text-base">
           {/* A long recipe name is cut short ("Keep Overnight oa…"), not
               pushed off the side of the button. */}
           <span className="min-w-0 truncate">Keep {currentName}</span>

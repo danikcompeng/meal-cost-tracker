@@ -237,8 +237,10 @@
    instead of that (two transition classes on one element fight, and only
    one wins).
    press: buttons, tab bar items, icon buttons, switch options (0.97).
-   press-wide: rows and tiles (0.985, the same visible give on something
-   four times wider). With Reduce Motion: no shrinking. */
+   press-wide: rows, tiles and full-width buttons (0.985, the same visible
+   give on something four times wider). Two buttons side by side (Skip |
+   Swap) are each half as wide, and keep press. With Reduce Motion: no
+   shrinking. */
 @utility press {
   transition-property: color, background-color, border-color, outline-color, text-decoration-color, fill, stroke, scale;
   transition-duration: var(--motion-fast);

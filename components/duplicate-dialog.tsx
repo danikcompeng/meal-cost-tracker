@@ -119,7 +119,7 @@ export function DuplicateDialog({
             disabled={pending}
             focusableWhenDisabled
             data-unavailable={(pending && choice !== "update") || undefined}
-            className="h-11 w-full text-base"
+            className="press-wide h-11 w-full text-base"
           >
             {pending && choice === "update" ? "Updating…" : "Update existing"}
           </Button>
@@ -134,7 +134,7 @@ export function DuplicateDialog({
             // Greyed while the other answer saves; full colour while it's
             // the one saving.
             data-unavailable={(pending && choice !== "keep") || undefined}
-            className="h-11 w-full text-base"
+            className="press-wide h-11 w-full text-base"
           >
             {pending && choice === "keep" ? "Saving…" : "Keep both"}
           </Button>
@@ -146,7 +146,7 @@ export function DuplicateDialog({
             disabled={pending}
             focusableWhenDisabled
             data-unavailable={pending || undefined}
-            className="h-11 w-full text-base"
+            className="press-wide h-11 w-full text-base"
           >
             Cancel
           </Button>

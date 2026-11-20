@@ -191,14 +191,14 @@ export function CameraBlocked({
 
       <div className="mt-8 space-y-2">
         {problem !== "no_camera" && problem !== "unsupported" && problem !== "insecure" && (
-          <Button onClick={onRetry} className="h-11 w-full text-base">
+          <Button onClick={onRetry} className="press-wide h-11 w-full text-base">
             Try again
           </Button>
         )}
-        <Button variant="outline" onClick={onTypeNumber} className="h-11 w-full text-base">
+        <Button variant="outline" onClick={onTypeNumber} className="press-wide h-11 w-full text-base">
           Type the number
         </Button>
-        <Button variant="ghost" onClick={onManual} className="h-11 w-full text-base">
+        <Button variant="ghost" onClick={onManual} className="press-wide h-11 w-full text-base">
           Enter manually
         </Button>
       </div>

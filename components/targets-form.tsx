@@ -218,7 +218,7 @@ export function TargetsForm({ targets }: { targets: Targets }) {
       )}
 
       {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full text-base">
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
         {pending ? "Saving…" : "Save targets"}
       </Button>
       <p role="status" className="min-h-5 text-center text-sm text-muted-foreground">

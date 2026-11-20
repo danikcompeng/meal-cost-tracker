@@ -108,7 +108,7 @@ export function LogRecipeForm({
         disabled={pending}
         focusableWhenDisabled
         autoFocus
-        className="h-11 w-full text-base"
+        className="press-wide h-11 w-full text-base"
       >
         {pending ? "Logging…" : "Log it"}
       </Button>

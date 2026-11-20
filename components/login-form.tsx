@@ -126,10 +126,10 @@ function EmailThenCode({ restarted, onStartOver }: { restarted: boolean; onStart
         </p>
       )}
       {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="h-11 w-full">
+      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full">
         {pending ? "Sending…" : "Email me a login code"}
       </Button>
-      <Button type="button" variant="ghost" onClick={openCodeStep} className="h-11 w-full">
+      <Button type="button" variant="ghost" onClick={openCodeStep} className="press-wide h-11 w-full">
         I already have a code
       </Button>
     </form>
