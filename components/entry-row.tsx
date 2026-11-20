@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef } from "react";
 import {
   animate,
-  AnimatePresence,
   motion,
   useIsPresent,
   useMotionValue,
@@ -12,11 +11,10 @@ import {
   type PanInfo,
 } from "framer-motion";
 import { Shuffle } from "lucide-react";
-import { macroText } from "@/lib/macros";
-import { DURATION, EASE_IN, EASE_OUT, SPRING } from "@/lib/motion";
+import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
 import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
-import { amountText } from "@/lib/units";
+import { MealPush } from "./meal-push";
 
 // One thing you ate. Tap it to change the amount, move it or delete it.
 //   Rolled oats                       568.5 kcal
@@ -56,10 +54,8 @@ export function EntryRow({
 }) {
   const reduceMotion = useReducedMotion();
   // The row's sideways position: follows your finger, rests at 0 (shut)
-  // or -REVEAL (open).
+  // or -REVEAL (open), and after Delete keeps going, off the left edge.
   const x = useMotionValue(0);
-  // The row and its button together, sliding off after Delete.
-  const away = useMotionValue(0);
   // The button is invisible while the row is shut, so no red shows at the
   // row's rounded corners; it appears as soon as the row moves.
   const buttonOpacity = useTransform(x, [-4, 0], [1, 0]);
@@ -103,16 +99,15 @@ export function EntryRow({
     settle(open);
   }, [open, settle]);
 
-  // false while the row fades out after a delete. If it comes back before
+  // false while the row leaves after a delete. If it comes back before
   // it's gone (the delete failed, or a quick Undo), it's the same row, so
   // put it back in place, shut.
   const isPresent = useIsPresent();
   useEffect(() => {
     if (!isPresent) return;
     x.jump(0);
-    away.jump(0);
     leaving.current = false;
-  }, [isPresent, x, away]);
+  }, [isPresent, x]);
 
   function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { velocity }: PanInfo) {
     setDragging(false);
@@ -130,21 +125,22 @@ export function EntryRow({
   function handleDelete() {
     if (leaving.current) return;
     leaving.current = true;
-    // Row and button slide off to the left while the row fades and the
-    // rows below close up (MealSection). With reduced motion: only the fade.
+    // Like iPhone Mail: the row keeps sliding left, off the screen, and
+    // the red behind it fills the space it leaves. Then, once it's gone,
+    // the red closes up (MealSection waits DURATION.slow for that: change
+    // both together). With reduced motion: no slide, the row just fades.
     if (!reduceMotion) {
       const width = wrapperRef.current?.offsetWidth ?? 320;
-      animate(away, -(width + 32), { duration: DURATION.base, ease: EASE_IN });
+      animate(x, -width, { duration: DURATION.slow, ease: EASE_IN });
     }
     onDelete();
   }
 
   return (
-    <motion.div
+    <div
       ref={wrapperRef}
       // TodayView: a tap inside the open row isn't a "tap elsewhere".
       data-entry-row={entry.id}
-      style={{ x: away }}
       className="relative overflow-hidden rounded-lg"
     >
       <motion.div
@@ -213,41 +209,11 @@ export function EntryRow({
           // So focus can come back here after Undo (see TodayView).
           data-entry-open={entry.id}
           // Inset: the meal's list hides anything outside a row.
-          className="focus-ring-inset flex min-h-14 min-w-0 flex-1 items-start gap-3 rounded-lg px-3 py-2.5 text-left"
+          className="focus-ring-inset flex min-h-14 min-w-0 flex-1 rounded-lg text-left"
         >
-          {/* After a swap the entry stays the same row, so its old name
-              slides out and the new one slides in (a fade with reduced
-              motion). The key changes only when the recipe does, so editing
-              the servings doesn't play it. */}
-          <span className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
-            <AnimatePresence mode="popLayout" initial={false}>
-              <motion.span
-                key={`${entry.recipe_id ?? entry.food_id ?? ""}:${entry.name}`}
-                initial={{ x: 24, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -24, opacity: 0 }}
-                transition={{ duration: DURATION.slow, ease: EASE_OUT }}
-                className="flex min-w-0 flex-col"
-              >
-                <span className="truncate font-medium">{entry.name}</span>
-                <span className="text-label text-muted-foreground tabular-nums">
-                  {amountText(entry.amount, entry.unit)} ·{" "}
-                  <span className={entry.protein_g === null ? undefined : "font-medium text-primary"}>
-                    {macroText(entry.protein_g, "g", "protein")}
-                  </span>
-                </span>
-              </motion.span>
-            </AnimatePresence>
-          </span>
-          <span
-            className={
-              entry.kcal === null
-                ? "text-muted-foreground tabular-nums"
-                : "whitespace-nowrap tabular-nums"
-            }
-          >
-            {macroText(entry.kcal, "kcal")}
-          </span>
+          {/* After a swap the old meal slides out left and the new one in
+              from the right, as one strip (meal-push.tsx). */}
+          <MealPush entry={entry} />
         </button>
         {onSwap && (
           <button
@@ -262,6 +228,16 @@ export function EntryRow({
           </button>
         )}
       </motion.div>
+      {/* The red that fills in behind the row as it moves: its left edge
+          is glued to the row's right edge (same x), and it's a whole row
+          wide, so wherever the row goes the space it leaves is red, out to
+          the right end. While shut it's just past the right edge, hidden by
+          overflow-hidden. Only moved, never resized (transform only). */}
+      <motion.div
+        aria-hidden="true"
+        style={{ x }}
+        className="absolute inset-y-0 left-full w-full bg-destructive"
+      />
       {/* Behind the row's right end; after it on the page, so Tab and
           screen readers reach it after the row, matching where it sits.
           inert while shut: not focusable and hidden from screen readers
@@ -282,6 +258,6 @@ export function EntryRow({
           Delete
         </motion.button>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -401,6 +401,34 @@ things appear and press), after 8 (shake, slides, heights), and after
 10 (the gestures: these are about feel, and only a real finger can
 judge them). Then the code-reviewer once on the whole branch.
 
+## Phone check 1 (2026-11-20): what changed
+
+- **Press:** full-width buttons (Save, Log it, Delete, Tired of this?…)
+  shrink to 0.985 like rows (`press-wide`, which `cn` swaps for the
+  Button's own `press`). Small buttons, and the two half-width ones side
+  by side (Skip | Swap), keep 0.97.
+- **Undo message:** settles in over `SETTLE_DURATION` (0.4 s), a second
+  named exception after the ring fill. Leaving stays 150 ms.
+- **Delete:** like iPhone Mail. After Delete the row keeps sliding left
+  off the screen (`DURATION.slow`), with red glued to its right edge
+  filling the space it leaves; only then does the red close up
+  (`DURATION.base`), so the rows below move up. Deleted from the edit
+  sheet there's no slide, so it closes at once. The last entry of a meal
+  now plays it too (the list stays on the page while it leaves).
+  Reduce Motion: a fade, then the rows below jump up.
+- **Rings:** fill from empty once per visit, the first time Today shows
+  them after the app is opened or reloaded; later in the same visit
+  (back from Kitchen) they appear at their value. The server already drew
+  them empty and they filled on load; what was missing was "once".
+  An iPhone app brought back from the background isn't a new visit (the
+  page never reloaded), so it doesn't fill again.
+- **Swap on Today:** the old meal (name, amount, kcal) slides out to the
+  left and the new one in from the right as one strip
+  (`components/meal-push.tsx`), no fade. The first version moved them as
+  two separate animations and measured a 40–50 px gap between them
+  mid-slide; as one strip it's 0 px on every frame. Undo plays it too.
+  Reduce Motion: the new meal fades in.
+
 ## Decisions for you (I'd pick the first option each time)
 
 - **A. Press on wide rows:** rows and tiles scale to 0.985, buttons to
