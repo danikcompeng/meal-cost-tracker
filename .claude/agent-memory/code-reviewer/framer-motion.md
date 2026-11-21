@@ -41,6 +41,19 @@ Drag (VisualElementDragControls)
   resumeAnimation only if constraints resolved (first onStart) and currentDirection allows x.
   Lock = 10 px, checks y first. Gesture code never preventDefaults pointerdown (CSS :active works).
 
+AnimatePresence (framer-motion 12, components/AnimatePresence/index.mjs)
+- A child whose key comes back while it's still exiting is REVIVED: same PresenceChild + same
+  component instance, isPresent flips back to true, motion exit reverses. Component state/refs
+  and "[] mount" effects do NOT re-run -> anything done once at exit start must be undone.
+- Exiting children are reinserted after the child they followed; passive effects of a closing
+  and an opening sibling run in tree (JSX) order.
+- ExitAnimationFeature.mount calls update(): an element MOUNTED while exiting runs its exit and
+  completes (#4049), so a scrim rendered only when !isPresent doesn't block removal.
+- MotionValue.start clears `animation` synchronously on complete; isAnimating() is true for ANY
+  running animation (also Framer's own drag-release inertia), it can't say whose.
+- Drag release inertia with dragMomentum false: within constraints = done on first tick; past them
+  = bounce spring (stiffness 200, damping 40) to the NEAREST bound.
+
 Press utilities (motion pass item 2)
 - press/press-wide skip :disabled, [aria-disabled="true"], [data-unavailable], [data-dragging] on the
   element ITSELF only; children of a data-dragging row (swap icon) still shrink.

@@ -9,6 +9,12 @@ Repeat offenders (explain in a new way each time; concrete walk-throughs work be
 - Async code that outlives its component: after every await or animation .then, re-check a
   cancelled flag / card id. Raised 6+ times (camera, scan-flow, recipe-view, today-view, swap fly-off,
   shared swap status, toast Undo replaced). "Had focus" read before an await is stale after it.
+  7th (2026-11-20): AnimatePresence keeps a closed sheet mounted 200 ms, so its window keydown
+  (SwapStack arrows) and listeners still act; check useIsPresent in anything kept for an exit.
+- "Done once at exit start" (closing ref, dialog.close) + a constant AnimatePresence key: a
+  re-open within the exit revives the SAME instance -> stale state (invisible sheet, 2026-11-20).
+- Leftover subscriptions: x.on("change") made in a handler must be removed on every way out
+  (card change, unmount), not only when it reaches its goal.
 - Comments promising another function's behaviour: verify. "Framer reduced motion leaves height
   alone" raised 4x (it JUMPS it on motion components; see [[framer-motion]]); 4th = collapse.tsx
   header + plans/motion.md:249, contradicting CollapseIn's own (correct) docstring.

@@ -87,6 +87,12 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   bottom-sheet `step`, ErrorLine with GAP class table + key-per-appearance); meal-push.tsx (swap strip
   inside entry-row's button); meal-section leaveVariants + AnimatePresence custom=wasSlidOff;
   progress-ring module `filledThisVisit`; cn class group press/press-wide in lib/utils.ts.
+  Items 9-10 + phone check 2 (2026-11-20): bottom-sheet exit (useIsPresent, close() at exit start,
+  module `closedAt` / untilSheetClosed() read by meal-push delay); every sheet in its own
+  AnimatePresence with a CONSTANT key (today-view, recipe-view, recipe-list); lib/held-entries.ts
+  (holdEntry/withHeld) + today-view `held` and `slideOut` ref (willSlide via AnimatePresence custom /
+  usePresenceData); entry-row settle() `heading` skip; swap-stack commit() skip = x.on("change")
+  listener, toMiddle, useCanStretchY; lib/swipe.ts throwVelocity. FILL_DURATION now 1.4 s.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

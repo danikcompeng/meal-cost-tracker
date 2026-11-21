@@ -394,3 +394,18 @@ metadata:
   "Log that one" -ml-2 link clipped by CollapseIn overflow (ring + 8 px tap); shake 6 px clipped in
   More nutrients (4 px room); collapse.tsx header comment 4th time; motion.ts "two values" stale; GAP
   doc; swap-sheet "end" literal vs END; login client email error repeat not re-read (pre-existing).
+- 2026-11-20 motion 9db6007..f6b463d (held entries, carousel, flat cards, sheet slide-down, velocity,
+  rubber band): Minor issues. Verified fine: exit effect before TodayView focusLater (child passive
+  first, same commit via AnimatePresence render-phase update); close-event/backdrop guard; scrim
+  mounted-exiting completes; offScreen = -layoutRight incl. x; x.stop() inside the change listener
+  then flushSync goTo is safe (L last subscriber, new VE gets jump(0)); useCanStretchY scroller = sheet
+  (overflow-x-clip keeps y visible, AutoHeight clip not matched); drag "x"<->true mid-gesture covered
+  by toMiddle; held/hidden transition rebase; 23505 retry clears mark. Raised: re-open same sheet
+  within 200 ms (Esc+Enter, x then tap) revives the instance -> invisible sheet (fix: one effect
+  keyed on isPresent); duplicate id="sheet-title" while two sheets overlap (useId); closing sheet not
+  inert + SwapStack arrows still live 200 ms (ArrowRight can swap); passive exit effect = a frame
+  with both backdrop and scrim + order relies on JSX order (useLayoutEffect); sheet Delete slide no
+  longer waits for the slide-down (12acd95; swap path waits); settle() skip treats Framer's release
+  bounce as ours (pointercancel past a bound -> rests open while state shut); lingering x.on
+  listener after Back/re-rank mid-flight (~75 ms window); stale slideOut mark after lost restore + x
+  then meal change; one-line glitches meal-section:28, entry-row:153; orphaned restsOpen docstring.
