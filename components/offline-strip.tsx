@@ -15,7 +15,7 @@ export function OfflineStrip() {
     // The status is always on the page (empty and 0 px tall while online),
     // so screen readers notice when the words appear inside it and read
     // them out once. sticky: it stays in view however far you've scrolled.
-    <div role="status" className="sticky top-0 z-20 bg-background">
+    <div role="status" className="sticky top-0 z-sticky bg-background">
       {/* Opens its space as it fades in, and closes as it goes; with
           Reduce Motion, a plain fade (collapse.tsx). */}
       <AnimatePresence initial={false}>

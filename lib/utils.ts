@@ -7,8 +7,14 @@ import { createCn } from "cn/config";
 // the two.
 // It also knows our two press shrinks (globals.css) are one setting, so a
 // full-width Button's "press-wide" replaces the "press" every Button has.
+// And that our layer classes (z-tab-bar...) are z-indexes, so one replaces
+// another, or a z-10.
 export const cn = createCn({
   extend: {
-    classGroups: { "font-size": [{ text: ["label"] }], press: ["press", "press-wide"] },
+    classGroups: {
+      "font-size": [{ text: ["label"] }],
+      press: ["press", "press-wide"],
+      z: [{ z: ["raised", "sticky", "tab-bar", "toast", "overlay"] }],
+    },
   },
 });

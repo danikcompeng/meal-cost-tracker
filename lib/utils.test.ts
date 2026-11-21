@@ -17,6 +17,12 @@ describe("cn", () => {
     expect(cn("press-wide", "press")).toBe("press");
   });
 
+  it("knows the layer classes are z-indexes", () => {
+    expect(cn("z-10", "z-tab-bar")).toBe("z-tab-bar");
+    expect(cn("z-raised", "z-overlay")).toBe("z-overlay");
+    expect(cn("z-toast bg-background")).toBe("z-toast bg-background");
+  });
+
   it("lets text-label replace another size, and another size replace it", () => {
     expect(cn("text-sm", "text-label")).toBe("text-label");
     expect(cn("text-label", "text-base")).toBe("text-base");

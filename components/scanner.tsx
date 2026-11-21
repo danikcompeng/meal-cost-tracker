@@ -54,7 +54,9 @@ export function Scanner({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: DURATION.fast }}
-      className="fixed inset-0 overflow-hidden bg-camera text-camera-foreground"
+      // z-overlay: over the offline strip too, which would otherwise cover
+      // the × (the scan itself says when you're offline).
+      className="fixed inset-0 z-overlay overflow-hidden bg-camera text-camera-foreground"
     >
       {/* The screen's title, for screen readers only: the camera picture
           says it for everyone else. Results below it are h2s. */}

@@ -177,7 +177,9 @@ export function EntryRow({
       ref={wrapperRef}
       // TodayView: a tap inside the open row isn't a "tap elsewhere".
       data-entry-row={entry.id}
-      className="relative overflow-hidden rounded-lg"
+      // isolate: the row's z-10 below only counts inside this box, so a
+      // row can never come up over the tab bar (globals.css, Layers).
+      className="relative isolate overflow-hidden rounded-lg"
     >
       <motion.div
         ref={rowRef}

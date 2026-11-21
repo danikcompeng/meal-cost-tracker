@@ -281,7 +281,8 @@ export function SwapStack({
   return (
     <div>
       {/* Room under the card for the ones peeking out behind it. */}
-      <div className="relative mb-6">
+      {/* isolate: the card's z-10 only counts inside the stack. */}
+      <div className="relative isolate mb-6">
         {behind >= 2 && <Peek className="inset-x-6 top-4 -bottom-4" />}
         {behind >= 1 && <Peek className="inset-x-3 top-2 -bottom-2" />}
 

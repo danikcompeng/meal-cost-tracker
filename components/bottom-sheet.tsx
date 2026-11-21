@@ -167,9 +167,10 @@ export function BottomSheet({
         isPresent
           ? "mx-auto mt-auto mb-0 max-h-[85dvh] w-full max-w-lg overflow-visible bg-transparent p-0 text-foreground backdrop:bg-scrim"
           : // Sliding away: no longer an open dialog, so drawn by hand where
-            // it was (the bottom of the screen, above everything), with a
-            // dim layer of its own fading out, and letting taps through.
-            "pointer-events-none fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-end justify-center overflow-visible bg-transparent p-0 text-foreground"
+            // it was (the bottom of the screen, above everything: z-overlay,
+            // since it has left the top layer), with a dim layer of its own
+            // fading out, and letting taps through.
+            "pointer-events-none fixed inset-0 z-overlay m-0 flex h-full max-h-none w-full max-w-none items-end justify-center overflow-visible bg-transparent p-0 text-foreground"
       }
     >
       {/* The dim layer while it slides away: a plain CSS fade from full

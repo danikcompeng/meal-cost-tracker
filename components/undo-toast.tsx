@@ -71,7 +71,7 @@ function MessageBox({ toast, onDismiss }: { toast: Toast | null; onDismiss: () =
       // Taps pass through the empty box; only the message takes them.
       // Today adds an h-20 spacer while a message shows, so the page can
       // scroll clear of it: change both together.
-      className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-lg px-4"
+      className="pointer-events-none fixed inset-x-0 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-toast mx-auto max-w-lg px-4"
     >
       {/* mode="wait": a second message waits for the first to fade out,
           instead of both showing for a moment. */}

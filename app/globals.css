@@ -165,6 +165,42 @@
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Layers: what sits on top of what, lowest first. Use the z-* classes
+   below, never a z-10 or z-50 of your own on something that floats over
+   the page.
+   Why it matters: a box with a z-index (or a transform, which every moving
+   row has) is painted as one sheet. Without a number, a later sheet goes on
+   top of an earlier one; with one, the higher number wins. The tab bar had
+   no number, so a Today row with z-10 slid over it as you scrolled.
+   Inside a component, a z-10 is fine if its parent has `isolate`: that
+   makes the parent one sheet, so the numbers inside it can't reach out
+   (the swipe row keeps its red button under the row that way).
+   Open sheets and dialogs need no number: showModal() puts them in the
+   browser's "top layer", above every z-index. lib/layers.test.ts checks
+   the order and that no raw number sneaks in. */
+:root {
+  --z-raised: 10; /* lifted off the page, scrolls with it: the log-out message */
+  --z-sticky: 20; /* stays at the top as you scroll: the offline strip */
+  --z-tab-bar: 30; /* fixed at the bottom: everything scrolls under it */
+  --z-toast: 40; /* the Undo message, just above the tab bar */
+  --z-overlay: 50; /* covers the screen: the scanner, a sheet sliding away */
+}
+@utility z-raised {
+  z-index: var(--z-raised);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-tab-bar {
+  z-index: var(--z-tab-bar);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+
 /* Empty space under a screen's content, so the last item can scroll up
    past the tab bar (fixed to the bottom, about 4.3 rem tall, with the
    round Scan button sticking up above it). On an iPhone without a home

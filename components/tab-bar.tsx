@@ -22,7 +22,8 @@ export function TabBar({ active }: { active?: TabId }) {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
+      // z-tab-bar: above everything that scrolls (globals.css, Layers).
+      className="fixed inset-x-0 bottom-0 z-tab-bar border-t border-border bg-background pb-[env(safe-area-inset-bottom)]"
     >
       <ul className="mx-auto grid max-w-lg grid-cols-3 items-center px-4 py-2">
         <li className="justify-self-center">
