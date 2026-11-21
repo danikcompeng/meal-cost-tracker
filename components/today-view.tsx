@@ -24,7 +24,7 @@ import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import { swapCurrentFromEntry, type EatenRow, type RankedSwap } from "@/lib/swap";
 import type { Targets } from "@/lib/targets";
 import type { Food, MealEntry, Recipe } from "@/lib/types";
-import { BottomSheet } from "./bottom-sheet";
+import { BottomSheet, noteSheetClosing } from "./bottom-sheet";
 import { DaySummary } from "./day-summary";
 import { EditEntryForm } from "./edit-entry-form";
 import { FirstUse } from "./first-use";
@@ -43,6 +43,14 @@ type Sheet =
   | SwapSheetState
   | null;
 type SwapSheetState = { mode: "swap"; entry: MealEntry };
+
+/**
+ * How long a deleted row's "slide off" mark lasts. It's read once, when
+ * the row starts leaving, which is within a few hundred ms of being set
+ * (a row's Delete hides it at once; the edit sheet's lets it go as the
+ * sheet closes). Generous, so a slow phone never misses it.
+ */
+const MARK_LIFETIME_MS = 3000;
 
 export function TodayView({
   day,
@@ -179,6 +187,9 @@ export function TodayView({
     const previous = result.previous;
     // Only this sheet's status: another sheet may have a swap of its own.
     setSwapStatus((s) => (s?.sheet === mine ? null : s));
+    // The row's carousel waits for the sheet to slide down (meal-push.tsx):
+    // said before the redraw, so the row knows even if it redraws first.
+    if (openSheet.current === mine) noteSheetClosing();
     setSheet((current) => (current === mine ? null : current));
     showSwapUndo(entry, swap, previous, swappedMessage(entry.meal, swap.name, entry.amount));
     return true;
@@ -282,11 +293,19 @@ export function TodayView({
   // screen depends on it until then.
   const slideOut = useRef(new Set<string>());
   const willSlide = useCallback((id: string) => slideOut.current.has(id), []);
-  // The mark is taken off exactly where a row comes back: a delete that
-  // failed, or Undo. Not by watching what's on screen: the edit sheet
-  // deletes inside a React transition, whose changes ("hide it", "hold
-  // it") only apply once the whole delete is done, so for one redraw the
-  // row is on screen, not yet hidden, and already marked.
+  // The mark is taken off where a row comes back (a delete that failed,
+  // or Undo), and in any case a few seconds after it was set: by then the
+  // row has started leaving, which is the only moment it's read. So a
+  // row that comes back some other way (an Undo whose answer was lost)
+  // can't slide off later when it's only moved to another meal.
+  // Not by watching what's on screen: the edit sheet deletes inside a
+  // React transition, whose changes ("hide it", "hold it") only apply
+  // once the whole delete is done, so for one redraw the row is on
+  // screen, not yet hidden, and already marked.
+  function markSlideOut(id: string) {
+    slideOut.current.add(id);
+    setTimeout(() => slideOut.current.delete(id), MARK_LIFETIME_MS);
+  }
 
   function setHiddenFor(id: string, hide: boolean) {
     setHidden((current) => {
@@ -407,7 +426,7 @@ export function TodayView({
     if (document.activeElement?.matches("[data-row-delete]")) {
       focusLater.current = afterDeleteSelector(entry.meal);
     }
-    slideOut.current.add(entry.id);
+    markSlideOut(entry.id);
     setHiddenFor(entry.id, true);
     const result = await removeEntry(entry);
     if (!result.ok) {
@@ -465,9 +484,11 @@ export function TodayView({
     // Deleted now, or already: either way the sheet's job is done.
     if (pressedWithFocus) focusLater.current = afterDeleteSelector(entry.meal);
     // The sheet closes and, in the same redraw, the row is let go: it
-    // slides off to the left like a swiped row's Delete.
+    // slides off to the left like a swiped row's Delete, once the sheet
+    // has slid down (said first, so the row's wait can't miss it).
+    if (openSheet.current === mine) noteSheetClosing();
     finish(mine);
-    slideOut.current.add(entry.id);
+    markSlideOut(entry.id);
     release(entry.id);
     if (result.ok) showDeleteUndo(entry, result.deleted, deletedMessage(entry.name, entry.meal));
     else showAlreadyDeleted(entry);

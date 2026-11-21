@@ -1,5 +1,6 @@
 // Swipe to reveal on a Today row (like iPhone Mail): where the row rests
-// after you let go. Pure, so it can be unit tested.
+// after you let go. And how fast a skipped swap card is thrown off. Pure,
+// so they can be unit tested.
 
 /** How far an open row slides: the Delete button's width, in px. */
 export const REVEAL = 88;
@@ -16,6 +17,12 @@ export const FLICK_SPEED = 500;
  * past a third of the button's width stays open, less snaps shut. The same
  * rule from either end, so swiping an open row back closes it.
  */
+export function restsOpen(position: number, velocity: number): boolean {
+  if (velocity < -FLICK_SPEED) return true;
+  if (velocity > FLICK_SPEED) return false;
+  return position < -REVEAL * OPEN_SHARE;
+}
+
 /**
  * How fast (px per second, signed) a card is thrown off towards `side`
  * (-1 left, 1 right) when you let go: your finger's own speed, so a hard
@@ -27,10 +34,4 @@ export const FLICK_SPEED = 500;
 export function throwVelocity(release: number, side: -1 | 1, min: number): number {
   const towardsSide = release * side;
   return side * Math.max(towardsSide, min);
-}
-
-export function restsOpen(position: number, velocity: number): boolean {
-  if (velocity < -FLICK_SPEED) return true;
-  if (velocity > FLICK_SPEED) return false;
-  return position < -REVEAL * OPEN_SHARE;
 }

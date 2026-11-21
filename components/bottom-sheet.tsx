@@ -7,7 +7,7 @@
 // it, and the page behind can't be clicked or read by screen readers while
 // it's open. Tapping the dimmed area outside the panel closes it too.
 
-import { useEffect, useRef } from "react";
+import { useId, useLayoutEffect, useRef } from "react";
 import { motion, useIsPresent, useReducedMotion } from "framer-motion";
 import { X } from "lucide-react";
 import { DURATION, EASE_IN, SPRING } from "@/lib/motion";
@@ -24,6 +24,29 @@ let closedAt = 0;
 /** Milliseconds until a sheet that's closing right now has gone (0 if none). */
 export function untilSheetClosed(): number {
   return Math.max(0, closedAt - performance.now());
+}
+/**
+ * A sheet starts sliding away now. The sheet says so itself as it closes;
+ * a page that closes a sheet AND changes the day in the same go (a
+ * delete, a swap) says it first, because its rows read untilSheetClosed()
+ * in that same redraw, possibly before the sheet's own effect has run.
+ */
+export function noteSheetClosing() {
+  closedAt = performance.now() + CLOSE.duration * 1000;
+}
+
+// The page behind can't scroll while any sheet is open. Counted, not
+// saved and restored per sheet: while one sheet slides away another can
+// open, in either order, and a sheet saving "hidden" as the value to
+// restore would lock the page for good.
+let openSheets = 0;
+function lockScroll() {
+  openSheets += 1;
+  document.documentElement.style.overflow = "hidden";
+}
+function unlockScroll() {
+  openSheets = Math.max(0, openSheets - 1);
+  if (openSheets === 0) document.documentElement.style.overflow = "";
 }
 
 export function BottomSheet({
@@ -49,27 +72,23 @@ export function BottomSheet({
   const titleRef = useRef<HTMLHeadingElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const reduceMotion = useReducedMotion();
-  // false once the page has closed this sheet: it's sliding away.
+  // Its own id per sheet: while one slides away and another opens, two
+  // are on the page, and a shared id would name the new one after the old.
+  const titleId = useId();
+  // false once the page has closed this sheet: it's sliding away. Back to
+  // true if the page opens it again before the slide is over (the same
+  // sheet comes back, AnimatePresence keeps it): then it opens again.
   const isPresent = useIsPresent();
-  // Gives the page back (scrolling, focus); set by the effect below.
-  const giveBack = useRef<(() => void) | null>(null);
   const closing = useRef(false);
 
-  // The page closed the sheet: really close the dialog straight away,
-  // and only keep drawing it for the slide (the "closing" look below).
-  // An open dialog makes the rest of the page untouchable, so focus
-  // couldn't go back to the button that opened it, nor wherever the page
-  // sends it next (Today's "+ Add" after a delete). This runs before the
-  // page's own effects, so the page still has the last word on focus.
-  useEffect(() => {
-    if (isPresent) return;
-    closing.current = true;
-    closedAt = performance.now() + CLOSE.duration * 1000;
-    ref.current?.close();
-    giveBack.current?.();
-  }, [isPresent]);
-
-  useEffect(() => {
+  // Open while present; the cleanup is the closing. One effect, keyed on
+  // presence, so a sheet brought back mid-slide simply opens again.
+  // A layout effect: it runs before the browser paints, and before the
+  // page's own effects, so the page still has the last word on focus
+  // (Today's "+ Add" after a delete).
+  useLayoutEffect(() => {
+    if (!isPresent) return;
+    closing.current = false;
     const dialog = ref.current;
     // Remember what was focused (the button that opened the sheet), so
     // keyboard and screen-reader users land back there when it closes.
@@ -97,30 +116,29 @@ export function BottomSheet({
     const marked = dialog?.querySelector<HTMLElement>("[data-autofocus]");
     if (marked) marked.focus();
     else if (document.activeElement === closeRef.current) titleRef.current?.focus();
-    // Stop the page behind from scrolling while the sheet is open (iPhones
+    // Stop the page behind from scrolling while a sheet is open (iPhones
     // otherwise scroll the page when you drag inside the sheet).
-    const root = document.documentElement;
-    const before = root.style.overflow;
-    root.style.overflow = "hidden";
-    // Once, when it starts closing (or is removed without a slide).
-    let given = false;
-    giveBack.current = () => {
-      if (given) return;
-      given = true;
-      root.style.overflow = before;
+    lockScroll();
+    // The page closed it (or it was removed): really close the dialog
+    // straight away, and only keep drawing it for the slide (the
+    // "closing" look below). An open dialog makes the rest of the page
+    // untouchable, so focus couldn't go back to the button that opened it.
+    return () => {
+      closing.current = true;
+      noteSheetClosing();
+      dialog?.close();
+      unlockScroll();
       // Only if it's still on the page (logging can re-draw the list).
       if (opener?.isConnected) opener.focus();
     };
-    return () => {
-      dialog?.close();
-      giveBack.current?.();
-    };
-  }, []);
+  }, [isPresent]);
 
   return (
     <dialog
       ref={ref}
-      aria-labelledby="sheet-title"
+      aria-labelledby={titleId}
+      // Sliding away: out of Tab and screen readers too, not just taps.
+      inert={!isPresent}
       // "cancel" fires on Escape; let React's state close it instead.
       onCancel={(e) => {
         e.preventDefault();
@@ -154,16 +172,15 @@ export function BottomSheet({
             "pointer-events-none fixed inset-0 z-50 m-0 flex h-full max-h-none w-full max-w-none items-end justify-center overflow-visible bg-transparent p-0 text-foreground"
       }
     >
+      {/* The dim layer while it slides away: a plain CSS fade from full
+          (starting:) to none over DURATION.base. Not a Framer element on
+          purpose: one removed mid-fade (the sheet opened again while
+          closing) left Framer waiting for it forever, and the next close
+          then never took the sheet off the page. */}
       {!isPresent && (
-        <motion.div
+        <div
           aria-hidden="true"
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 0 }}
-          // It appears while the sheet is already leaving, so this fade is
-          // also its "exit" (the sheet waits for it).
-          exit={{ opacity: 0 }}
-          transition={CLOSE}
-          className="absolute inset-0 bg-scrim"
+          className="absolute inset-0 bg-scrim opacity-0 transition-opacity duration-(--motion-base) ease-(--motion-ease-out) starting:opacity-100"
         />
       )}
       <motion.div
@@ -178,7 +195,7 @@ export function BottomSheet({
       >
         <div className="flex items-center justify-between px-4 pt-3">
           {/* tabIndex -1: code can focus it (see above), Tab skips it. */}
-          <h2 ref={titleRef} id="sheet-title" tabIndex={-1} className="text-lg font-semibold outline-none">
+          <h2 ref={titleRef} id={titleId} tabIndex={-1} className="text-lg font-semibold outline-none">
             {title}
           </h2>
           <button

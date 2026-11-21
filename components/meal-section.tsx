@@ -6,15 +6,17 @@ import { dayTotals, totalNumber } from "@/lib/day-totals";
 import { MEAL_LABELS, type Meal } from "@/lib/meals";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { MealEntry } from "@/lib/types";
+import { untilSheetClosed } from "./bottom-sheet";
 import { EntryRow } from "./entry-row";
 
 /**
  * How a deleted row leaves: the space it took closes up, so the rows below
  * move up.
  * - Deleted with Delete (the row's red one, or the edit sheet's once the
- *   sheet has closed; `willSlide`): it slides off to the left as it
- *   leaves, red filling in behind (EntryRow), so the gap waits
- *   DURATION.slow for that slide, then the red closes up.
+ *   sheet has slid away; `willSlide`): it slides off to the left as it
+ *   leaves, red filling in behind (EntryRow), so the gap waits for the
+ *   sheet (untilSheetClosed) and DURATION.slow for that slide, then the
+ *   red closes up.
  * - Anything else (gone from the server's list, another phone): it fades
  *   and closes at once.
  * - Reduce Motion: MotionProvider makes height jump, so height: 0 would
@@ -25,7 +27,10 @@ function leaveVariants(id: string, reduceMotion: boolean | null): Variants {
   return {
     leave: (willSlide: ((id: string) => boolean) | undefined) => {
       if (reduceMotion) return { opacity: 0 };
-      const delay = willSlide?.(id) ? DURATION.slow : 0;      return { opacity: 0, height: 0, transition: { duration: DURATION.base, ease: EASE_OUT, delay } };
+      // A sliding row first waits for a sheet still sliding down (the edit
+      // sheet's Delete), then for its own slide, then closes up.
+      const delay = willSlide?.(id) ? untilSheetClosed() / 1000 + DURATION.slow : 0;
+      return { opacity: 0, height: 0, transition: { duration: DURATION.base, ease: EASE_OUT, delay } };
     },
   };
 }

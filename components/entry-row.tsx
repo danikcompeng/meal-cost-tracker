@@ -15,6 +15,7 @@ import { Shuffle, Trash2 } from "lucide-react";
 import { DURATION, EASE_IN, RUBBER, SPRING } from "@/lib/motion";
 import { REVEAL, restsOpen } from "@/lib/swipe";
 import type { MealEntry } from "@/lib/types";
+import { untilSheetClosed } from "./bottom-sheet";
 import { MealPush } from "./meal-push";
 
 // One thing you ate. Tap it to change the amount, move it or delete it.
@@ -91,19 +92,24 @@ export function EntryRow({
    * open and settles while a slow push eases in. Past a limit (pulled right
    * of shut, or left of Delete) it springs back with a hint of bounce
    * (SPRING.settle); otherwise it snaps (SPRING.snap).
-   * Already heading there (the page confirming the open you just swiped):
-   * left alone, because starting again would measure the speed afresh and
-   * lose the flick.
+   * `keepIfHeading`: only for the page confirming the open you just
+   * swiped. If our spring is already heading there it's left alone,
+   * because starting again would measure the speed afresh and lose the
+   * flick. Nothing else skips: x can also be moving by Framer's own
+   * release bounce (a touch the phone cancelled), which must be replaced.
+   * A row that's leaving (deleted) is never moved back by this.
    */
   const heading = useRef<number | null>(null);
+  const present = useRef(true);
   const settle = useCallback(
-    (toOpen: boolean, velocity?: number) => {
+    (toOpen: boolean, velocity?: number, keepIfHeading = false) => {
+      if (!present.current) return;
       const target = toOpen ? -REVEAL : 0;
       if (reduceMotion) {
         x.jump(target);
         return;
       }
-      if (velocity === undefined && x.isAnimating() && heading.current === target) return;
+      if (keepIfHeading && x.isAnimating() && heading.current === target) return;
       heading.current = target;
       const now = x.get();
       const pastLimit = now > 0 || now < -REVEAL;
@@ -115,7 +121,7 @@ export function EntryRow({
   // Opened or shut by the page (another row opened, a tap elsewhere, a
   // scroll) or by your own swipe: move there.
   useEffect(() => {
-    settle(open);
+    settle(open, undefined, true);
   }, [open, settle]);
 
   // false while the row leaves after a delete.
@@ -125,15 +131,18 @@ export function EntryRow({
   // red one or the edit sheet's.
   const willSlide = usePresenceData() as ((id: string) => boolean) | undefined;
   useEffect(() => {
+    present.current = isPresent;
     if (!isPresent) {
       // Like iPhone Mail: the row slides left, off the screen, from
       // wherever it is (open after a swipe, shut after the edit sheet),
       // and the red glued to its right edge fills the space it leaves.
       // Then the red closes up (MealSection waits DURATION.slow for that:
-      // change both together). With reduced motion: no slide, it fades.
+      // change both together). After the edit sheet's Delete it first
+      // waits for the sheet to slide down, so you see it (same wait in
+      // MealSection). With reduced motion: no slide, it fades.
       if (reduceMotion || !willSlide?.(entry.id)) return;
       const width = wrapperRef.current?.offsetWidth ?? 320;
-      animate(x, -width, { duration: DURATION.slow, ease: EASE_IN });
+      animate(x, -width, { duration: DURATION.slow, ease: EASE_IN, delay: untilSheetClosed() / 1000 });
       return;
     }
     // Back before it's gone (the delete failed, or a quick Undo): it's the
@@ -150,7 +159,8 @@ export function EntryRow({
       settle(openRef.current);
       return;
     }
-    const toOpen = restsOpen(x.get(), velocity.x);    // Carries your finger's speed into the spring.
+    const toOpen = restsOpen(x.get(), velocity.x);
+    // Carries your finger's speed into the spring.
     settle(toOpen, velocity.x);
     if (toOpen !== openRef.current) onOpenChange(toOpen);
   }

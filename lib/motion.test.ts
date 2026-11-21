@@ -37,6 +37,10 @@ describe("motion tokens: CSS matches lib/motion.ts", () => {
     expect(cssVar("motion-fast")).toBe(`${DURATION.fast * 1000}ms`);
   });
 
+  it("a closing sheet's dim layer fades over DURATION.base", () => {
+    expect(cssVar("motion-base")).toBe(`${DURATION.base * 1000}ms`);
+  });
+
   it("the camera picture's fade is DURATION.slow", () => {
     expect(cssVar("motion-slow")).toBe(`${DURATION.slow * 1000}ms`);
   });

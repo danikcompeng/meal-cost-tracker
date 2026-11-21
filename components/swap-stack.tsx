@@ -14,7 +14,15 @@
 // fly-off, see commit). Otherwise it springs back to the middle.
 
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
-import { animate, motion, useMotionValue, useReducedMotion, useTransform, type PanInfo } from "framer-motion";
+import {
+  animate,
+  motion,
+  useIsPresent,
+  useMotionValue,
+  useReducedMotion,
+  useTransform,
+  type PanInfo,
+} from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_OUT, PUSH_FADE, PUSH_SCALE, RUBBER, SCALE_FROM, SPRING, THROW_SPEED } from "@/lib/motion";
@@ -93,8 +101,18 @@ export function SwapStack({
   // too. The buttons stay the same elements from card to card, so focus
   // stays on Skip while you skip through. useLayoutEffect runs before the
   // screen is painted, so the new card never flashes where the old one was.
+  // A Skip's "has it left the screen yet?" listener (commit). Dropped
+  // whenever the top card changes or the sheet goes, so one left over from
+  // a card that changed mid-flight can't shrink, fade or stop the next.
+  const stopFollowing = useRef<(() => void) | null>(null);
+  const dropFollowing = () => {
+    stopFollowing.current?.();
+    stopFollowing.current = null;
+  };
+
   useLayoutEffect(() => {
     topId.current = swap.id;
+    dropFollowing();
     x.jump(0);
     y.jump(0);
     scale.jump(1);
@@ -102,14 +120,24 @@ export function SwapStack({
     leaving.current = false;
   }, [swap.id, x, y, scale, opacity]);
 
-  // Closing the sheet mid-flight: stop the animation, so it can't open a
-  // recipe (or, on Today, swap your meal) after you said no. `alive` stops
-  // a failed swap from bringing back a card that's no longer on screen.
+  // The sheet is closing (it slides away first, still on the page) or
+  // gone: from that moment nothing here may act. The arrow keys, the
+  // buttons and a card still in flight could otherwise swap your meal (or
+  // open a recipe) after you said no. `alive` also stops a failed swap
+  // from bringing back a card that's no longer on screen.
+  const isPresent = useIsPresent();
   const alive = useRef(true);
   useEffect(() => {
-    alive.current = true;
+    alive.current = isPresent;
+    if (!isPresent) {
+      dropFollowing();
+      x.stop();
+    }
+  }, [isPresent, x]);
+  useEffect(() => {
     return () => {
       alive.current = false;
+      dropFollowing();
       x.stop();
       y.stop();
       scale.stop();
@@ -149,7 +177,8 @@ export function SwapStack({
 
   /** `velocity`: your finger's speed when you let go; 0 for a tap or a key. */
   function commit(direction: SwapDirection, velocity = { x: 0, y: 0 }) {
-    if (leaving.current || pending) return;
+    // Not once the sheet is closing (see `alive` above).
+    if (!alive.current || leaving.current || pending) return;
     leaving.current = true;
     const id = swap.id;
     // Picking (Swap, or swiped right): no fly-off (phone check 2). Thrown
@@ -182,12 +211,13 @@ export function SwapStack({
     // Shrinking and fading a little as it goes, like the Today row's
     // carousel: worked out from how far it has travelled, so the three
     // can't drift apart.
-    const stopFollowing = x.on("change", (now) => {
+    dropFollowing();
+    stopFollowing.current = x.on("change", (now) => {
       const share = Math.min(Math.max(now / offScreen, 0), 1);
       scale.set(1 - (1 - PUSH_SCALE) * share);
       opacity.set(1 - (1 - PUSH_FADE) * share);
       if (now > offScreen) return;
-      stopFollowing();
+      dropFollowing();
       // Stopped here, so nothing moves the card once the next one is up
       // (the old "then" that ran late under next dev and left the next
       // card off-screen, plans/motion.md item 9).

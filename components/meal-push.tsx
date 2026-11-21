@@ -83,7 +83,9 @@ export function MealPush({ entry }: { entry: MealEntry }) {
       duration: reduceMotion ? DURATION.base : DURATION.slow,
       ease: EASE_OUT,
       // After a swap the sheet slides down first: the old meal waits in
-      // place until it's gone, so the two moves don't overlap.
+      // place until it's gone, so the two moves don't overlap. Today says
+      // "a sheet is closing" (noteSheetClosing) before the redraw, so this
+      // knows even when the new meal and the closing land in one redraw.
       delay: untilSheetClosed() / 1000,
     });
     controls.then(() => {
