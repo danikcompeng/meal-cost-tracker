@@ -307,14 +307,16 @@ its own. Plan both before building, like every feature.
    ## 2026-11-20: Learning: JavaScript
 
    -swap.ts is a javascript file that handles how the recipe switcher works.
-   -It determines which recipes are similar to the recipe that needs to be switched, and it orders them using 2 main facts: Price similarity, and macro similarity(protein and for now by default)
+   -It determines which recipes are similar to the recipe that needs to be switched, and it orders them using 4 facts, in this order: protein similarity(close protein first), how many foods you'd need to get(fewest first), price(cheaper or about the same first), and if you ate it recently(not in the last 3 days first)
    -By comparing these nutrient facts of the other logged meals, the swap.ts file assigns values to rank each meal(Decorating)
    -It then undecorates the recipes and returns the most similar recipes in order of most similar to least.
 
    ## 2026-11-20: Learning: React
 
    -entry-row.tsx is purely UI with almost no logic. It just takes the user's action input and calls a function to do it
-   -Like when a user swipes across the screen to signal a meal swap, entry-row.tsx calls the function "onSwap", which then uses data from swap.ts which only runs once, and then displays the next recipe
+   -Like when a user taps the swap icon(the shuffle arrows) on a row, entry-row.tsx calls the function "onSwap", which opens the swap sheet. The sheet uses data from swap.ts which only runs once, and then displays the recipes as cards. Swiping the row left is different, it opens the trash can to delete it
+   -Props vs state: props are what a component is handed by its parent(entry-row.tsx gets the entry and onSwap from meal-section.tsx), and it can't change them itself. State is what a component remembers and changes on its own, and changing state redraws the component. Example: which row is swiped open is state in today-view.tsx(openRow), and each entry-row.tsx gets it as the prop "open", so only one row is open at a time
+   -"use client" at the top of a file means that component runs in the browser, not only on the server. It's needed for anything the user interacts with: taps, swipes, state, animations. Without it the component is made once on the server and sent as plain HTML
 
 ## 2026-11-20: Motion pass (branch `motion`, plans/motion.md)
 
