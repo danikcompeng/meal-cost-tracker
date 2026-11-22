@@ -3,6 +3,7 @@
 // A missing value is null and always shows as "—". It is never treated as 0,
 // because "0 g protein" is a real claim about a food and "not entered" isn't.
 
+import { formatNumber, type DisplayUnit } from "./format";
 import type { BaseUnit } from "./units";
 
 export type Macros = {
@@ -49,20 +50,15 @@ export function basisLabel(unit: BaseUnit): string {
   return unit === "each" ? "per 1 item" : `per ${basisAmount(unit)} ${unit}`;
 }
 
-const amountFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
-
 /**
  * One macro as text: macroText(13, "g", "protein") -> "13 g protein",
- * macroText(350, "kcal") -> "350 kcal". A missing value keeps its label so
- * you can still tell which one is missing: "— protein", "— kcal".
- * Above 0 but under 0.05: "<0.1 g protein".
+ * macroText(652.9, "kcal") -> "653 kcal". A missing value keeps its label
+ * so you can still tell which one is missing: "— protein", "— kcal".
+ * Rounded by the display rule in lib/format.ts (4.5 g, 24 g, "<0.1 g").
  */
-export function macroText(value: number | null, unit: string, label?: string): string {
+export function macroText(value: number | null, unit: DisplayUnit, label?: string): string {
   if (value === null || !Number.isFinite(value)) return `— ${label ?? unit}`;
-  // A little that rounds down to 0 ("0.03 g") shows "<0.1 g", because
-  // "0 g" would claim there's none at all.
-  const shown = value > 0 && Math.round(value * 10) === 0 ? "<0.1" : amountFormat.format(value);
-  const amount = `${shown} ${unit}`;
+  const amount = `${formatNumber(value, unit)} ${unit}`;
   return label ? `${amount} ${label}` : amount;
 }
 

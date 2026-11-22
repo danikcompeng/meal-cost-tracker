@@ -35,7 +35,7 @@ export function SummaryRings({
         <BigRing p={kcal} />
       ) : (
         <p className="mt-1 text-primary">
-          <span className="text-5xl font-bold tabular-nums">{totalNumber(kcalTotal)}</span>
+          <span className="text-5xl font-bold tabular-nums">{totalNumber(kcalTotal, "kcal")}</span>
           <span className="ml-1.5 text-base font-medium">kcal</span>
         </p>
       )}

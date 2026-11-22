@@ -76,7 +76,7 @@ export function MealSection({
         </h2>
         {entries.length > 0 && (
           <span className="text-sm text-muted-foreground tabular-nums">
-            {totalNumber(kcal)} kcal
+            {totalNumber(kcal, "kcal")} kcal
             {kcal.missing > 0 && kcal.sum !== null && ` · ${kcal.missing} unknown`}
           </span>
         )}

@@ -4,6 +4,7 @@
 // values we DO know, plus how many entries are missing that value, so the
 // screen can say "1,240 kcal + 1 food without calories".
 
+import { formatNumber, type DisplayUnit } from "./format";
 import { EXTRA_KEYS, NUTRIENT_KEYS, type Nutrients } from "./macros";
 
 export type Total = {
@@ -51,16 +52,14 @@ export function hasAnyExtra(totals: DayTotals): boolean {
   });
 }
 
-const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
-
 /**
- * A total rounded to whole numbers: "1,240", or "—" when unknown. A little
- * that rounds down to 0 shows "<1": "0" would claim there's none at all.
+ * A total by the display rule (lib/format.ts): "1,240" kcal, "4.5" g, or
+ * "—" when unknown. A little that rounds down to 0 shows "<1" ("<0.1" g):
+ * "0" would claim there's none at all.
  */
-export function totalNumber(total: Total): string {
+export function totalNumber(total: Total, unit: DisplayUnit): string {
   if (total.sum === null) return "—";
-  if (total.sum > 0 && Math.round(total.sum) === 0) return "<1";
-  return whole.format(total.sum);
+  return formatNumber(total.sum, unit);
 }
 
 /** "+ 1 food without calories", "+ 2 foods without a price", or null. */

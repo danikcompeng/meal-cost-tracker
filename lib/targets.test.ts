@@ -169,11 +169,11 @@ describe("lowCalorieNote", () => {
 
 describe("progress", () => {
   it("is null with no target", () => {
-    expect(progress({ sum: 500, missing: 0 }, null)).toBeNull();
+    expect(progress({ sum: 500, missing: 0 }, null, "kcal")).toBeNull();
   });
 
   it("works out what's left", () => {
-    const p = progress({ sum: 1140, missing: 0 }, 2000)!;
+    const p = progress({ sum: 1140, missing: 0 }, 2000, "kcal")!;
     expect(p).toEqual({
       target: 2000,
       eaten: 1140,
@@ -184,41 +184,49 @@ describe("progress", () => {
       incomplete: false,
     });
     expect(kcalHeadline(p)).toEqual({ prefix: null, number: "860", suffix: "kcal left" });
-    expect(ofTarget({ sum: 1140, missing: 0 }, 2000)).toBe("1,140 of 2,000");
+    expect(ofTarget({ sum: 1140, missing: 0 }, 2000, "kcal")).toBe("1,140 of 2,000");
   });
 
   it("says 'up to' when a food is missing calories", () => {
-    const p = progress({ sum: 1140, missing: 1 }, 2000)!;
+    const p = progress({ sum: 1140, missing: 1 }, 2000, "kcal")!;
     expect(kcalHeadline(p)).toEqual({ prefix: "up to", number: "860", suffix: "kcal left" });
   });
 
   it("counts all-unknown as nothing known, still 'up to'", () => {
-    const p = progress({ sum: null, missing: 2 }, 2000)!;
+    const p = progress({ sum: null, missing: 2 }, 2000, "kcal")!;
     expect(p.eaten).toBe(0);
-    expect(ofTarget({ sum: null, missing: 2 }, 2000)).toBe("— of 2,000");
+    expect(ofTarget({ sum: null, missing: 2 }, 2000, "kcal")).toBe("— of 2,000");
     expect(kcalHeadline(p)).toEqual({ prefix: "up to", number: "2,000", suffix: "kcal left" });
   });
 
   it("says how far over, and keeps the bar full", () => {
-    const p = progress({ sum: 2120, missing: 0 }, 2000)!;
+    const p = progress({ sum: 2120, missing: 0 }, 2000, "kcal")!;
     expect(p).toMatchObject({ over: true, reached: true, fraction: 1 });
     expect(kcalHeadline(p)).toEqual({ prefix: null, number: "120", suffix: "kcal over" });
     expect(kcalHeadline({ ...p, incomplete: true }).prefix).toBe("at least");
   });
 
   it("uses the rounded total, so 139.6 of 140 g counts as reached", () => {
-    expect(progress({ sum: 139.6, missing: 0 }, 140)).toMatchObject({
+    expect(progress({ sum: 139.6, missing: 0 }, 140, "g")).toMatchObject({
       eaten: 140,
       left: 0,
       over: false,
       reached: true,
       fraction: 1,
     });
-    expect(progress({ sum: 139.4, missing: 0 }, 140)!.reached).toBe(false);
+    expect(progress({ sum: 139.4, missing: 0 }, 140, "g")!.reached).toBe(false);
+  });
+
+  it("under 10 g, uses the one-decimal total the screen shows", () => {
+    // Shown as "9.6 of 10 g", so not reached (whole rounding said 10).
+    expect(progress({ sum: 9.6, missing: 0 }, 10, "g")).toMatchObject({ eaten: 9.6, reached: false });
+    expect(ofTarget({ sum: 9.6, missing: 0 }, 10, "g")).toBe("9.6 of 10");
+    // 9.96 is shown as 10, so it is reached.
+    expect(progress({ sum: 9.96, missing: 0 }, 10, "g")).toMatchObject({ eaten: 10, reached: true });
   });
 
   it("treats a 0 g target as met and full", () => {
-    expect(progress({ sum: 0, missing: 0 }, 0)).toMatchObject({ reached: true, fraction: 1 });
-    expect(progress({ sum: 5, missing: 0 }, 0)).toMatchObject({ over: true, left: -5 });
+    expect(progress({ sum: 0, missing: 0 }, 0, "g")).toMatchObject({ reached: true, fraction: 1 });
+    expect(progress({ sum: 5, missing: 0 }, 0, "g")).toMatchObject({ over: true, left: -5 });
   });
 });

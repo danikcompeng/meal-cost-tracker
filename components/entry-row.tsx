@@ -19,7 +19,7 @@ import { untilSheetClosed } from "./bottom-sheet";
 import { MealPush } from "./meal-push";
 
 // One thing you ate. Tap it to change the amount, move it or delete it.
-//   Rolled oats                       568.5 kcal
+//   Rolled oats                       569 kcal
 //   150 g · 19.5 g protein
 // A recipe gets a swap icon at the right edge ("Tired of this?").
 //   Overnight oats                    750 kcal  ⇄

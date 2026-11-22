@@ -31,7 +31,12 @@ describe("macroText", () => {
   it("shows the amount, unit and label", () => {
     expect(macroText(13, "g", "protein")).toBe("13 g protein");
     expect(macroText(350, "kcal")).toBe("350 kcal");
-    expect(macroText(12.5, "g", "fat")).toBe("12.5 g fat");
+  });
+
+  it("rounds by the display rule: whole kcal, grams to 0.1 under 10", () => {
+    expect(macroText(652.9, "kcal")).toBe("653 kcal");
+    expect(macroText(12.5, "g", "fat")).toBe("13 g fat");
+    expect(macroText(4.53, "g", "fat")).toBe("4.5 g fat");
   });
 
   it("shows a missing value as — and keeps its label", () => {
@@ -39,9 +44,9 @@ describe("macroText", () => {
     expect(macroText(null, "kcal")).toBe("— kcal");
   });
 
-  it("shows <0.1 for a little above 0 that rounds down, never 0", () => {
+  it("shows <0.1 g (or <1 kcal) for a little above 0 that rounds down, never 0", () => {
     expect(macroText(0.03, "g", "fat")).toBe("<0.1 g fat");
-    expect(macroText(0.04, "kcal")).toBe("<0.1 kcal");
+    expect(macroText(0.4, "kcal")).toBe("<1 kcal");
     expect(macroText(0.05, "g", "fat")).toBe("0.1 g fat");
   });
 

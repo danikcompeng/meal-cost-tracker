@@ -1,7 +1,7 @@
 import { formatMoney } from "@/lib/cost";
 import { macroText, type Macros } from "@/lib/macros";
 
-// The live line under the amount box: "= 568.5 kcal · 19.5 g protein · $1.05".
+// The live line under the amount box: "= 569 kcal · 20 g protein · $1.05".
 // Missing values show "—"; a food with no price says "no price yet".
 export function AmountPreview({
   values,

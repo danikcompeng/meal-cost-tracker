@@ -20,6 +20,7 @@
 
 import { costPerServing, formatMoney, proteinPerDollar } from "./cost";
 import { addDays, daysBetween } from "./dates";
+import { formatNumber, roundForDisplay } from "./format";
 import { nutrientsPerServing } from "./nutrition";
 import { ingredientsMissing, missingSentence } from "./recipe-totals";
 import type { Recipe } from "./types";
@@ -369,8 +370,9 @@ function notesFor(c: SwapCandidate, protein: ProteinPart, cost: CostPart, hasRea
   // reasons, only the protein part, so a "$0.62 cheaper" chip isn't
   // repeated. Without reasons, everything we know.
   const parts: string[] = [];
-  if (protein.change !== null && !protein.close && Math.round(protein.change) !== 0) {
-    const grams = Math.abs(Math.round(protein.change));
+  if (protein.change !== null && !protein.close && roundForDisplay(protein.change, "g") !== 0) {
+    // By the display rule: "4.5 g less", "15 g more".
+    const grams = formatNumber(Math.abs(protein.change), "g");
     parts.push(`${grams} g ${protein.change < 0 ? "less" : "more"} protein`);
   }
   if (!hasReasons && cost.centsSaved !== null && cost.centsSaved !== 0) {

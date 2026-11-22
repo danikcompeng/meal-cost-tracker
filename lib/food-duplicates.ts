@@ -3,6 +3,7 @@
 
 import { unitPriceLabel } from "./cost";
 import type { FoodInput } from "./food-validation";
+import type { DisplayUnit } from "./format";
 import { macroText, type Nutrients } from "./macros";
 import type { BaseUnit } from "./units";
 
@@ -47,7 +48,7 @@ const NUTRIENT_LINES = [
   { key: "sodium_mg", label: "Sodium", unit: "mg" },
 ] as const;
 
-const valueText = (value: number | null, unit: string) =>
+const valueText = (value: number | null, unit: DisplayUnit) =>
   value === null ? "—" : macroText(value, unit);
 
 /**

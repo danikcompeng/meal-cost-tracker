@@ -5,6 +5,7 @@
 // because a 0 g carbs target is a real choice and "not set" isn't.
 
 import { totalNumber, type Total } from "./day-totals";
+import { roundForDisplay, type DisplayUnit } from "./format";
 import { kcalFromMacros, kcalGapTooBig } from "./macros";
 import { AMBIGUOUS_COMMA, parseDecimal } from "./numbers";
 
@@ -155,7 +156,7 @@ export function lowCalorieNote(kcal: number | null): string | null {
 
 export type Progress = {
   target: number;
-  /** What's known to be eaten, rounded to a whole number like the screen shows it. */
+  /** What's known to be eaten, rounded the way the screen shows it (lib/format.ts). */
   eaten: number;
   /** target - eaten. Negative when over. */
   left: number;
@@ -175,12 +176,13 @@ export type Progress = {
  * calories might have any amount, so "860 kcal left" could really be less:
  * `incomplete` lets the screen say "up to 860 kcal left" instead.
  *
- * Everything uses the rounded total, so "140 of 140 g" never shows next to
- * an unfilled bar because the real total was 139.6.
+ * Everything uses the total as shown (whole kcal; grams to 0.1 under 10),
+ * so "140 of 140 g" never shows next to an unfilled bar because the real
+ * total was 139.6, and "9.6 of 10 g" never counts as reached.
  */
-export function progress(total: Total, target: number | null): Progress | null {
+export function progress(total: Total, target: number | null, unit: DisplayUnit): Progress | null {
   if (target === null) return null;
-  const eaten = Math.round(total.sum ?? 0);
+  const eaten = roundForDisplay(total.sum ?? 0, unit);
   const left = target - eaten;
   return {
     target,
@@ -206,6 +208,6 @@ export function kcalHeadline(p: Progress): { prefix: string | null; number: stri
 }
 
 /** "1,140 of 2,000", or "— of 2,000" when none of the foods have a value. */
-export function ofTarget(total: Total, target: number): string {
-  return `${totalNumber(total)} of ${whole.format(target)}`;
+export function ofTarget(total: Total, target: number, unit: DisplayUnit): string {
+  return `${totalNumber(total, unit)} of ${whole.format(target)}`;
 }

@@ -46,14 +46,14 @@ export function summarySlots(
   showWater: boolean,
 ): Slot[] {
   const grams = (key: SlotKey, word: string, total: Total, target: number | null): Slot => {
-    const p = isToday ? progress(total, target) : null;
+    const p = isToday ? progress(total, target, "g") : null;
     const known = total.sum !== null;
     return {
       key,
       word,
-      short: known ? `${totalNumber(total)} g` : "—",
+      short: known ? `${totalNumber(total, "g")} g` : "—",
       fraction: p ? p.fraction : null,
-      detail: p ? `${ofTarget(total, p.target)} g` : known ? `${totalNumber(total)} g` : "—",
+      detail: p ? `${ofTarget(total, p.target, "g")} g` : known ? `${totalNumber(total, "g")} g` : "—",
       // Only protein celebrates: more protein is the point of this app.
       reached: key === "protein" && known && Boolean(p?.reached),
       missing: known ? total.missing : 0,
@@ -69,15 +69,15 @@ export function summarySlots(
 
   if (showWater) {
     // Water is never unknown: a food that doesn't count adds 0.
-    const p = isToday ? progress({ sum: water, missing: 0 }, targets.daily_water_ml) : null;
+    const p = isToday ? progress({ sum: water, missing: 0 }, targets.daily_water_ml, "ml") : null;
     slots.push({
       key: "water",
       word: "water",
       short: waterText(water),
       fraction: p ? p.fraction : null,
       detail: p
-        ? `${ofTarget({ sum: water, missing: 0 }, p.target)} ml`
-        : `${totalNumber({ sum: water, missing: 0 })} ml`,
+        ? `${ofTarget({ sum: water, missing: 0 }, p.target, "ml")} ml`
+        : `${totalNumber({ sum: water, missing: 0 }, "ml")} ml`,
       reached: false,
       missing: 0,
       known: true,

@@ -158,6 +158,23 @@ Formulas (pure functions in /lib):
   food counts toward hydration)
 - Protein per $   = protein_g / cost   (hidden if cost is 0 or unknown)
 
+Display rounding (one rule, everywhere: Today rows, rings, totals, recipe
+screen, swap cards, previews, Settings). Only the text on screen rounds;
+the maths and the database keep full precision. One helper:
+formatNumber / roundForDisplay in lib/format.ts (tested), used by
+macroText, totalNumber and the rest; no new Intl.NumberFormat for these.
+- kcal: whole numbers, rounded (652.9 → 653).
+- Grams: whole from 10 g, one decimal under 10 g (4.5 g; 9.96 → 10).
+  Protein per $ counts as grams.
+- ml and mg: whole numbers. Water from 1,000 ml shows litres (1.3 L).
+- Money: 2 decimals (formatMoney in lib/cost.ts).
+- A little above 0 that would round to 0 shows "<1" (kcal, ml, mg) or
+  "<0.1" (g), never "0".
+- Ring progress ("reached", "140 of 140 g") compares the rounded number,
+  so the bar and the text always agree.
+- Not rounded: amounts you typed (150 g, 1.5 servings, shown as typed)
+  and the numbers inside boxes you type in.
+
 Missing stays missing (one rule, everywhere): never show a lower number
 that quietly leaves an unknown out.
 - A recipe is one meal, so if ANY ingredient is missing a price or a

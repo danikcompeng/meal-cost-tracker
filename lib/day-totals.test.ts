@@ -76,18 +76,24 @@ describe("hasAnyExtra", () => {
 });
 
 describe("totalNumber", () => {
-  it("rounds to whole numbers with a thousands comma", () => {
-    expect(totalNumber({ sum: 1239.6, missing: 0 })).toBe("1,240");
-    expect(totalNumber({ sum: 0, missing: 0 })).toBe("0");
+  it("rounds kcal to whole numbers with a thousands comma", () => {
+    expect(totalNumber({ sum: 1239.6, missing: 0 }, "kcal")).toBe("1,240");
+    expect(totalNumber({ sum: 0, missing: 0 }, "kcal")).toBe("0");
+  });
+
+  it("keeps one decimal for grams under 10", () => {
+    expect(totalNumber({ sum: 4.53, missing: 0 }, "g")).toBe("4.5");
+    expect(totalNumber({ sum: 23.6, missing: 0 }, "g")).toBe("24");
   });
 
   it("shows — when unknown", () => {
-    expect(totalNumber({ sum: null, missing: 2 })).toBe("—");
+    expect(totalNumber({ sum: null, missing: 2 }, "g")).toBe("—");
   });
 
   it("shows <1 for a little above 0 that rounds down, never 0", () => {
-    expect(totalNumber({ sum: 0.4, missing: 0 })).toBe("<1");
-    expect(totalNumber({ sum: 0.5, missing: 0 })).toBe("1");
+    expect(totalNumber({ sum: 0.4, missing: 0 }, "kcal")).toBe("<1");
+    expect(totalNumber({ sum: 0.5, missing: 0 }, "kcal")).toBe("1");
+    expect(totalNumber({ sum: 0.04, missing: 0 }, "g")).toBe("<0.1");
   });
 });
 

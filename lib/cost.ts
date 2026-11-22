@@ -1,5 +1,6 @@
 // Pure cost math: no database, no React. That makes it easy to unit test.
 
+import { formatNumber } from "./format";
 import { sumOrNull } from "./numbers";
 import type { BaseUnit } from "./units";
 
@@ -65,16 +66,13 @@ export function proteinPerDollar(protein: number | null, cost: number | null): n
   return protein / cost;
 }
 
-const wholeGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
-const tenthGrams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
-
 /**
- * Just the number of protein per $: "21", "4.5". Under 10 keeps one
- * decimal, where the difference between 4 and 5 matters; above that whole
- * grams are enough.
+ * Just the number of protein per $: "21", "4.5". It's grams, so it follows
+ * the grams display rule (lib/format.ts): one decimal under 10, where 4
+ * vs 5 matters; whole grams above that.
  */
 export function proteinPerDollarNumber(value: number): string {
-  return value < 10 ? tenthGrams.format(value) : wholeGrams.format(value);
+  return formatNumber(value, "g");
 }
 
 /** "21 g protein per $", "4.5 g protein per $". */

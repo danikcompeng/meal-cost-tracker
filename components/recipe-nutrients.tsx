@@ -1,3 +1,4 @@
+import type { DisplayUnit } from "@/lib/format";
 import { waterText } from "@/lib/hydration";
 import { macroText, type Nutrients } from "@/lib/macros";
 import { missingNotes, recipeTotals } from "@/lib/recipe-totals";
@@ -79,8 +80,8 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
   );
 }
 
-// "412.3 kcal", "24 g", or a dash (with words for screen readers).
-function valueText(value: number | null, unit: string) {
+// "412 kcal", "24 g", "4.5 g", or a dash (with words for screen readers).
+function valueText(value: number | null, unit: DisplayUnit) {
   if (value === null) {
     return (
       <>

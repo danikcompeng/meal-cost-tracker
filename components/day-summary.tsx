@@ -41,7 +41,7 @@ export function DaySummary({
   const [open, setOpen] = useState(initialOpen);
   const reduceMotion = useReducedMotion();
 
-  const kcal = isToday ? progress(totals.kcal, targets.daily_kcal) : null;
+  const kcal = isToday ? progress(totals.kcal, targets.daily_kcal, "kcal") : null;
   const slots = summarySlots(totals, water, targets, isToday, showWater);
   const costNote = missingNote(totals.cost.missing, "a price");
 

@@ -1,4 +1,5 @@
 import { formatMoney, proteinPerDollarNumber } from "@/lib/cost";
+import { formatNumber, roundForDisplay } from "@/lib/format";
 import type { RankedSwap } from "@/lib/swap";
 import { amountText, unitWord } from "@/lib/units";
 
@@ -14,8 +15,9 @@ import { amountText, unitWord } from "@/lib/units";
 // A screen reader reads the name first, then the reasons: someone jumping
 // from heading to heading lands on the name and must still hear why.
 
-const grams = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
-const whole = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+// Grams and kcal by the display rule (lib/format.ts).
+const grams = (v: number) => formatNumber(v, "g");
+const kcal = (v: number) => formatNumber(v, "kcal");
 
 /** How many ingredient chips fit before "+3". */
 const CHIPS = 3;
@@ -71,10 +73,10 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
         <Stat
           label="protein"
           className="text-primary"
-          value={<Value value={shown.protein} format={(v) => `${grams.format(v)} g`} />}
+          value={<Value value={shown.protein} format={(v) => `${grams(v)} g`} />}
           change={swap.proteinChange === null ? null : `${signed(swap.proteinChange, grams)} g`}
         />
-        <Stat label="kcal" value={<Value value={shown.kcal} format={(v) => whole.format(v)} />} />
+        <Stat label="kcal" value={<Value value={shown.kcal} format={kcal} />} />
         <Stat
           label="protein per $"
           value={<Value value={swap.proteinPerDollar} format={(v) => `${proteinPerDollarNumber(v)} g`} />}
@@ -153,9 +155,10 @@ function Value({ value, format }: { value: number | null; format: (v: number) =>
 }
 
 // "+1", "-20", "±0" style changes. Rounded first, so -0.4 shows "0", not "-0".
-function signed(value: number, format: Intl.NumberFormat): string {
-  const shown = format.format(Math.abs(value));
-  if (Number(shown) === 0) return "0";
+function signed(value: number, format: (v: number) => string): string {
+  // A change too small to show is "0", not "+<0.1".
+  if (roundForDisplay(Math.abs(value), "g") === 0) return "0";
+  const shown = format(Math.abs(value));
   return `${value < 0 ? "-" : "+"}${shown}`;
 }
 

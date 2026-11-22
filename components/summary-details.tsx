@@ -22,9 +22,9 @@ export function SummaryDetails({
           label="Calories"
           amount={
             kcal
-              ? `${ofTarget(totals.kcal, kcal.target)} kcal`
+              ? `${ofTarget(totals.kcal, kcal.target, "kcal")} kcal`
               : kcalKnown
-                ? `${totalNumber(totals.kcal)} kcal`
+                ? `${totalNumber(totals.kcal, "kcal")} kcal`
                 : "—"
           }
           missing={kcalKnown ? totals.kcal.missing : 0}
@@ -98,7 +98,7 @@ function ExtraNutrients({ totals }: { totals: DayTotals }) {
         return (
           <li key={key}>
             {known ? (
-              <span className="font-medium">{`${totalNumber(total)} ${unit}`}</span>
+              <span className="font-medium">{`${totalNumber(total, unit)} ${unit}`}</span>
             ) : (
               // A bare "—" may be read as nothing by screen readers.
               <>
