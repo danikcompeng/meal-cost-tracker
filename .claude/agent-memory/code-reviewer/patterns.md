@@ -31,6 +31,9 @@ Data
   guarded() (never suggest redirect() inside guarded()).
 - Rounding then re-scaling stored values compounds error. Validation vs numeric(p,s) precision.
 - Read-then-update actions: put checked conditions in the update's .eq() filters too.
+- Guards that ignore { error } fail OPEN (sampleRefusal 2026-11-22): a check that protects
+  something must refuse + log when it can't read, not wave the change through.
+- "Marker saved last, so a failure redoes it": check an OLD marker isn't left in place.
 - NOT NULL migrations: old live code may still write null between SQL and deploy. Manual SQL
   backfills bypass RLS: scope by id/user. Reads without .limit() feeding "never" claims truncate.
 

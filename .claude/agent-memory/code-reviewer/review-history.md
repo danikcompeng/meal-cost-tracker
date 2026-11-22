@@ -409,3 +409,12 @@ metadata:
   bounce as ours (pointercancel past a bound -> rests open while state shut); lingering x.on
   listener after Back/re-rank mid-flight (~75 ms window); stale slideOut mark after lost restore + x
   then meal change; one-line glitches meal-section:28, entry-row:153; orphaned restsOpen docstring.
+- 2026-11-22 demo branch (456e88e + a82122e, "Try the demo"): Minor issues, security clean.
+  Verified: DEMO_* only read in server-only lib/demo.ts, login page passes a boolean; seedDemo =
+  RLS session + email check; resetDemo refuses others; guard covers every foods/recipes/ingredient
+  write (saveFood edit + updateExisting, deleteFood, updateRecipe, deleteRecipe, save/removeIngredient);
+  basis_amount generated, user_id defaults, FK order ok. Raised: failed seed keeps the OLD
+  demo_seeded_at (comment + plan say "never seeded"; clear it first); sampleRefusal fails open on
+  getUser/select errors, unlogged; email-only identity (DEMO_EMAIL = a real email would let Reset
+  wipe it); "today" seeded at 23:30 = empty Today at 00:10; "Yes, reset" matcha not destructive;
+  plan drift (chip place, messages); chip missing on recipe detail/scan screens.

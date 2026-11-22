@@ -57,5 +57,10 @@ Per feature (all approved, don't re-raise)
   800 ms is the one exception (C); no press on swap card, Delete strip, text links, rings, switch,
   inputs. Items 3-10 built later, one commit each; reviewer runs before each phone check.
 
+- Demo (2026-11-22, plans/demo.md "Known limits", accepted): demo token usable against Supabase
+  directly (change data/password/metadata), shared meals between visitors, double seed in the
+  same second, Supabase per-IP sign-in limit. Login page static: button presence fixed at build
+  (Vercel env changes need a redeploy anyway). Don't re-raise these.
+
 Won't fix
 - formatMoney shows "$0.00" for values < $0.00005 (2026-11-07).

@@ -93,6 +93,11 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   (holdEntry/withHeld) + today-view `held` and `slideOut` ref (willSlide via AnimatePresence custom /
   usePresenceData); entry-row settle() `heading` skip; swap-stack commit() skip = x.on("change")
   listener, toMiddle, useCanStretchY; lib/swipe.ts throwVelocity. FILL_DURATION now 1.4 s.
+- Demo (plans/demo.md, no migration, 2026-11-22): lib/demo.ts (server-only: demoCredentials,
+  isDemoEmail, isDemoAccount, seedDemo, sampleRefusal), lib/demo-seed.ts (pure data, needsReseed,
+  isSample vs user_metadata.demo_seeded_at), lib/demo-actions.ts (signInDemo, resetDemo),
+  components/demo-login.tsx, demo-reset.tsx, DemoChip in app-header.tsx. NEW actions that change
+  foods/recipes/ingredients (purchases!) must call sampleRefusal too.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,
