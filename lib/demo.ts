@@ -52,8 +52,11 @@ export async function isDemoAccount(): Promise<boolean> {
  * the demo, even if a bug passed in someone else.
  *
  * Not one database transaction (Supabase's client can't do those), so a
- * failure halfway leaves part of the data. The seed date is saved last,
- * so the next demo sign-in sees "never seeded" and starts again.
+ * failure halfway leaves part of the data. So the seed date is cleared
+ * FIRST and saved again only at the end: after a failure there's no date,
+ * the next demo sign-in sees "never seeded" and starts again, and the
+ * half-made rows don't count as samples. (Keeping the old date would
+ * leave an empty demo for up to an hour.)
  */
 export async function seedDemo(
   supabase: SupabaseClient,
@@ -62,6 +65,11 @@ export async function seedDemo(
 ): Promise<void> {
   if (!isDemoEmail(user.email)) throw new Error("seedDemo: not the demo account");
   const start = new Date();
+
+  const { error: clearError } = await supabase.auth.updateUser({
+    data: { demo_seeded_at: null, demo_seeded_day: null },
+  });
+  if (clearError) throw new Error(`seedDemo: clear seed date: ${clearError.message}`);
 
   // Meals first, then recipes (their ingredients go with them), then
   // foods: the database won't delete a food that's still in a recipe.
@@ -115,8 +123,11 @@ export async function seedDemo(
     .reduce((a, b) => (new Date(a) >= new Date(b) ? a : b));
   // Kept on the demo account itself (its user metadata), so no new table
   // or migration. Read back with getUser(), never from the login token,
-  // which keeps the old value until it's renewed.
-  const { error: markError } = await supabase.auth.updateUser({ data: { demo_seeded_at: newest } });
+  // which keeps the old value until it's renewed. The day too: "today"
+  // in the sample data goes stale at midnight, however recent the seed.
+  const { error: markError } = await supabase.auth.updateUser({
+    data: { demo_seeded_at: newest, demo_seeded_day: today },
+  });
   if (markError) throw new Error(`seedDemo: seed date: ${markError.message}`);
 }
 
@@ -136,13 +147,20 @@ export async function sampleRefusal(kind: "food" | "recipe", id: string): Promis
 
   // Fresh from Supabase, not the login token: someone else's Reset may
   // have moved the seed date since this person logged in.
-  const { data: auth } = await supabase.auth.getUser();
-  const { data: row } = await supabase
+  const { data: auth, error: authError } = await supabase.auth.getUser();
+  const { data: row, error: rowError } = await supabase
     .from(kind === "food" ? "foods" : "recipes")
     .select("created_at")
     .eq("id", id)
     .maybeSingle();
-  if (!auth.user || !row) return null;
+  // Couldn't check (say Supabase was briefly busy): refuse rather than
+  // let a sample be changed, and log why.
+  if (authError || rowError || !auth.user) {
+    console.error("sampleRefusal: couldn't check", authError ?? rowError);
+    return "Couldn't check this just now. Please try again.";
+  }
+  // Not there (gone, or not yours): the change after this fails safely.
+  if (!row) return null;
   if (!isSample(row.created_at as string, auth.user.user_metadata)) return null;
   return kind === "food" ? SAMPLE_FOOD_MESSAGE : SAMPLE_RECIPE_MESSAGE;
 }

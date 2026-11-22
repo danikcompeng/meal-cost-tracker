@@ -32,18 +32,25 @@ button that signs into one shared demo account with no email at all.
   pure functions the app uses when you log (snapshotFor,
   recipeSnapshotFor), so they can't drift from the app's maths.
 - "When was it seeded" is kept on the demo account itself (Supabase user
-  metadata, `demo_seeded_at`), written only after a seed succeeds, so a
-  half-finished seed is redone next time.
+  metadata: `demo_seeded_at`, and `demo_seeded_day` for which "today"
+  the meals were dated). A seed clears both first and writes them again
+  only once it has finished, so a half-finished seed looks like "never
+  seeded" and is redone at the next demo sign-in.
 - On demo sign-in: reseed if it was never seeded, seeded over an hour
-  ago, or the date is unreadable or in the future.
+  ago, seeded for another day than the visitor's today (just after
+  midnight, or another timezone), or the date is unreadable or in the
+  future.
 - Settings, demo account only: a "Reset demo" tile with a two-step
   "Reset demo?" / "Yes, reset" (no browser pop-up). It reseeds now and
   goes to Today.
 
 ## 3. Making it obvious
 
-- A small "Demo" chip next to Settings / Log out in the header on every
-  screen, for the demo account only.
+- A small "Demo account" chip above the page title on the main screens
+  (Today, Recipes, Foods, Settings), for the demo account only. It sits
+  in the empty space above the title: next to Settings / Log out it
+  pushed a past day's title onto two lines on a 360 px phone. Recipe
+  detail and the scan screens have no header, so no chip there.
 
 ## 4. What's blocked (so the next person finds it working)
 
@@ -51,7 +58,10 @@ Everyone shares one account, so the starter foods and recipes are kept
 as they are:
 - The sample foods and recipes can't be edited or deleted, and the
   sample recipes' ingredients can't be changed. The server says so:
-  "This is a sample food in the demo. Add your own to try editing."
+  "This is one of the demo's sample foods, so it stays the same for the
+  next person. Add your own food to try this." If it can't check (say
+  Supabase is briefly busy) it refuses too: "Couldn't check this just
+  now. Please try again."
 - Everything else works: log, edit, swap and delete meals; add, edit and
   delete your own new foods and recipes; scan; change targets; log out.
 - The demo account's email can't be used to ask for a login email.
@@ -72,7 +82,8 @@ Known limits (said plainly):
   copies; "Reset demo" fixes it.
 - Supabase limits sign-ins per IP address, and every demo sign-in comes
   from Vercel's servers: if many people try within minutes, the button
-  says "Too many people just tried the demo. Try again in a minute."
+  says "Lots of people just tried the demo. Wait a minute, then try
+  again."
 
 ## 5. What you set up (once)
 
@@ -80,3 +91,10 @@ Known limits (said plainly):
    made-up email and a long password, "Auto Confirm User" ticked.
 2. Vercel and .env.local: `DEMO_EMAIL` and `DEMO_PASSWORD`.
 No migration.
+
+`DEMO_EMAIL` must be an address nobody logs in with (we use
+demo@example.com). The app treats whoever has that email as the demo,
+so a real address there would give that person a "Reset demo" button
+that wipes their own data. A stronger check (a `demo: true` flag in the
+account's app_metadata, which only the dashboard can set) is possible
+later; not done.

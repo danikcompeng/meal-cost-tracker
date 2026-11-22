@@ -180,14 +180,17 @@ export function seededAt(metadata: unknown): Date | null {
 }
 
 /**
- * Reseed on sign-in? Yes if it was never seeded, over an hour ago, or
- * "in the future" (a clock that far off means someone set it by hand,
- * which would otherwise stop the demo ever being reset). A few minutes of
- * clock difference between servers is allowed.
+ * Reseed on sign-in? Yes if it was never seeded, over an hour ago, for
+ * another day than `today` (seeded at 23:30, the 00:10 visitor would find
+ * Today empty and breakfast on "yesterday"), or "in the future" (a clock
+ * that far off means someone set it by hand, which would otherwise stop
+ * the demo ever being reset). A few minutes of clock difference between
+ * servers is allowed.
  */
-export function needsReseed(metadata: unknown, now: Date): boolean {
+export function needsReseed(metadata: unknown, now: Date, today: string): boolean {
   const at = seededAt(metadata);
   if (!at) return true;
+  if ((metadata as { demo_seeded_day?: unknown }).demo_seeded_day !== today) return true;
   const age = now.getTime() - at.getTime();
   return age > RESEED_AFTER_MS || age < -5 * 60 * 1000;
 }

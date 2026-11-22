@@ -56,6 +56,8 @@ export function DemoReset() {
           <div className="flex items-center gap-2">
             <Button
               type="button"
+              // Red like every other "Yes, …" that throws things away.
+              variant="destructive"
               onClick={handleReset}
               disabled={resetting}
               // Keeps keyboard focus while it works.

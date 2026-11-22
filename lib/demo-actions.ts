@@ -36,9 +36,10 @@ export async function signInDemo(): Promise<FormState> {
       return { ok: false, message: "The demo isn't working right now. Please try again later." };
     }
 
-    if (needsReseed(data.user.user_metadata, new Date())) {
+    const today = await userToday();
+    if (needsReseed(data.user.user_metadata, new Date(), today)) {
       try {
-        await seedDemo(supabase, data.user, await userToday());
+        await seedDemo(supabase, data.user, today);
       } catch (seedError) {
         // Let them in anyway: the seed date wasn't saved, so the next
         // demo sign-in tries again, and Settings has Reset demo.

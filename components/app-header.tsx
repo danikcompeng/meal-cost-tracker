@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import { connection } from "next/server";
 import { isDemoAccount } from "@/lib/demo";
 import { LogOutButton } from "./log-out-button";
 
@@ -49,6 +50,10 @@ export function AppHeader({
  * appearing a moment after the page doesn't push anything down.
  */
 async function DemoChip() {
+  // Wait for a real request first: checking the login reads the clock
+  // (is the token expired?), which Next.js refuses while it prerenders a
+  // page for prefetching ("encountered the unstable value Date.now()").
+  await connection();
   if (!(await isDemoAccount())) return null;
   return (
     <span className="absolute -top-7 left-0 rounded-full border border-border px-2.5 py-0.5 text-label font-medium text-muted-foreground">

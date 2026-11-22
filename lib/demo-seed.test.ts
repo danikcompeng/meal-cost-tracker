@@ -91,24 +91,32 @@ describe("demoEntryRows", () => {
 
 describe("needsReseed", () => {
   const now = new Date("2026-11-22T12:00:00Z");
-  const meta = (at: string) => ({ demo_seeded_at: at });
+  const today = "2026-11-22";
+  const meta = (at: string, day = today) => ({ demo_seeded_at: at, demo_seeded_day: day });
 
   it("reseeds a demo that was never seeded, or whose date can't be read", () => {
-    expect(needsReseed(null, now)).toBe(true);
-    expect(needsReseed({}, now)).toBe(true);
-    expect(needsReseed(meta("yesterday-ish"), now)).toBe(true);
-    expect(needsReseed({ demo_seeded_at: 12 }, now)).toBe(true);
+    expect(needsReseed(null, now, today)).toBe(true);
+    expect(needsReseed({}, now, today)).toBe(true);
+    expect(needsReseed(meta("yesterday-ish"), now, today)).toBe(true);
+    expect(needsReseed({ demo_seeded_at: 12, demo_seeded_day: today }, now, today)).toBe(true);
+    // A seed that failed halfway cleared both (lib/demo.ts).
+    expect(needsReseed({ demo_seeded_at: null, demo_seeded_day: null }, now, today)).toBe(true);
   });
 
   it("keeps data under an hour old and reseeds after that", () => {
-    expect(needsReseed(meta("2026-11-22T11:30:00Z"), now)).toBe(false);
-    expect(needsReseed(meta("2026-11-22T11:00:00Z"), now)).toBe(false);
-    expect(needsReseed(meta("2026-11-22T10:59:59Z"), now)).toBe(true);
+    expect(needsReseed(meta("2026-11-22T11:30:00Z"), now, today)).toBe(false);
+    expect(needsReseed(meta("2026-11-22T11:00:00Z"), now, today)).toBe(false);
+    expect(needsReseed(meta("2026-11-22T10:59:59Z"), now, today)).toBe(true);
+  });
+
+  it("reseeds a recent seed made for another day (just after midnight, or another timezone)", () => {
+    expect(needsReseed(meta("2026-11-22T11:50:00Z", "2026-11-21"), now, today)).toBe(true);
+    expect(needsReseed({ demo_seeded_at: "2026-11-22T11:50:00Z" }, now, today)).toBe(true);
   });
 
   it("allows a little clock difference but not a date set in the future", () => {
-    expect(needsReseed(meta("2026-11-22T12:02:00Z"), now)).toBe(false);
-    expect(needsReseed(meta("2027-01-01T00:00:00Z"), now)).toBe(true);
+    expect(needsReseed(meta("2026-11-22T12:02:00Z"), now, today)).toBe(false);
+    expect(needsReseed(meta("2027-01-01T00:00:00Z"), now, today)).toBe(true);
   });
 });
 
