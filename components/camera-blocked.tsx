@@ -54,7 +54,7 @@ function withSite(step: string, site: string | null) {
   return step.replace("{site}", site ?? "this app's web address");
 }
 
-// This app's address (e.g. meal-cost-tracker.vercel.app). Like the
+// This app's address (e.g. stapleapp.vercel.app). Like the
 // platform, only the browser knows it, so the server paint gets null.
 function useSite(): string | null {
   return useSyncExternalStore(

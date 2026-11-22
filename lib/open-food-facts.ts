@@ -11,7 +11,7 @@
 import type { Macros, Nutrients } from "./macros";
 
 /** Who we are, sent with every request, as Open Food Facts asks apps to do. */
-export const OFF_USER_AGENT = "MealCostTracker/0.1 (https://meal-cost-tracker.vercel.app)";
+export const OFF_USER_AGENT = "Staple/0.1 (https://stapleapp.vercel.app)";
 
 // Only ask for the fields we use: the full product is often 100 KB+.
 const FIELDS = [

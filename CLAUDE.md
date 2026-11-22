@@ -1,8 +1,11 @@
 # Staple
 
-(Called "Meal Cost Tracker" until 2026-11-21. The repo, the Vercel
-project and the web address keep that old name. The app's name lives in
-lib/app-identity.ts.)
+(Called "Meal Cost Tracker" until 2026-11-21. The repo and the Vercel
+project keep that old name. The app's name lives in lib/app-identity.ts.)
+
+Web address: https://stapleapp.vercel.app (since 2026-11-22). The old
+https://meal-cost-tracker.vercel.app redirects there. Supabase's Site
+URL and Redirect URLs must name the new address.
 
 ## What this app is
 "Cheap meals that hit your macros, on repeat, with a swap when you're bored."
