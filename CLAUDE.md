@@ -1,4 +1,8 @@
-# Meal Cost Tracker
+# Staple
+
+(Called "Meal Cost Tracker" until 2026-11-21. The repo, the Vercel
+project and the web address keep that old name. The app's name lives in
+lib/app-identity.ts.)
 
 ## What this app is
 "Cheap meals that hit your macros, on repeat, with a swap when you're bored."

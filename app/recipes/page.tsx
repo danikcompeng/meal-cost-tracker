@@ -12,7 +12,7 @@ import { getFoods } from "@/lib/foods";
 import { getRecipes } from "@/lib/recipes";
 import { orderByRecent } from "@/lib/recent";
 
-export const metadata: Metadata = { title: "Recipes · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Recipes" };
 
 // The Kitchen tab opens here: your staple meals, recently eaten first.
 export default function RecipesPage() {

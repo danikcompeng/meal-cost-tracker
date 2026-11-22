@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { TabBar } from "@/components/tab-bar";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Not found · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Not found" };
 
 // A mistyped or old address. Same calm layout as the error page, with the
 // tab bar so you can carry on from here. (Next's own 404 page is plain and

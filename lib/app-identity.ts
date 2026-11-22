@@ -1,15 +1,19 @@
 // The app's name, icons and colours for the home screen, in one place.
-// Renaming the app later is mostly this file (plus the icon drawing in
-// components/app-icon.tsx and the email template's "Meal Cost Tracker").
+// Renaming the app is this file, plus the places that can't read it: the
+// email template's "Your Staple login code" line and subject (pasted into
+// Supabase by hand), README.md and CLAUDE.md. Page titles add the name
+// themselves (the title template in app/layout.tsx). The icon has no
+// letters, so it doesn't change. Until 2026-11-21 it was "Meal Cost Tracker";
+// the repo, Vercel project and web address keep that name.
 import type { MetadataRoute } from "next";
 
-export const APP_NAME = "Meal Cost Tracker";
+export const APP_NAME = "Staple";
 
 /**
  * The name under the icon on the home screen. iPhone cuts names off at
- * about 12 characters ("Meal Cost Tr…"), so this one has to be short.
+ * about 12 characters, so this one has to be short. "Staple" already is.
  */
-export const APP_SHORT_NAME = "Meal Cost";
+export const APP_SHORT_NAME = "Staple";
 
 export const APP_DESCRIPTION = "Cheap meals on repeat, without getting bored.";
 

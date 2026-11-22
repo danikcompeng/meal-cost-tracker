@@ -18,7 +18,7 @@ import { mealForHour } from "@/lib/meals";
 import { DETAILS_COOKIE } from "@/lib/summary";
 import { userHour, userToday } from "@/lib/server-helpers";
 
-export const metadata: Metadata = { title: "Today · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Today" };
 
 // The main screen: what you ate on one day. "?day=2026-11-08" shows a past
 // day; without it, you see today.

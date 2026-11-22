@@ -9,7 +9,7 @@ import { KitchenSwitch } from "@/components/kitchen-switch";
 import { KitchenSlide } from "@/components/slide-in";
 import { getFoods } from "@/lib/foods";
 
-export const metadata: Metadata = { title: "Foods · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Foods" };
 
 export default function FoodsPage() {
   return (

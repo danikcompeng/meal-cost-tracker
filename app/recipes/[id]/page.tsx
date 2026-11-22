@@ -11,7 +11,7 @@ import { getRecipe, getRecipes } from "@/lib/recipes";
 import { orderByRecent } from "@/lib/recent";
 import { userToday } from "@/lib/server-helpers";
 
-export const metadata: Metadata = { title: "Recipe · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Recipe" };
 
 // One recipe: its cost and nutrients per serving, and its ingredients.
 // The id in the address is only known when someone visits, so (as the

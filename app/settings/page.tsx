@@ -7,7 +7,7 @@ import { TabBar } from "@/components/tab-bar";
 import { TargetsForm } from "@/components/targets-form";
 import { getTargets } from "@/lib/settings";
 
-export const metadata: Metadata = { title: "Settings · Meal Cost Tracker" };
+export const metadata: Metadata = { title: "Settings" };
 
 export default function SettingsPage() {
   return (
