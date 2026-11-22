@@ -5,7 +5,8 @@ import type { Food } from "./types";
 
 // One string, not "a" + "b": Supabase reads this text to know the row's
 // shape, and a joined string is just "some string" to TypeScript.
-const FOOD_COLUMNS =
+// Also used by lib/demo.ts to read back the demo's sample foods.
+export const FOOD_COLUMNS =
   "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, counts_toward_hydration";
 
 // Reads only. Row Level Security in the database guarantees this returns

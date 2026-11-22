@@ -5,6 +5,7 @@
 
 import type { PostgrestError } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
+import { sampleRefusal } from "./demo";
 import { duplicateChanges, findDuplicate } from "./food-duplicates";
 import { parseSource, validateFood, type FoodInput } from "./food-validation";
 import { getFood, getFoods } from "./foods";
@@ -77,6 +78,8 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
     // (isEdit already means id is a string, but TypeScript can't see that
     // through a separate boolean, so it's checked again here.)
     if (isEdit && typeof id === "string") {
+      const sample = await sampleRefusal("food", id);
+      if (sample) return { ok: false, message: sample };
       const current = await getFood(id);
       const locked = current && (await unitLockedMessage(current, value.unit));
       // Shown under "Measured by", the switch you changed.
@@ -115,6 +118,8 @@ type Supabase = Awaited<ReturnType<typeof requireUser>>;
  * - "How it was added", like any edit.
  */
 async function updateExisting(supabase: Supabase, existing: Food, value: FoodInput): Promise<FormState> {
+  const sample = await sampleRefusal("food", existing.id);
+  if (sample) return { ok: false, message: sample };
   const locked = await unitLockedMessage(existing, value.unit);
   if (locked) return { ok: false, message: locked };
 
@@ -183,6 +188,9 @@ async function foodIdWithBarcode(supabase: Supabase, barcode: string): Promise<s
 export async function deleteFood(id: string): Promise<FormState> {
   return guarded("deleteFood", "Couldn't delete. Please try again.", async () => {
     const supabase = await requireUser();
+
+    const sample = await sampleRefusal("food", id);
+    if (sample) return { ok: false, message: sample };
 
     // Deleting a food that's in a recipe would make the recipe look
     // cheaper and lighter than it really is, so say where it's used.

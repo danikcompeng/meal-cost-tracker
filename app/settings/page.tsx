@@ -2,6 +2,8 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { AppHeader } from "@/components/app-header";
+import { DemoReset } from "@/components/demo-reset";
+import { isDemoAccount } from "@/lib/demo";
 import { SettingsSkeleton } from "@/components/settings-skeleton";
 import { TabBar } from "@/components/tab-bar";
 import { TargetsForm } from "@/components/targets-form";
@@ -19,6 +21,11 @@ export default function SettingsPage() {
         <Suspense fallback={<SettingsSkeleton />}>
           <TargetsTile />
         </Suspense>
+        {/* The demo account only. Nothing while it checks: everyone else
+            never sees it, so a placeholder would only flash. */}
+        <Suspense fallback={null}>
+          <DemoTile />
+        </Suspense>
       </main>
       {/* Settings isn't a tab, so no tab is highlighted here. */}
       <TabBar />
@@ -31,4 +38,9 @@ async function TargetsTile() {
   await connection();
   const targets = await getTargets();
   return <TargetsForm targets={targets} />;
+}
+
+async function DemoTile() {
+  await connection();
+  return (await isDemoAccount()) ? <DemoReset /> : null;
 }

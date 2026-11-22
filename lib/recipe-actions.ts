@@ -10,6 +10,7 @@
 // both the recipe AND the food are yours (migration 011).
 
 import { revalidatePath } from "next/cache";
+import { sampleRefusal } from "./demo";
 import { validateIngredient, validateRecipe } from "./recipe-validation";
 import { guarded, logDbError, requireUser } from "./server-helpers";
 import type { FormState } from "./types";
@@ -40,6 +41,8 @@ export async function updateRecipe(_prev: FormState, formData: FormData): Promis
     const supabase = await requireUser();
     const id = formData.get("id");
     if (typeof id !== "string" || !id) return { ok: false, message: "Missing recipe." };
+    const sample = await sampleRefusal("recipe", id);
+    if (sample) return { ok: false, message: sample };
 
     const result = validateRecipe({ name: formData.get("name"), servings: formData.get("servings") });
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
@@ -60,6 +63,8 @@ export async function updateRecipe(_prev: FormState, formData: FormData): Promis
 export async function deleteRecipe(id: string): Promise<FormState> {
   return guarded("deleteRecipe", "Couldn't delete. Please try again.", async () => {
     const supabase = await requireUser();
+    const sample = await sampleRefusal("recipe", id);
+    if (sample) return { ok: false, message: sample };
     const { error } = await supabase.from("recipes").delete().eq("id", id);
     if (error) {
       logDbError("deleteRecipe", error);
@@ -80,6 +85,8 @@ export async function saveIngredient(_prev: FormState, formData: FormData): Prom
     const supabase = await requireUser();
     const recipeId = formData.get("recipeId");
     if (typeof recipeId !== "string" || !recipeId) return { ok: false, message: "Missing recipe." };
+    const sample = await sampleRefusal("recipe", recipeId);
+    if (sample) return { ok: false, message: sample };
 
     const result = validateIngredient({ foodId: formData.get("foodId"), amount: formData.get("amount") });
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
@@ -102,6 +109,8 @@ export async function saveIngredient(_prev: FormState, formData: FormData): Prom
 export async function removeIngredient(recipeId: string, foodId: string): Promise<FormState> {
   return guarded("removeIngredient", "Couldn't remove it. Please try again.", async () => {
     const supabase = await requireUser();
+    const sample = await sampleRefusal("recipe", recipeId);
+    if (sample) return { ok: false, message: sample };
     const { error } = await supabase
       .from("recipe_ingredients")
       .delete()

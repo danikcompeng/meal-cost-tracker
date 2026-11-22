@@ -3,6 +3,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { logAuthError } from "./auth-log";
+import { isDemoEmail } from "./demo";
 import { cleanLoginCode } from "./login-code";
 import { createClient } from "./supabase/server";
 import type { FormState } from "./types";
@@ -17,6 +18,11 @@ export async function sendMagicLink(
   const email = String(formData.get("email") ?? "").trim();
   if (!email.includes("@")) {
     return { ok: false, fieldErrors: { email: "Enter a valid email." } };
+  }
+  // Nobody can read the demo account's inbox, so an email to it would
+  // only bounce. "Try the demo" logs in without one.
+  if (isDemoEmail(email)) {
+    return { ok: false, fieldErrors: { email: "That's the demo account. Tap Try the demo below." } };
   }
 
   // Where the link in the email should send you back to.

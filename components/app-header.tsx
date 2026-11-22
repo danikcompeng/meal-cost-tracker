@@ -1,4 +1,6 @@
+import { Suspense } from "react";
 import Link from "next/link";
+import { isDemoAccount } from "@/lib/demo";
 import { LogOutButton } from "./log-out-button";
 
 // Settings is a quiet grey link up here rather than a tab: you set your
@@ -21,6 +23,12 @@ export function AppHeader({
       <div className="flex items-baseline justify-between">
         <h1 className="text-3xl leading-tight font-bold tabular-nums">{title}</h1>
         <div className="-mr-2 flex items-center">
+          {/* Its own Suspense: it needs the login, which only exists per
+              request, and it shouldn't hold up the header. It sits left of
+              the links, so appearing doesn't move them. */}
+          <Suspense fallback={null}>
+            <DemoChip />
+          </Suspense>
           {showSettingsLink && (
             <Link href="/settings" className={quiet}>
               Settings
@@ -31,5 +39,15 @@ export function AppHeader({
       </div>
       {children}
     </header>
+  );
+}
+
+/** "Demo", for the shared demo account only (plans/demo.md). */
+async function DemoChip() {
+  if (!(await isDemoAccount())) return null;
+  return (
+    <span className="mr-1 rounded-full border border-border px-2.5 py-0.5 text-label font-medium text-muted-foreground">
+      Demo
+    </span>
   );
 }

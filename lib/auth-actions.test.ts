@@ -9,6 +9,8 @@ const { signOutMock, logAuthErrorMock } = vi.hoisted(() => ({
 }));
 
 vi.mock("./auth-log", () => ({ logAuthError: logAuthErrorMock }));
+// lib/demo.ts is "server-only", which refuses to load outside Next.js.
+vi.mock("./demo", () => ({ isDemoEmail: () => false }));
 
 vi.mock("./supabase/server", () => ({
   createClient: async () => ({ auth: { signOut: signOutMock } }),
