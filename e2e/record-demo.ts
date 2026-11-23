@@ -49,8 +49,8 @@ const BACKGROUND = { light: "white", dark: "0x141414" } as const;
  * the check digit is checked again when the barcode is drawn.
  */
 const BARCODE = "5054268934725";
-/** What the 1 kg tray cost, typed into "What you paid". */
-const PRICE = "3.50";
+/** What the 1 kg tray cost (a Toronto price), typed into "What you paid". */
+const PRICE = "10.99";
 /**
  * Where the scan window sits on the camera picture, as a fraction of its
  * width and height: the middle across, a little above the middle down (the
