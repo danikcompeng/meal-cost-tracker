@@ -85,6 +85,25 @@ npm run dev     # http://localhost:3000
 npm test        # unit tests
 ```
 
+### End-to-end tests and the demo video
+
+These use [Playwright](https://playwright.dev) on an iPhone-sized screen against the live app
+(set `BASE_URL=http://localhost:3000` to test a local copy), and only ever log in with
+**Try the demo**, so no personal data is involved. They reset the shared demo first and
+again at the end.
+
+```bash
+npx playwright install chromium   # once: the browser Playwright drives
+npm run test:e2e                  # 3 tests: log a meal, build a recipe, swap a meal
+npm run record:demo               # re-record the demo videos into design/videos/
+```
+
+`record:demo` makes `staple-demo-light.mp4` / `-dark.mp4` (the full tour, about 75 s) and
+`staple-loop-light.mp4` / `-dark.mp4` (a 20 s loop of logging in and swapping a meal).
+MP4 needs ffmpeg: install it (`winget install Gyan.FFmpeg`), or run
+`npm install --no-save ffmpeg-static`, or point `FFMPEG_PATH` at one. Without ffmpeg you get
+a softer `.webm` and no loop. The script is `e2e/record-demo.ts`.
+
 You'll need a Supabase project. Put its URL and publishable key in `.env.local`
 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) and run the SQL files
 in `supabase/migrations/` in order.
