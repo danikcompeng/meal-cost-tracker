@@ -24,6 +24,12 @@ Repeat offenders (explain in a new way each time; concrete walk-throughs work be
   while you're on another page (DaySlide lastDay).
   "Change one, change the other" notes: check the OTHER file has the matching note.
 
+- One rule computed in two places from different inputs (swipe sign from card x, commit from
+  finger offset, 2026-11-23): check they agree in every start state, and suggest one pure function
+  in /lib used by both. Feedback that shows while the action is refused (pending) is the same smell.
+- Accent-preset tests filter checks by name (/primary|ring/): any new hue-dependent token whose
+  check name lacks those words is silently skipped for presets (swipe-pick, 2026-11-23).
+
 Data
 - Postgres numeric arrives as string: Number()/numberOrNull at every new read.
 - Null must propagate: no `?? 0` on price/nutrients; guard servings / package_size = 0.

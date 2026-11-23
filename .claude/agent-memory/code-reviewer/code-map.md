@@ -108,6 +108,10 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   servingAmount, servingsIn, validateServing, servingFromOpenFoodFacts); components/serving-picks.tsx
   used by log-food-form, edit-entry-form, ingredient-form; ingredient-row "284 g · 2 cans". Amounts
   saved stay in g/ml. New food columns must also go into FOOD_COLUMNS AND recipes.ts nested select.
+- Swipe feedback (branch swipe-feedback, 2026-11-23, no migration): components/swipe-feedback.tsx
+  (SwipeTint under the card text via SwapCard `backdrop`, SwipeSign + pop), lib/swipe.ts
+  swipeFeedback/FEEDBACK_START, POP_SCALE in motion.ts, --swipe-pick/--swipe-skip in globals.css.
+  LOCK_AT / COMMIT_DISTANCE / SIDEWAYS_GIVE live in swap-stack.tsx (not lib) at review time.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

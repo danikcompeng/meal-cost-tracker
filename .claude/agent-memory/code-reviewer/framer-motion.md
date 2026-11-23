@@ -37,6 +37,13 @@ Drag (VisualElementDragControls)
   onDragStart fires at 3 px (tap wobble). onDragEnd runs in postRender AFTER the snap-back started.
 - Press then pointercancel before 3 px: NEITHER onDragEnd NOR React onPointerUp fires -> x stuck.
   "Settle on release" designs need onPointerCancel too.
+- Card position while dragging = applyConstraints(originPoint + offset): with constraints 0 and
+  elastic e, x = e x (origin + offset) (motion-dom drag/utils/constraints.mjs mixNumber).
+  originPoint = x.get() at onStart (after pointerdown froze any spring). So "commit on pointer
+  offset" and "feedback from x" disagree when the card is grabbed mid-spring (origin != 0).
+  offset is measured from the pointerdown point (includes the pre-lock pixels).
+- useMotionValueEvent subscribes in useInsertionEffect (before any layout effect), re-subscribes
+  when the callback changes (every render).
 - Release: y-locked gesture -> startAnimation skips x (no spring back); no-drag tap/cancel ->
   resumeAnimation only if constraints resolved (first onStart) and currentDirection allows x.
   Lock = 10 px, checks y first. Gesture code never preventDefaults pointerdown (CSS :active works).

@@ -449,3 +449,15 @@ metadata:
   one in where you had none, replaces it on a unit change, and the dialog lists it (servingUpdate /
   servingChangeLine). OFF serving_quantity(_unit) DROPPED entirely: checked real replies, unit is
   often wrong ("0.75 cup (170 g)" -> 170 ml); only the g/ml written in serving_size counts.
+- 2026-11-23 swipe feedback (branch swipe-feedback, uncommitted: swipe-feedback.tsx, tint tokens,
+  POP_SCALE, swipeFeedback): Minor issues. Verified fine: LOCK_AT = 96 x 0.9 holds from rest
+  (x = 0.9 x offset); paint order (positioned tint first, `relative` wrapper later; no z-index);
+  padding move equivalent; #DFEED1 recomputed by hand (5.10:1 grey, 4.98:1 matcha); E3E3E3/242424
+  maths; settle spring overshoot < 16 px so no wrong-side flash; new card x.jump(0) resets latch
+  (SwipeSign remounts per key anyway); reduced motion; strict mode. Raised: grab mid-spring-back
+  -> sign locks at offset ~56 but release needs 96 (or commits unlocked) -> decide on card position
+  in one lib fn; drag still live while pending ("Swapping…"/"Opening…") so sign pops but release
+  does nothing; Skip button/arrow + unlocked flick now show grey sign + pop mid-flight (Swap button
+  shows nothing; design call); preset test skips foreground/muted on swipe-pick (filter); CLAUDE.md
+  swipe hex unchecked by the hex test; nits: font-semibold pill vs font rule, swipe.ts header,
+  "plan: the branch" pointer, misplaced jump(0) comment in swap-stack 100-114.
