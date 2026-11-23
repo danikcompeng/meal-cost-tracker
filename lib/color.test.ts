@@ -153,6 +153,26 @@ function contrastChecks(theme: Theme, hue: number) {
     needs: 4.5,
   });
   checks.push({ what: "highlight-foreground on highlight", ratio: c("highlight-foreground", "highlight"), needs: 4.5 });
+  // A swap card while you drag it (swipe-feedback.tsx): the card's own
+  // text on its full-strength tint. Swap cards live in a sheet, so in
+  // dark mode they're --raised (surface-raised); checked on the plain
+  // tile too. They have no red text.
+  const swapCards = theme === "dark" ? ["raised", "card"] : ["card"];
+  for (const card of swapCards) {
+    for (const tint of ["swipe-pick", "swipe-skip"]) {
+      const tinted = shown(theme, tint, hue, shown(theme, card, hue));
+      for (const text of ["foreground", "muted-foreground", "primary"]) {
+        checks.push({
+          what: `swap card: ${text} on ${tint} over ${card}`,
+          ratio: contrast(shown(theme, text, hue), tinted),
+          needs: 4.5,
+        });
+      }
+    }
+  }
+  // The big signs at the card's centre: Swap is the matcha button's pair
+  // (checked above), Skip is the page colour on the grey label colour.
+  checks.push({ what: "Skip sign: background on muted-foreground", ratio: c("background", "muted-foreground"), needs: 4.5 });
   return checks;
 }
 
@@ -181,7 +201,8 @@ const ACCENT_CANDIDATES = { matcha: 130, ocean: 240, indigo: 272, plum: 330, tea
 describe("palette: an accent preset only changes the hue", () => {
   for (const [name, hue] of Object.entries(ACCENT_CANDIDATES)) {
     for (const theme of ["light", "dark"] as const) {
-      const accentChecks = contrastChecks(theme, hue).filter((check) => /primary|ring/.test(check.what));
+      // swipe-pick reads --accent-h too: all the card's text on it.
+      const accentChecks = contrastChecks(theme, hue).filter((check) => /primary|ring|swipe-pick/.test(check.what));
       it.each(accentChecks)(`${name} (${hue}), ${theme}: $what`, ({ ratio, needs }) => {
         expect(ratio).toBeGreaterThanOrEqual(needs);
       });
@@ -206,6 +227,19 @@ describe("surface-raised", () => {
       secondary: "var(--raised)",
       accent: "var(--raised)",
     });
+  });
+});
+
+describe("palette: swipe tints", () => {
+  // See-through, so CLAUDE.md gives them as they show on a swap card: a
+  // tile in light mode, a tile inside a sheet (--raised) in dark mode.
+  it.each([
+    ["light", "swipe-pick", "card", "#DFEED1"],
+    ["light", "swipe-skip", "card", "#E3E3E3"],
+    ["dark", "swipe-pick", "raised", "#25341D"],
+    ["dark", "swipe-skip", "raised", "#242424"],
+  ] as const)("%s --%s on %s shows as %s", (theme, tint, card, hex) => {
+    expect(rgbToHex(shown(theme, tint, MATCHA_HUE, shown(theme, card)))).toBe(hex);
   });
 });
 

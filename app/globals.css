@@ -25,6 +25,8 @@
   --color-camera-accent: var(--camera-accent);
   --color-field-border: var(--field-border);
   --color-inset: var(--inset);
+  --color-swipe-pick: var(--swipe-pick);
+  --color-swipe-skip: var(--swipe-skip);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -109,6 +111,17 @@
   /* #78855A non-text fills: budget bar, chart bars. A little yellower
      than matcha (8 degrees round the wheel). */
   --matcha-soft: oklch(59.47% 0.0638 calc(var(--accent-h) - 8));
+  /* The tint a swap card takes on while you drag it (swipe-feedback.tsx),
+     at full strength; it fades in with the drag. Under the card's text,
+     never over it, and see-through, so it tints whatever card it's on.
+     Right (Swap): a pale matcha at 70%, #DFEED1 on a tile. Pale, not
+     the button's matcha: dark matcha at 9% only greyed the card
+     (#E1E4DF), and darkening is what costs the text its contrast.
+     Left (Skip): ink at 6%, a neutral grey (#E3E3E3 on a tile).
+     All the card's text stays at least 4.5:1, in every accent preset
+     (lib/color.test.ts). */
+  --swipe-pick: oklch(92% 0.06 var(--accent-h) / 70%);
+  --swipe-skip: oklch(20.46% 0 0 / 6%);
   --highlight: oklch(84.96% 0.1463 90.49); /* #F2C94C butter: active tab/pill only */
   --highlight-foreground: oklch(20.46% 0 0);
   /* The camera screen is dark in both modes, like any viewfinder, so it
@@ -156,6 +169,12 @@
     --input: oklch(100% 0 0 / 11%);
     --field-border: oklch(57.95% 0 0);      /* #7A7A7A 4.3:1 on the background, 3.8:1 on tiles, 3.3:1 on sheets */
     --matcha-soft: oklch(59.31% 0.0646 calc(var(--accent-h) - 6)); /* #76855A */
+    /* Dark mode tints by darkening: the card's text is light, so a
+       darker card keeps it readable, while light matcha over #333333
+       would wash the grey labels under 4.5:1 within 5%. Swap: a deep
+       matcha. Skip: the page colour, so the card sinks back. */
+    --swipe-pick: oklch(30% 0.07 calc(var(--accent-h) + 6.4) / 60%);
+    --swipe-skip: oklch(19.13% 0 0 / 50%);
     --highlight: oklch(82.83% 0.1297 88.7); /* #E9C25A */
     --highlight-foreground: oklch(19.13% 0 0);
   }

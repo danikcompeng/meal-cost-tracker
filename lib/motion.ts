@@ -75,6 +75,13 @@ export const SCALE_FROM = 0.97;
  */
 export const PRESS_SCALE_WIDE = 0.985;
 
+/**
+ * The pop as a dragged swap card's Swap / Skip sign locks in (letting go
+ * now counts): it grows to this and settles back, over DURATION.base.
+ * Just enough to feel the click. With Reduce Motion: no pop.
+ */
+export const POP_SCALE = 1.08;
+
 /** Springs, all visually done in 200–250 ms. */
 export const SPRING = {
   /** A row snapping open or shut: quick, no bounce past the button. */

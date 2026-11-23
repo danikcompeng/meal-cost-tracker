@@ -244,7 +244,11 @@ Motion (Framer Motion)
   for the next card. Everything stays flat and level, moving only
   sideways: no tilt or rotation, nothing up or down. Skip slides the
   card straight off to the left, shrinking and fading a little, and the
-  next card comes up. Swap doesn't throw the card: the sheet closes and
+  next card comes up. While you drag, the card tints under its text
+  (soft matcha right, grey left) and a solid sign fades in at its centre
+  (check + "Swap", or ✕ + "Skip"), full strength exactly when letting go
+  would count, where it pops once (POP_SCALE; none with Reduce Motion).
+  Swap doesn't throw the card: the sheet closes and
   the swap is one move left on Today's row, like a carousel (the old
   meal slides out left, shrinking to 0.9 and fading; the new one grows
   in from the right). With Reduce Motion: a crossfade. This should feel
@@ -305,6 +309,12 @@ only that number.
 - matcha-soft     #78855A / #76855A   NON-TEXT fills only: budget bar, chart bars
 - highlight       #F2C94C / #E9C25A   butter: active tab/pill only, dark text on it
 - destructive     #A8432F / #E08470   over budget: muted tomato red
+- swipe-pick      #DFEED1 / #25341D   a swap card's tint, dragged right
+- swipe-skip      #E3E3E3 / #242424   and dragged left. See-through, under
+                                      the card's text; these hex are on a
+                                      tile (light) and on a tile in a sheet
+                                      (dark). Dark mode tints by darkening,
+                                      so the light text keeps its contrast
 All text colors pass 4.5:1 contrast on background, tiles, popovers,
 raised and hover backgrounds (lowest: destructive on dark raised,
 4.63:1). Tinted buttons are measured separately (lowest: a red button
@@ -333,7 +343,7 @@ Tokens: use these, never a raw hex, rgb() or a made-up size
 | Type    | text-label 13 (labels, chips; our own, lib/utils.ts tells cn) · text-sm 14 (secondary lines, buttons) · text-base 16 (body, inputs) · text-lg 18 (sheet titles) · text-xl 20 · text-2xl 24 (swap card name) · text-3xl 30 (page titles, with leading-tight) · text-4xl 36 (big ring number at 6+ digits) · text-5xl 48 (the key number) |
 | Spacing | Tailwind's 4 px steps (--spacing): 1 2 3 4 5 6 8, half steps for tight chips and rows. Page gutter px-4, tile padding p-4 or p-5, tap targets h-11 (44 px) or h-12 |
 | Radius  | from --radius (10 px): rounded-md 8 (text links), rounded-lg 10 (buttons, boxes, rows), rounded-2xl 18 (tiles, sheets, cards), rounded-full (chips, pills, rings); plain rounded 4 only on skeleton text bars. Nested corners: concentric rule above |
-| Motion  | lib/motion.ts: DURATION fast 150 / base 200 / slow 250 ms, EASE_OUT / EASE_IN, SPRING snap / settle / sheet, SCALE_FROM 0.97 and PRESS_SCALE_WIDE 0.985 (press, press-wide), PUSH_SCALE / PUSH_FADE (swap carousel), SLIDE 24 px, RUBBER, SHAKE_X, THROW_SPEED; named exceptions FILL_DURATION / FILL_EASE (rings) and SETTLE_DURATION (Undo message). CSS copies are --motion-* in globals.css; lib/motion.test.ts checks they match and that answers to a tap stay 150–250 ms |
+| Motion  | lib/motion.ts: DURATION fast 150 / base 200 / slow 250 ms, EASE_OUT / EASE_IN, SPRING snap / settle / sheet, SCALE_FROM 0.97 and PRESS_SCALE_WIDE 0.985 (press, press-wide), PUSH_SCALE / PUSH_FADE (swap carousel), POP_SCALE (swipe sign locking in), SLIDE 24 px, RUBBER, SHAKE_X, THROW_SPEED; named exceptions FILL_DURATION / FILL_EASE (rings) and SETTLE_DURATION (Undo message). CSS copies are --motion-* in globals.css; lib/motion.test.ts checks they match and that answers to a tap stay 150–250 ms |
 Arbitrary values left on purpose: safe-area insets (env(), the phone
 decides), max-h-[85dvh] on sheets, concentric corners written from their
 outer token, and two width formulas (the dialog's 1 rem gutter, the scan

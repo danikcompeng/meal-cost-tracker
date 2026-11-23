@@ -5,8 +5,9 @@
 // through commit(), so the card always leaves the same way.
 //
 // How the swipe works: the card's sideways position is a "motion value"
-// (x) that follows your finger. The Swap / Skip labels are worked out from
-// x, so they fade with it on every frame without React redrawing. The card
+// (x) that follows your finger. The tint and the big Swap / Skip sign
+// (swipe-feedback.tsx) are worked out from x, so they grow with it on
+// every frame without React redrawing. The card
 // stays flat and level: it only ever moves sideways (no tilt).
 // Let go far enough (or flick fast) and it counts: to the left, Skip, and
 // the card slides straight off, shrinking and fading a little; to the
@@ -14,26 +15,14 @@
 // fly-off, see commit). Otherwise it springs back to the middle.
 
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
-import {
-  animate,
-  motion,
-  useIsPresent,
-  useMotionValue,
-  useReducedMotion,
-  useTransform,
-  type PanInfo,
-} from "framer-motion";
+import { animate, motion, useIsPresent, useMotionValue, useReducedMotion, type PanInfo } from "framer-motion";
 import { Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DURATION, EASE_OUT, PUSH_FADE, PUSH_SCALE, RUBBER, SCALE_FROM, SPRING, THROW_SPEED } from "@/lib/motion";
-import { throwVelocity } from "@/lib/swipe";
+import { LOCK_AT, SIDEWAYS_GIVE, releaseSide, throwVelocity } from "@/lib/swipe";
 import type { RankedSwap } from "@/lib/swap";
 import { SwapCard } from "./swap-card";
-
-/** How far (px) to drag before letting go commits. */
-const COMMIT_DISTANCE = 96;
-/** Or a flick this fast (px per second) away from the middle. */
-const COMMIT_SPEED = 600;
+import { SwipeSign, SwipeTint } from "./swipe-feedback";
 
 export type SwapDirection = "skip" | "pick";
 
@@ -79,8 +68,6 @@ export function SwapStack({
   const opacity = useMotionValue(1);
   const cardRef = useRef<HTMLDivElement>(null);
   const canStretchY = useCanStretchY(cardRef);
-  const pickOpacity = useTransform(x, [16, COMMIT_DISTANCE], [0, 1]);
-  const skipOpacity = useTransform(x, [-COMMIT_DISTANCE, -16], [1, 0]);
 
   // Which card is on top right now. The fly-off checks it when it lands,
   // so a card that's no longer on top (you pressed Back meanwhile) can't
@@ -94,13 +81,16 @@ export function SwapStack({
   // Did this touch become a sideways drag? Framer decides after a few
   // pixels (dragDirectionLock); until then it may still be a scroll.
   const sideways = useRef(false);
+  // Where the card was on the last frame of the drag. Letting go decides
+  // from this (releaseSide), the same number the sign is drawn from.
+  // Not x.get() in onDragEnd: by then Framer has already started the card
+  // back towards the middle.
+  const dragX = useRef(0);
+  // Is your finger moving the card (1), or a button or arrow key (0)? The
+  // tint and sign only answer a finger: tapping Skip throws the card off
+  // through the same positions, and shouldn't flash the sign on the way.
+  const byFinger = useMotionValue(1);
 
-  // A new top card starts in the middle again. jump() also STOPS a fly-off
-  // still running from the card before (plain set() wouldn't), and a
-  // stopped animation never runs its "then", so it can't skip this card
-  // too. The buttons stay the same elements from card to card, so focus
-  // stays on Skip while you skip through. useLayoutEffect runs before the
-  // screen is painted, so the new card never flashes where the old one was.
   // A Skip's "has it left the screen yet?" listener (commit). Dropped
   // whenever the top card changes or the sheet goes, so one left over from
   // a card that changed mid-flight can't shrink, fade or stop the next.
@@ -110,15 +100,22 @@ export function SwapStack({
     stopFollowing.current = null;
   };
 
+  // A new top card starts in the middle again. jump() also STOPS a fly-off
+  // still running from the card before (plain set() wouldn't), and a
+  // stopped animation never runs its "then", so it can't skip this card
+  // too. The buttons stay the same elements from card to card, so focus
+  // stays on Skip while you skip through. useLayoutEffect runs before the
+  // screen is painted, so the new card never flashes where the old one was.
   useLayoutEffect(() => {
     topId.current = swap.id;
     dropFollowing();
+    byFinger.jump(1);
     x.jump(0);
     y.jump(0);
     scale.jump(1);
     opacity.jump(1);
     leaving.current = false;
-  }, [swap.id, x, y, scale, opacity]);
+  }, [swap.id, byFinger, x, y, scale, opacity]);
 
   // The sheet is closing (it slides away first, still on the page) or
   // gone: from that moment nothing here may act. The arrow keys, the
@@ -169,17 +166,23 @@ export function SwapStack({
     void result.then((ok) => {
       if (ok || !alive.current || topId.current !== id) return;
       leaving.current = false;
+      byFinger.jump(1);
       // A pick never leaves (see commit), so the card is already in the
       // middle; this only makes sure it's settled there.
       toMiddle();
     });
   }
 
-  /** `velocity`: your finger's speed when you let go; 0 for a tap or a key. */
-  function commit(direction: SwapDirection, velocity = { x: 0, y: 0 }) {
+  /**
+   * `velocity`: your finger's speed when you let go; 0 for a tap or a key.
+   * `fromFinger`: a swipe (the sign stays with the card as it leaves), not
+   * a button or a key (no sign).
+   */
+  function commit(direction: SwapDirection, velocity = { x: 0, y: 0 }, fromFinger = false) {
     // Not once the sheet is closing (see `alive` above).
     if (!alive.current || leaving.current || pending) return;
     leaving.current = true;
+    if (!fromFinger) byFinger.jump(0);
     const id = swap.id;
     // Picking (Swap, or swiped right): no fly-off (phone check 2). Thrown
     // to the right, the card read as the meal going up and right, while on
@@ -236,7 +239,7 @@ export function SwapStack({
     toMiddle();
   }
 
-  function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) {
+  function handleDragEnd(event: MouseEvent | TouchEvent | PointerEvent, { velocity }: PanInfo) {
     // Only a gesture locked sideways decides, never one the browser took
     // over to scroll the sheet ("pointercancel"). Framer reports the
     // finger's speed even for a scroll, so a quick scroll that drifts a
@@ -248,11 +251,10 @@ export function SwapStack({
       if (!leaving.current) toMiddle({ x: 0, y: velocity.y });
       return;
     }
-    // A fast flick only counts towards the side the card is on: pulling
-    // back quickly towards the middle means "never mind".
-    if (offset.x > COMMIT_DISTANCE || (offset.x > 0 && velocity.x > COMMIT_SPEED)) commit("pick", velocity);
-    else if (offset.x < -COMMIT_DISTANCE || (offset.x < 0 && velocity.x < -COMMIT_SPEED))
-      commit("skip", velocity);
+    // Past the lock, or a fast flick towards the side the card is on
+    // (releaseSide). Decided from where the card is, like the sign.
+    const side = releaseSide(dragX.current, velocity.x);
+    if (side) commit(side, velocity, true);
     // "Never mind": springs back to the middle with your speed.
     else toMiddle(velocity);
   }
@@ -303,7 +305,9 @@ export function SwapStack({
         >
           <motion.div
             // Not draggable while it flies off: a touch would stop the
-            // flight halfway and leave the card stuck.
+            // flight halfway and leave the card stuck. Nor while a pick is
+            // saving ("Swapping…"): the buttons wait then, and a drag would
+            // grow and pop the sign for a release that can't count.
             // Sideways it follows your finger. Up and down it stretches on
             // a rubber band (RUBBER) and springs back, but only when the
             // sheet has nothing to scroll (or with a mouse): dragging up
@@ -311,14 +315,21 @@ export function SwapStack({
             // finger is on the card, and on a small phone the swap sheet
             // can be taller than the screen. Then up/down keeps scrolling
             // it (Framer sets touch-action: pan-y for a sideways-only drag).
-            drag={flying ? false : canStretchY ? true : "x"}
+            drag={flying || pending ? false : canStretchY ? true : "x"}
             // Decides which way you meant after a few pixels, and sticks
             // to it: a sideways swipe never drifts up or down.
             dragDirectionLock
-            dragElastic={{ left: 0.9, right: 0.9, top: RUBBER, bottom: RUBBER }}
+            dragElastic={{ left: SIDEWAYS_GIVE, right: SIDEWAYS_GIVE, top: RUBBER, bottom: RUBBER }}
             dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
             onPointerDownCapture={() => {
               sideways.current = false;
+              dragX.current = x.get();
+              // A finger again (after a failed pick by button, say).
+              if (!leaving.current) byFinger.jump(1);
+            }}
+            // After Framer has moved the card for this frame.
+            onDrag={() => {
+              dragX.current = x.get();
             }}
             // A press that never became a sideways drag (a tap, a scroll the
             // phone took over) stops any slide still running: put it back.
@@ -334,23 +345,13 @@ export function SwapStack({
             style={{ x, y, scale, opacity }}
             className={`relative ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
           >
-            <SwapCard swap={swap} servings={servings} />
-            {/* Labels that fade in as you drag. Hidden from screen readers:
-                the buttons below say the same thing. */}
-            <motion.span
-              aria-hidden="true"
-              style={{ opacity: pickOpacity }}
-              className="pointer-events-none absolute top-4 left-4 rounded-full bg-primary px-3 py-1 text-sm font-semibold text-primary-foreground"
-            >
-              {dragLabel}
-            </motion.span>
-            <motion.span
-              aria-hidden="true"
-              style={{ opacity: skipOpacity }}
-              className="pointer-events-none absolute top-4 right-4 rounded-full border border-border bg-background px-3 py-1 text-sm font-semibold text-muted-foreground"
-            >
-              Skip
-            </motion.span>
+            {/* The tint goes under the card's text, the sign on top of it. */}
+            <SwapCard
+              swap={swap}
+              servings={servings}
+              backdrop={<SwipeTint x={x} byFinger={byFinger} lockAt={LOCK_AT} />}
+            />
+            <SwipeSign x={x} byFinger={byFinger} lockAt={LOCK_AT} pickLabel={dragLabel} />
           </motion.div>
         </motion.div>
       </div>

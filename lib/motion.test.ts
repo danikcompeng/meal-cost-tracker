@@ -6,6 +6,7 @@ import {
   EASE_OUT,
   FILL_DURATION,
   FILL_EASE,
+  POP_SCALE,
   PRESS_SCALE_WIDE,
   PUSH_FADE,
   PUSH_SCALE,
@@ -106,6 +107,11 @@ describe("motion tokens: sane values", () => {
     }
     // A wide row gives less than a button: the same visible edge movement.
     expect(PRESS_SCALE_WIDE).toBeGreaterThan(SCALE_FROM);
+  });
+
+  it("the swipe sign's pop is tiny: a click, not a bounce", () => {
+    expect(POP_SCALE).toBeGreaterThan(1);
+    expect(POP_SCALE).toBeLessThanOrEqual(1.1);
   });
 
   it("the rubber band resists: less than half the finger's movement", () => {

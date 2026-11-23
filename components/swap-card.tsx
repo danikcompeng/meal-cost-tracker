@@ -22,7 +22,19 @@ const kcal = (v: number) => formatNumber(v, "kcal");
 /** How many ingredient chips fit before "+3". */
 const CHIPS = 3;
 
-export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: number }) {
+export function SwapCard({
+  swap,
+  servings,
+  backdrop,
+}: {
+  swap: RankedSwap;
+  servings: number;
+  /**
+   * Drawn on the card's background, under all its text: the swipe tint
+   * (swipe-feedback.tsx). Absolutely placed (inset-0).
+   */
+  backdrop?: React.ReactNode;
+}) {
   const { shown, foods } = swap;
   // "Shown as 1" (unitWord's rule), so a saved 1.004 says "per serving" too.
   const costLabel =
@@ -35,80 +47,91 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
     // In dark mode the card is one step lighter than the sheet it sits on
     // (bg-card inside a surface-raised sheet, globals.css). The border is
     // a quiet edge on top of that.
-    <article aria-labelledby={`swap-${swap.id}`} className="rounded-2xl border border-border bg-card p-5">
-      {/* Name first in the code, chips first on screen ("order-first"
-          moves only how it looks). */}
-      <div className="flex flex-col">
-        <h3 id={`swap-${swap.id}`} className="text-2xl leading-tight font-bold break-words">
-          {swap.name}
-        </h3>
-        {swap.reasons.length > 0 && (
-          <ul aria-label="Why this one" className="order-first mb-3 flex flex-wrap gap-1.5">
-            {swap.reasons.map((reason) => (
+    // The backdrop is placed absolutely over the card's background; the
+    // content box after it is positioned too (relative), so it's painted
+    // later, on top: the text sits on the tint, never under it. No
+    // z-index needed (lib/layers.test.ts). overflow-hidden: the backdrop
+    // follows the rounded corners.
+    <article
+      aria-labelledby={`swap-${swap.id}`}
+      className="relative overflow-hidden rounded-2xl border border-border bg-card"
+    >
+      {backdrop}
+      <div className="relative p-5">
+        {/* Name first in the code, chips first on screen ("order-first"
+            moves only how it looks). */}
+        <div className="flex flex-col">
+          <h3 id={`swap-${swap.id}`} className="text-2xl leading-tight font-bold break-words">
+            {swap.name}
+          </h3>
+          {swap.reasons.length > 0 && (
+            <ul aria-label="Why this one" className="order-first mb-3 flex flex-wrap gap-1.5">
+              {swap.reasons.map((reason) => (
+                <li
+                  key={reason}
+                  className="rounded-full bg-inset px-2.5 py-1 text-label font-medium text-primary tabular-nums"
+                >
+                  {reason}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <p className="mt-4 text-label font-medium text-muted-foreground">{costLabel}</p>
+        <div className="flex items-baseline justify-between gap-3">
+          <p className="text-5xl leading-tight font-bold text-primary tabular-nums">
+            <Value value={shown.cost} format={formatMoney} />
+          </p>
+          {swap.costChange !== null && (
+            <p className="text-label text-muted-foreground tabular-nums">
+              {signedMoney(swap.costChange)}
+              <span className="sr-only"> vs now</span>
+            </p>
+          )}
+        </div>
+
+        <dl className="mt-3 grid grid-cols-3 gap-2">
+          <Stat
+            label="protein"
+            className="text-primary"
+            value={<Value value={shown.protein} format={(v) => `${grams(v)} g`} />}
+            change={swap.proteinChange === null ? null : `${signed(swap.proteinChange, grams)} g`}
+          />
+          <Stat label="kcal" value={<Value value={shown.kcal} format={kcal} />} />
+          <Stat
+            label="protein per $"
+            value={<Value value={swap.proteinPerDollar} format={(v) => `${proteinPerDollarNumber(v)} g`} />}
+          />
+        </dl>
+
+        {swap.notes.map((note) => (
+          <p key={note} className="mt-2 text-label text-muted-foreground">
+            {note}
+          </p>
+        ))}
+
+        {foods.length > 0 && (
+          <ul aria-label="Ingredients" className="mt-4 flex flex-wrap gap-1.5">
+            {foods.slice(0, CHIPS).map((food) => (
               <li
-                key={reason}
-                className="rounded-full bg-inset px-2.5 py-1 text-label font-medium text-primary tabular-nums"
+                key={food.id}
+                className="max-w-40 truncate rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground"
               >
-                {reason}
+                {food.name}
               </li>
             ))}
+            {extra > 0 && (
+              <li className="rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground tabular-nums">
+                +{extra}
+                <span className="sr-only"> more</span>
+              </li>
+            )}
           </ul>
         )}
+
+        {swap.lastHad && <p className="mt-3 text-label text-muted-foreground">{swap.lastHad}</p>}
       </div>
-
-      <p className="mt-4 text-label font-medium text-muted-foreground">{costLabel}</p>
-      <div className="flex items-baseline justify-between gap-3">
-        <p className="text-5xl leading-tight font-bold text-primary tabular-nums">
-          <Value value={shown.cost} format={formatMoney} />
-        </p>
-        {swap.costChange !== null && (
-          <p className="text-label text-muted-foreground tabular-nums">
-            {signedMoney(swap.costChange)}
-            <span className="sr-only"> vs now</span>
-          </p>
-        )}
-      </div>
-
-      <dl className="mt-3 grid grid-cols-3 gap-2">
-        <Stat
-          label="protein"
-          className="text-primary"
-          value={<Value value={shown.protein} format={(v) => `${grams(v)} g`} />}
-          change={swap.proteinChange === null ? null : `${signed(swap.proteinChange, grams)} g`}
-        />
-        <Stat label="kcal" value={<Value value={shown.kcal} format={kcal} />} />
-        <Stat
-          label="protein per $"
-          value={<Value value={swap.proteinPerDollar} format={(v) => `${proteinPerDollarNumber(v)} g`} />}
-        />
-      </dl>
-
-      {swap.notes.map((note) => (
-        <p key={note} className="mt-2 text-label text-muted-foreground">
-          {note}
-        </p>
-      ))}
-
-      {foods.length > 0 && (
-        <ul aria-label="Ingredients" className="mt-4 flex flex-wrap gap-1.5">
-          {foods.slice(0, CHIPS).map((food) => (
-            <li
-              key={food.id}
-              className="max-w-40 truncate rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground"
-            >
-              {food.name}
-            </li>
-          ))}
-          {extra > 0 && (
-            <li className="rounded-full border border-border px-2.5 py-0.5 text-label text-muted-foreground tabular-nums">
-              +{extra}
-              <span className="sr-only"> more</span>
-            </li>
-          )}
-        </ul>
-      )}
-
-      {swap.lastHad && <p className="mt-3 text-label text-muted-foreground">{swap.lastHad}</p>}
     </article>
   );
 }
