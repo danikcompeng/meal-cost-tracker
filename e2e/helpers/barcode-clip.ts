@@ -1,20 +1,21 @@
-// The camera picture for the demo's real scan: a can of baked beans lying
-// on a kitchen counter, with the real EAN-13 barcode on its label, filmed
-// as if by a phone held in a hand (it drifts into place, then wobbles a
-// little).
+// The camera picture for the demo's real scan: a plain tray of raw chicken
+// thighs under clear wrap, on a plain counter, with one white sticker that
+// says "Chicken thighs" and carries a real product's EAN-13 barcode. The
+// camera holds still; the tray slides into the scan window once, smoothly,
+// and stays there.
 //
 // How it reaches the app: Chromium can pretend a video file is its camera
 // (--use-fake-device-for-media-stream with
 // --use-file-for-fake-video-capture=<file>, see record-demo.ts). The app's
 // own scanner then reads the barcode off that "camera" exactly as on a
-// phone. No app code knows about this.
+// phone, and looks it up on Open Food Facts. No app code knows about this.
 //
 // Made in two steps, both on this computer:
 // 1. The still scene is drawn as a web page (plain HTML and CSS, the
 //    barcode as SVG bars) and saved as a PNG by the browser.
-// 2. ffmpeg moves a phone-sized window over that picture (the hand) and
-//    writes a .y4m file, the raw video format Chromium's fake camera reads.
-//    It's big (about 70 MB), so it lives in test-results/, never in git.
+// 2. ffmpeg moves a camera-sized window over that picture and writes a
+//    .y4m file, the raw video format Chromium's fake camera reads. It's big
+//    (about 90 MB), so it lives in test-results/, never in git.
 
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
@@ -26,9 +27,10 @@ import type { Browser } from "@playwright/test";
  * it asks for 1280 x 720, and Chromium's fake camera, which can only crop
  * and shrink a file, hands over the middle 720 x 720 of anything 720 tall.
  * The phone screen (object-cover) then shows the middle strip of it, about
- * 330 px wide. Moving at 15 frames a second, for 6 s, then it loops.
+ * 330 px wide. 15 frames a second, for 8 s, then it loops (long after the
+ * barcode has been read).
  */
-const CAMERA = { width: 720, height: 720, fps: 15, seconds: 6 };
+const CAMERA = { width: 720, height: 720, fps: 15, seconds: 8 };
 /**
  * What the camera sees of the scene, before it's scaled down to CAMERA.
  * Sized so the barcode's bars span about three quarters of the scan window
@@ -36,8 +38,17 @@ const CAMERA = { width: 720, height: 720, fps: 15, seconds: 6 };
  * bar width: sharp enough for the reader, small enough to look real.
  */
 const VIEW = { width: 1700, height: 1700 };
-/** The scene is drawn bigger than what the camera sees, so the window can move over it. */
-const SCENE = { width: 2400, height: 3500 };
+/** The scene is taller than what the camera sees, so the tray can slide in. */
+const SCENE = { width: 2000, height: 3300 };
+/**
+ * Where the tray starts, in scene pixels below where it stops: low enough
+ * that the barcode is outside the scan window, so the clip opens on the
+ * counter and the near edge of the tray.
+ */
+const SLIDE = 800;
+/** The slide: still until START, then glides into place over DURATION (seconds). */
+const START = 1.0;
+const DURATION = 1.8;
 
 // EAN-13: each digit is 7 thin columns ("modules"), 1 = bar, 0 = space.
 // The left six digits use pattern L or G, chosen by the first digit; the
@@ -77,8 +88,8 @@ function barcodeSvg(code: string, module: number) {
     .join("");
   const text = (x: number, s: string) =>
     `<text x="${x * module}" y="${barHeight + 9 * module}" font-size="${9 * module}" text-anchor="middle">${s}</text>`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${barHeight + 11 * module}"
-      style="font-family: 'Courier New', monospace; fill: #111">
+  return `<svg id="barcode" xmlns="http://www.w3.org/2000/svg" width="${width}" height="${barHeight + 11 * module}"
+      style="display:block; font-family: Arial, sans-serif; fill: #111">
     ${bars}
     ${text(quiet - 4, code[0])}
     ${text(quiet + 3 + 21, code.slice(1, 7))}
@@ -86,57 +97,60 @@ function barcodeSvg(code: string, module: number) {
   </svg>`;
 }
 
+/** One raw chicken thigh: an irregular pale-pink shape, a little lighter at its fatty edge. */
+function thigh(left: number, top: number, w: number, h: number, turn: number, radius: string) {
+  return `<div style="position:absolute; left:${left}px; top:${top}px; width:${w}px; height:${h}px;
+      transform: rotate(${turn}deg); border-radius:${radius};
+      background:
+        radial-gradient(60% 55% at 45% 45%, #e39a92, #d98c86 55%, transparent 75%),
+        radial-gradient(90% 85% at 50% 50%, #e7a9a0 40%, #efc9bb 78%, #f3dccf);
+      box-shadow: inset 0 -14px 30px rgba(120,40,40,.18), 0 6px 10px rgba(0,0,0,.25)"></div>`;
+}
+
 /**
- * The still scene: a warm oak counter, and a can lying on its side, label
- * up, its barcode where the phone's scan window will be. A plain own-brand
- * label (no real brand's look), only the barcode is the real product's.
+ * The still scene. Plain on purpose: a neutral counter, a black tray, four
+ * thighs, clear wrap, and one white sticker with only "Chicken thighs" and
+ * the barcode. No brand, logo or decoration.
  */
 function sceneHtml(code: string) {
   return `<!doctype html><html><body style="margin:0">
   <div style="position:relative; width:${SCENE.width}px; height:${SCENE.height}px; overflow:hidden;
-      background:
-        repeating-linear-gradient(94deg, rgba(90,60,30,.07) 0 3px, transparent 3px 19px),
-        repeating-linear-gradient(91deg, rgba(255,240,220,.08) 0 7px, transparent 7px 41px),
-        radial-gradient(120% 80% at 40% 30%, #d9c2a0, #b8986f 70%, #a58560);">
-    <svg width="100%" height="100%" style="position:absolute; inset:0; opacity:.35; mix-blend-mode:multiply">
-      <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.09" numOctaves="3" seed="7"/>
-        <feColorMatrix values="0 0 0 0 .45  0 0 0 0 .3  0 0 0 0 .15  0 0 0 .9 0"/></filter>
-      <rect width="100%" height="100%" filter="url(#grain)"/>
-    </svg>
-    <!-- The can, lying on its side, turned a little; shifted left so its
-         barcode (on the right of the label) is in the middle. -->
-    <div style="position:absolute; left:calc(50% - 150px); top:50%; width:1180px; height:700px;
-        transform: translate(-50%, -50%) rotate(-3deg);">
-      <div style="position:absolute; inset:40px -10px -40px 30px; border-radius:60px; background:rgba(40,25,10,.45); filter:blur(36px)"></div>
-      <!-- Rims at each end. -->
-      <div style="position:absolute; left:0; top:0; bottom:0; width:70px; border-radius:40px 16px 16px 40px;
-          background: linear-gradient(180deg, #6d6d6d, #e9e9e9 30%, #9a9a9a 55%, #f2f2f2 70%, #5c5c5c)"></div>
-      <div style="position:absolute; right:0; top:0; bottom:0; width:70px; border-radius:16px 40px 40px 16px;
-          background: linear-gradient(180deg, #6d6d6d, #e9e9e9 30%, #9a9a9a 55%, #f2f2f2 70%, #5c5c5c)"></div>
-      <!-- The label. -->
-      <div style="position:absolute; left:62px; right:62px; top:14px; bottom:14px; overflow:hidden;
-          background:#c8512b; display:flex; align-items:center; justify-content:space-between; padding:0 90px;
-          font-family: Georgia, serif; color:#fff7e8;">
-        <div style="font-size:84px; line-height:1.02; font-weight:bold">Baked<br>Beans
-          <div style="font-size:34px; font-weight:normal; font-style:italic; margin-top:18px">in tomato sauce · 415 g</div>
-        </div>
-        <div style="background:#fff; padding:24px 26px 18px; border-radius:10px">${barcodeSvg(code, 5)}</div>
+      background: radial-gradient(140% 90% at 50% 40%, #d6d3ce, #c9c6c1);">
+    <!-- The tray, centred. -->
+    <div style="position:absolute; left:50%; top:50%; width:1250px; height:900px; transform:translate(-50%, -50%);">
+      <div style="position:absolute; inset:24px -16px -28px -16px; border-radius:70px; background:rgba(0,0,0,.35); filter:blur(30px)"></div>
+      <div style="position:absolute; inset:0; border-radius:60px; background:#26262a;
+          box-shadow: inset 0 0 0 26px #303035, inset 0 0 0 30px #1c1c1f"></div>
+      <!-- The thighs. -->
+      ${thigh(70, 80, 560, 380, -8, "48% 52% 45% 55% / 55% 48% 52% 45%")}
+      ${thigh(610, 70, 570, 390, 6, "52% 48% 55% 45% / 50% 55% 45% 50%")}
+      ${thigh(80, 440, 570, 390, 5, "55% 45% 50% 50% / 45% 52% 48% 55%")}
+      ${thigh(620, 430, 560, 400, -6, "46% 54% 52% 48% / 52% 46% 54% 48%")}
+      <!-- Clear wrap: a faint sheen and two soft glints. -->
+      <div style="position:absolute; inset:18px; border-radius:46px;
+          background: linear-gradient(115deg, rgba(255,255,255,.10), rgba(255,255,255,.02) 40%, rgba(255,255,255,.12) 62%, rgba(255,255,255,.03));"></div>
+      <div style="position:absolute; left:120px; top:60px; width:420px; height:30px; border-radius:30px;
+          background:rgba(255,255,255,.35); filter:blur(10px); transform:rotate(-12deg)"></div>
+      <div style="position:absolute; right:110px; bottom:90px; width:300px; height:24px; border-radius:24px;
+          background:rgba(255,255,255,.28); filter:blur(9px); transform:rotate(-12deg)"></div>
+      <!-- The sticker, on top of the wrap, in the middle of the tray. -->
+      <div style="position:absolute; left:50%; top:50%; transform:translate(-50%, -50%);
+          background:#fbfbf9; border-radius:8px; padding:30px 34px 24px; box-shadow: 0 2px 6px rgba(0,0,0,.25);
+          font-family: Arial, sans-serif; color:#111;">
+        <div style="font-size:54px; font-weight:bold; margin:0 0 22px 12px">Chicken thighs</div>
+        ${barcodeSvg(code, 5)}
       </div>
-      <!-- Light and shade round the cylinder. -->
-      <div style="position:absolute; left:62px; right:62px; top:14px; bottom:14px; pointer-events:none;
-          background: linear-gradient(180deg, rgba(0,0,0,.42), rgba(0,0,0,.04) 22%, rgba(255,255,255,.22) 36%,
-            rgba(255,255,255,0) 50%, rgba(0,0,0,.08) 72%, rgba(0,0,0,.5))"></div>
     </div>
   </div></body></html>`;
 }
 
-/** Where the barcode's middle is in the scene, so the camera can start on it. */
+/** Draws the scene; returns where the barcode's middle is in it. */
 async function drawScene(browser: Browser, code: string, png: string) {
   const page = await browser.newPage({ viewport: SCENE, deviceScaleFactor: 1 });
   try {
     await page.setContent(sceneHtml(code));
     await page.screenshot({ path: png });
-    const box = (await page.locator("svg").last().boundingBox())!;
+    const box = (await page.locator("#barcode").boundingBox())!;
     return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
   } finally {
     await page.close();
@@ -144,9 +158,9 @@ async function drawScene(browser: Browser, code: string, png: string) {
 }
 
 /**
- * Makes (or reuses) the fake camera's video for `code` and returns its
- * path. `aim` is where on the camera picture the scan window is, as a
- * fraction of its width and height (0.5, 0.5 = the middle).
+ * Makes the fake camera's video for `code` and returns its path. `aim` is
+ * where on the camera picture the scan window is, as a fraction of its
+ * width and height (0.5, 0.5 = the middle).
  */
 export async function barcodeClip(
   browser: Browser,
@@ -160,44 +174,27 @@ export async function barcodeClip(
   const clip = path.join(dir, `barcode-camera-${code}.y4m`);
   const barcode = await drawScene(browser, code, png);
 
-  // The window's top-left corner when the barcode sits under the scan
-  // window, kept inside the scene.
+  // The window's top-left corner once the barcode sits under the scan
+  // window. Before the slide the window is SLIDE higher up the scene, so
+  // the tray shows lower down; it then moves straight down to rest. No
+  // sideways movement, no turning, nothing after it stops.
   const restX = Math.round(barcode.x - aim.x * VIEW.width);
   const restY = Math.round(barcode.y - aim.y * VIEW.height);
-  // How far away the phone starts (the barcode well outside the scan
-  // window, so the first second or two shows just counter and can), and
-  // the furthest the window moves from rest (arrival plus wobble, below).
-  const from = { x: -250, y: 700 };
-  const reach = { left: -from.x + 46, right: 46, up: 36, down: from.y + 36 };
-  if (
-    restX - reach.left < 0 ||
-    restX + reach.right > SCENE.width - VIEW.width ||
-    restY - reach.up < 0 ||
-    restY + reach.down > SCENE.height - VIEW.height
-  ) {
-    throw new Error(`The camera would move off the scene (rest ${restX}, ${restY}): move the can or enlarge SCENE`);
+  if (restX < 0 || restX > SCENE.width - VIEW.width || restY - SLIDE < 0 || restY > SCENE.height - VIEW.height) {
+    throw new Error(`The camera would move off the scene (rest ${restX}, ${restY}): enlarge SCENE`);
   }
-  // ffmpeg expressions, `t` in seconds. `arrive` is 1 while the phone is
-  // still away, then glides to 0 between 1.8 s and 4.2 s (smoothstep: it
-  // speeds up, then slows to a stop, as a hand does). After that only the
-  // hand's wobble: two slow sways at different speeds, so it never looks
-  // mechanical. Commas are written \, because a bare comma would end the
-  // filter (see ffmpeg's filtergraph escaping).
-  // The reader reads one line across the bars, so it picks the code up as
-  // soon as the bars cross the window, a little before the phone settles,
-  // as a real scanner does: about 2.5 s after the camera opens.
-  const p = "clip((t-1.8)/2.4\\,0\\,1)";
-  const arrive = `(1-(3*${p}*${p}-2*${p}*${p}*${p}))`;
-  const x = `${restX}+34*sin(2*PI*t*0.55)+12*sin(2*PI*t*1.7)+${from.x}*${arrive}`;
-  const y = `${restY}+26*sin(2*PI*t*0.45+1)+10*sin(2*PI*t*2.1)+${from.y}*${arrive}`;
-  const tilt = `0.018*sin(2*PI*t*0.4)+0.08*${arrive}`;
+  // ffmpeg expression, `t` in seconds. `p` runs 0 → 1 during the slide;
+  // 3p² - 2p³ (smoothstep) starts and ends gently. Commas are written \,
+  // because a bare comma would end the filter (ffmpeg's filtergraph
+  // escaping). The reader reads one line across the bars, so it picks the
+  // code up as the bars cross the window, near the end of the slide.
+  const p = `clip((t-${START})/${DURATION}\\,0\\,1)`;
+  const y = `${restY - SLIDE}+${SLIDE}*(3*${p}*${p}-2*${p}*${p}*${p})`;
   const filters = [
-    `rotate=a=${tilt}:c=0xb0906a:ow=iw:oh=ih`,
-    `crop=w=${VIEW.width}:h=${VIEW.height}:x=${x}:y=${y}`,
+    `crop=w=${VIEW.width}:h=${VIEW.height}:x=${restX}:y=${y}`,
     `scale=${CAMERA.width}:${CAMERA.height}`,
-    // A phone camera's softness and grain.
+    // A phone camera's slight softness.
     "gblur=sigma=0.5",
-    "noise=alls=4:allf=t",
     "format=yuv420p",
   ].join(",");
   const run = spawnSync(

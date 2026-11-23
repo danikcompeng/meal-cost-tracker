@@ -18,9 +18,10 @@
 //      carousel slide on Today), then Undo.
 //   5. Swipe a row to show the trash can, delete it, Undo.
 //   6. Kitchen → a recipe: cost per serving and nutrients.
-//   7. Scan: the camera sees a can of beans on a counter and the app's
-//      real scanner reads its barcode (a made-up camera picture with the
-//      real Heinz beans barcode, helpers/barcode-clip.ts) → Open Food
+//   7. Scan: the camera sees a tray of chicken thighs slide into the scan
+//      window and the app's real scanner reads its barcode (a made-up
+//      camera picture with a real product's barcode,
+//      helpers/barcode-clip.ts) → Open Food
 //      Facts → Save and log → back on Today. Without ffmpeg there's no
 //      such picture, so it taps "Type the number" instead.
 
@@ -41,8 +42,15 @@ const MAX_BYTES = 10 * 1024 * 1024;
 const SIZE = { width: PHONE.viewport.width * 2, height: PHONE.viewport.height * 2 };
 /** The page background (CLAUDE.md), for the fade in and out. */
 const BACKGROUND = { light: "white", dark: "0x141414" } as const;
-/** Heinz baked beans: on Open Food Facts, with calories and protein. */
-const BARCODE = "5000157024671";
+/**
+ * Chicken thighs, 1 kg, a real product on Open Food Facts (category
+ * "chicken thighs"), with all eight nutrients per 100 g: 186 kcal, 18.5 g
+ * protein, 0 g carbs, 12.5 g fat. Checked against the API on 2026-11-23;
+ * the check digit is checked again when the barcode is drawn.
+ */
+const BARCODE = "5054268934725";
+/** What the 1 kg tray cost, typed into "What you paid". */
+const PRICE = "3.50";
 /**
  * Where the scan window sits on the camera picture, as a fraction of its
  * width and height: the middle across, a little above the middle down (the
@@ -172,7 +180,7 @@ async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
   await scrollTo(page.getByRole("region", { name: "Per serving", exact: true }), "start");
   await pause(2800);
 
-  // 7. Scan the can (or type its number) → Save and log → Today.
+  // 7. Scan the tray (or type its number) → Save and log → Today.
   await finger.tap(tabs.getByRole("link", { name: "Scan" }));
   if (!realScan) {
     const typeNumber = page.getByRole("button", { name: "Type the number" });
@@ -187,7 +195,7 @@ async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
     await pause(600);
     await finger.tap(page.getByRole("button", { name: "Look it up" }));
   }
-  // Scanning: the can drifts into the window and the app reads it by
+  // Scanning: the tray slides into the window and the app reads it by
   // itself, then looks it up. Open Food Facts can be slow.
   await expect(page.getByRole("heading", { name: "Check the numbers" })).toBeVisible({ timeout: 30_000 });
   await pause(2400);
@@ -195,7 +203,7 @@ async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
   await scrollTo(price);
   await pause(400);
   await finger.tap(price);
-  await page.keyboard.type("1.25", { delay: 170 });
+  await page.keyboard.type(PRICE, { delay: 170 });
   await pause(900);
   await finger.tap(page.getByRole("button", { name: "Save and log" }));
   await page.waitForURL((url) => url.pathname === "/");
