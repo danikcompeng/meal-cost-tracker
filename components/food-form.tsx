@@ -19,7 +19,7 @@ import { unitPriceLabel } from "@/lib/cost";
 import { basisChangeNote, basisLabel, calorieHint, type Nutrients } from "@/lib/macros";
 import type { FoodDraft } from "@/lib/food-draft";
 import { soundsLikeWater } from "@/lib/hydration";
-import { missingMacros, missingNote } from "@/lib/open-food-facts";
+import { nutritionNote } from "@/lib/open-food-facts";
 import { inputUnitsFor, toBaseUnit, type BaseUnit, type InputUnit } from "@/lib/units";
 import type { FormState, Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -229,7 +229,7 @@ export function FoodForm({
     ...(fromOpenFoodFacts ? macros.fieldErrors : {}),
     ...(state.fieldErrors ?? {}),
   };
-  const missing = draft && fromOpenFoodFacts ? missingNote(missingMacros(draft)) : null;
+  const missing = draft && fromOpenFoodFacts ? nutritionNote(draft) : null;
   // After a scan, a blank box means "they didn't have it", not "you can
   // skip this".
   const placeholder = fromOpenFoodFacts ? "not listed" : "optional";

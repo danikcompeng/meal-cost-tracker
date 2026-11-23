@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { missingMacros, missingNote, offProductUrl, parseOffResponse } from "./open-food-facts";
+import {
+  missingMacros,
+  missingNote,
+  NO_NUTRITION_NOTE,
+  nutritionNote,
+  offProductUrl,
+  parseOffResponse,
+} from "./open-food-facts";
 
 // Shortened copies of real Open Food Facts replies.
 const oats = {
@@ -201,6 +208,35 @@ describe("missingNote", () => {
     expect(missingNote(["kcal", "carbs", "fat"])).toBe(
       "Open Food Facts doesn't list calories, carbs or fat. Fill them in from the label, or leave them blank.",
     );
+  });
+});
+
+describe("nutritionNote", () => {
+  it("says there's no nutrition yet when they have a name and nothing else", () => {
+    // Their real reply for 0065651002612 (omega-3 eggs), checked
+    // 2026-11-23: a name, and no nutriments at all.
+    const draft = parseOffResponse({
+      code: "0065651002612",
+      status: 1,
+      product: { product_name: "Oeufs Omega 3" },
+    });
+    expect(draft?.name).toBe("Oeufs Omega 3");
+    expect(nutritionNote(draft!)).toBe(NO_NUTRITION_NOTE);
+    expect(NO_NUTRITION_NOTE).toBe("Open Food Facts has no nutrition for this product yet. Copy it from the label.");
+  });
+
+  it("names the missing macros when they have some nutrition", () => {
+    const draft = parseOffResponse({
+      status: 1,
+      product: { product_name: "Mystery bar", nutriments: { "energy-kcal_100g": 400, proteins_100g: 10 } },
+    });
+    expect(nutritionNote(draft!)).toBe(
+      "Open Food Facts doesn't list carbs or fat. Fill them in from the label, or leave them blank.",
+    );
+  });
+
+  it("is quiet when the four main ones are all there", () => {
+    expect(nutritionNote(parseOffResponse(oats)!)).toBeNull();
   });
 });
 
