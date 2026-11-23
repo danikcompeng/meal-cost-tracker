@@ -341,3 +341,11 @@ Lessons:
 - Next.js cacheComponents keeps visited pages alive but hidden. Anything
   that decides "on first appear" must decide each time it's shown
   (layout effects), and remember handled answers in refs.
+
+## 2026-11-23: Learning: MCP
+
+- MCP (Model Context Protocol) is a standard way for an AI to use outside tools and data. Instead of guessing, Claude can ask a real system.
+- I connected the Supabase MCP to Claude Code for Staple. Now it can list my tables and run SQL to check my real data, instead of guessing like it did with the Water sodium.
+- I set it to read_only=true and scoped it to my one project (project_ref). Login is done in the browser, so no key is saved in the repo.
+- Test: I asked it to delete a food. Postgres refused with "cannot execute DELETE in a read-only transaction", and the food count stayed at 18. The database blocks it, not Claude choosing to behave.
+- Watch out: the MCP connects as an admin, so Row Level Security doesn't limit what it reads. It sees every user's rows. Another reason to keep it read-only.
