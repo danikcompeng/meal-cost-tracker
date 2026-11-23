@@ -62,13 +62,30 @@ type Theme = keyof typeof BACKGROUND;
 
 test.describe.configure({ mode: "serial" });
 
-/** Off camera: the sample data, fresh, so every take is the same. */
-async function freshDemo(browser: Browser) {
+/**
+ * The calorie target for the takes. The sample day's 2,200 would end the
+ * tour over target once the chicken is logged (2,237 kcal by then), so the
+ * takes use 2,300 and Today ends 63 kcal under. Set off camera; the reset
+ * after recording puts the shared demo back to 2,200.
+ */
+const KCAL_TARGET = "2300";
+
+/**
+ * Off camera: the sample data, fresh, so every take is the same. With
+ * `target`, also sets the daily calorie target in Settings.
+ */
+async function freshDemo(browser: Browser, target?: string) {
   const context = await browser.newContext({ ...PHONE, baseURL: BASE_URL });
   try {
     const page = await context.newPage();
     await loginWithDemo(page);
     await resetDemo(page);
+    if (target) {
+      await page.goto("/settings");
+      await page.getByRole("textbox", { name: "Calories" }).fill(target);
+      await page.getByRole("button", { name: "Save targets" }).click();
+      await expect(page.getByText("Saved", { exact: true })).toBeVisible();
+    }
   } finally {
     await context.close();
   }
@@ -212,7 +229,7 @@ async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
   await expect(amount).toBeVisible();
   await pause(1200);
   await finger.tap(amount);
-  await page.keyboard.type("200", { delay: 170 });
+  await page.keyboard.type("100", { delay: 170 });
   await pause(1300);
   await finger.tap(logSheet.getByRole("button", { name: "Log it" }));
   await expect(logSheet).toBeHidden();
@@ -228,7 +245,7 @@ function megabytes(file: string) {
 
 for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
   test(`${theme} take`, async ({ browser }) => {
-    await freshDemo(browser);
+    await freshDemo(browser, KCAL_TARGET);
     const ffmpeg = await findFfmpeg();
     const webm = path.join(VIDEOS, `staple-demo-${theme}.webm`);
 
