@@ -1,111 +1,117 @@
 # Staple
 
-**Cheap meals that hit your macros, on repeat, with a swap when you're bored.**
+Cheap meals that hit your macros, on repeat, with a swap when you're bored.
 
-Live: [stapleapp.vercel.app](https://stapleapp.vercel.app)
+**Live:** [stapleapp.vercel.app](https://stapleapp.vercel.app). Tap **Try the demo**, no email needed.
+On a phone, add it to your home screen and it opens like an app.
 
-I'm living alone and cooking for myself, so I need a few cheap meals I can repeat that
-still hit my protein. Calorie trackers like MyFitnessPal don't know what food costs.
-Meal planners like Eat This Much generate recipes with ingredients I don't have and never
-reuse them, and MealMate is mostly paywalled with no prices at all. So I'm building the
-app I wanted: my own staple meals, real prices, and a one-tap swap to a meal with the same
-protein using groceries I already bought.
+![Swapping a meal: the card stack, then the carousel move on Today](design/ui/motion/after/swap.gif)
 
-## Status
+Full tour, including a real barcode scan on an iPhone:
+[staple-demo-light-real-scan.mp4](design/videos/staple-demo-light-real-scan.mp4) ·
+dark mode: [staple-demo-dark.mp4](design/videos/staple-demo-dark.mp4)
 
-Work in progress (November 2026). Built so far:
+## Why
 
-- Magic link login (Supabase Auth), with Row Level Security so every row is private to its owner
-- Foods with prices and calories / protein / carbs / fat, per 100 g, 100 ml or per item
-- Cost math with unit tests: a missing price or macro shows "—", never a made-up 0
-- Design system: tokens for color, type and spacing, light and dark mode
-- Daily food log *(in progress)*
+I live alone and cook for myself, so I repeat a few cheap meals that hit my protein.
+Calorie trackers don't know what food costs. Meal planners make up recipes with ingredients
+I don't have. None of the apps I tried let me swap one of *my* meals for another with the
+same protein at the price I actually paid. So I built one.
 
-Coming next: daily targets, barcode scanning (Open Food Facts), recipes with macros and cost
-per serving, the swipe-to-swap feature, and installing it on a phone as a PWA.
+## What it does
+
+- **Today:** your meals against daily goals for calories, protein, carbs, fat and water,
+  shown as progress rings, plus what the day costs.
+- **Staple recipes:** your own meals, each showing calories, macros, cost and
+  protein per dollar per serving.
+- **"I'm tired of this" swap:** one tap on a meal brings up your other recipes as a card
+  stack, best match first. Swipe right to swap, left to skip.
+- **Barcode scanning:** scan a package with the phone camera, the nutrition comes from
+  Open Food Facts, and you type what you paid.
+- **Protein per dollar:** grams of protein per $1, on recipes, swap cards and the day.
+- Light and dark mode, installable on iPhone and Android.
+
+## Interesting decisions
+
+- **Missing stays missing.** A food with no price shows "no price yet", never $0. If one
+  ingredient has no sodium, the recipe's sodium is "—" and the screen names the food.
+  A day adds up what it knows and says what's left out ("+ 1 food without protein").
+  A number that looks right but quietly leaves something out is worse than no number.
+- **The swap ranking works like a spreadsheet sort.** Sort by protein first, then by how
+  many foods you'd need to buy, then by cost, then by what you've eaten lately. Each column
+  is a coarse group (protein "within 15%", not the exact grams), so the later columns
+  still get a say. It's a pure function in `lib/swap.ts` with its own tests.
+- **Honest wording.** Until I track purchases, "foods you have" means foods you logged in
+  the last 7 days. So the card says "Uses 3 foods you've had this week", never
+  "in your kitchen".
+- **A demo with no admin key.** Visitors can't get a login email, so "Try the demo" signs
+  into one shared account on the server. It resets its own sample data as that user, so
+  Row Level Security still applies and the demo can only ever touch its own rows.
+
+## Design
+
+- **One accent.** White paper (near-black in dark mode), black ink, one matcha green.
+  Every colour is an OKLCH token in `app/globals.css`, and a unit test checks each one
+  and its contrast.
+- **One font.** Figtree for everything, with tabular numbers so prices line up.
+- **A motion pass.** Buttons and rows press in, a swap slides Today's row like a carousel,
+  and you swipe a row to delete it. With Reduce Motion it fades instead.
+  Clips: [`design/ui/motion/after/`](design/ui/motion/after/).
+- **An accessibility pass.** Text passes 4.5:1 contrast, keyboard focus shows a ring,
+  tap targets are 44 px, and screen readers hear loading states and errors.
+
+## How I built it with AI
+
+I built it with Claude Code. It writes most of the code; I make the decisions, review
+the work and read the code until I understand it.
+
+- **Plan first.** Every feature starts as a written plan: database changes, files, tests,
+  and the phone layout in words. I push back and change it before any code exists.
+  There are 13 plans in [`plans/`](plans/), one feature at a time.
+- **[`CLAUDE.md`](CLAUDE.md) is the spec.** It holds the database schema, formulas,
+  rounding rules, colours with their contrast ratios, and my working rules, so every
+  session builds toward the same app.
+- **A code-reviewer subagent** ([`.claude/agents/code-reviewer.md`](.claude/agents/code-reviewer.md))
+  reviews each change before it's committed. It never edits code, and it keeps its own
+  notes so it doesn't raise things I already decided. It has done 43 reviews so far. Catches:
+  - A package size of 0 made a food look free ([fix](https://github.com/danikcompeng/meal-cost-tracker/commit/599293a)).
+  - Rounding errors that grew with every edit, "1,000" read as 1, and an app left open
+    overnight logging breakfast to yesterday ([fix](https://github.com/danikcompeng/meal-cost-tracker/commit/8ca92ae)).
+- **Tests:** 822 unit tests in 37 files cover the maths, validation, swap ranking and
+  colour contrast. 3 Playwright tests run the main flows on an iPhone-sized screen.
+- **Notes as I learn:** [`notes.md`](notes.md) has my debugging write-ups, design rules
+  and lessons, for example connecting the Supabase MCP in read-only mode and checking
+  that the database itself refuses a delete.
 
 ## Stack
 
 Next.js (App Router) · TypeScript · Tailwind CSS + shadcn/ui · Framer Motion ·
-Supabase (Postgres, Auth, RLS) · Vitest · Vercel
+Supabase (Postgres, Auth, Row Level Security) · Vitest · Playwright · Vercel
 
-## How I build with AI
-
-I build with **Claude Code**. It writes most of the code; I make the decisions, review its
-work, and read the code until I understand it.
-
-- **Plan first.** For every feature, Claude proposes a plan (database changes, files, tests,
-  and the phone layout in words) and waits. I review it, push back and change it before any
-  code is written. One feature at a time, one commit per working feature.
-- **`CLAUDE.md` is the source of truth.** It holds the app's purpose, database schema,
-  formulas, design system and working rules, so every session builds toward the same thing.
-  I learned to treat this file, not the chat, as the spec after a color value drifted between
-  what we agreed and what got committed.
-- **A code-reviewer subagent** ([`.claude/agents/code-reviewer.md`](.claude/agents/code-reviewer.md)).
-  Before each commit, a separate Claude reviews the change for bugs, security and readability.
-  - **Read-only:** it can find problems but can't change code I haven't approved.
-  - **Project memory:** it keeps notes on past findings, decisions and my recurring
-    mistakes, so it doesn't re-raise things I chose not to fix.
-  - **What it has caught** (each one fixed before the commit):
-    - A package size of 0 would show a food as *free*, a wrong number that looks right
-      ([fix](https://github.com/danikcompeng/meal-cost-tracker/commit/599293a)).
-    - A "check your numbers" warning disappeared too early after changing a food's unit
-      ([fix](https://github.com/danikcompeng/meal-cost-tracker/commit/9e1360b)).
-    - On the daily food log it found six bugs
-      ([fix](https://github.com/danikcompeng/meal-cost-tracker/commit/8ca92ae)), including:
-      - **Rounding errors that grew with every edit.** Logging 1 g of rice, then changing it
-        to 500 g, cost $2.50 instead of $2.48. Now exact values are stored and only the
-        screen rounds.
-      - **"1,000" read as 1**, because a comma can be a decimal point in some countries.
-        Ambiguous numbers are now refused with a clear message.
-      - **An app left open overnight could log breakfast to yesterday.** It now checks the
-        date when you come back to it.
-      - A dropped connection replacing the whole screen, keyboard focus not returning after
-        closing a panel, and an empty-search message that read "No food called \"\"".
-- **Tests on the logic that matters.** Cost, nutrition, totals and validation are pure
-  functions with unit tests, including a hand-checkable example
-  ($4.50 for 2 lb of rice → $0.74 per 150 g serving).
-- **Debugging from logs, not guesses.** The app shows friendly errors to users but logs the
-  real reason on the server. That's how I found a login bug that turned out to be a wrong
-  Supabase URL, then an email rate limit.
-
-My running notes, design rules and screen reviews are in [`notes.md`](notes.md).
-
-## Design
-
-Black ink on white with one matcha-green accent, Figtree for everything: bold for titles
-and the big number, regular for the rest (it has tabular numbers, so prices line up). Each screen has one
-main number. References and before/after screenshots are in [`design/`](design/).
-
-## Running it locally
+## Run it locally
 
 ```bash
 npm install
 npm run dev     # http://localhost:3000
-npm test        # unit tests
 ```
 
-### End-to-end tests and the demo video
+You need a Supabase project. Run the SQL files in `supabase/migrations/` in order, then
+put these in `.env.local`:
 
-These use [Playwright](https://playwright.dev) on an iPhone-sized screen against the live app
-(set `BASE_URL=http://localhost:3000` to test a local copy), and only ever log in with
-**Try the demo**, so no personal data is involved. They reset the shared demo first and
-again at the end.
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `DEMO_EMAIL`, `DEMO_PASSWORD` (optional: the "Try the demo" account. Without them the
+  button is hidden.)
+
+## Tests
 
 ```bash
-npx playwright install chromium   # once: the browser Playwright drives
-npm run test:e2e                  # 3 tests: log a meal, build a recipe, swap a meal
+npm test                          # unit tests (Vitest)
+npx playwright install chromium   # once
+npm run test:e2e                  # log a meal, build a recipe, swap a meal
 npm run record:demo               # re-record the demo videos into design/videos/
 ```
 
-`record:demo` makes `staple-demo-light.mp4` / `-dark.mp4` (the full tour, about 58 s) and
-`staple-loop-light.mp4` / `-dark.mp4` (a 20 s loop of logging in and swapping a meal). The tour has no barcode scan: that's filmed on a
-real iPhone and spliced in by hand, and the script prints the exact time to splice it at.
-MP4 needs ffmpeg: install it (`winget install Gyan.FFmpeg`), or run
-`npm install --no-save ffmpeg-static`, or point `FFMPEG_PATH` at one. Without ffmpeg you get
-a softer `.webm` and no loop. The script is `e2e/record-demo.ts`. To film this branch before it's live, run the app
-(`npx next build && npx next start`) and set `BASE_URL=http://localhost:3000`.
-
-You'll need a Supabase project. Put its URL and publishable key in `.env.local`
-(`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) and run the SQL files
-in `supabase/migrations/` in order.
+The Playwright tests run against the live app and only log in with **Try the demo**.
+Set `BASE_URL=http://localhost:3000` to test a local copy instead. To make MP4s,
+`record:demo` needs ffmpeg (or point `FFMPEG_PATH` at one).
