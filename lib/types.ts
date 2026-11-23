@@ -1,5 +1,6 @@
 import type { Nutrients } from "./macros";
 import type { Meal } from "./meals";
+import type { ServingColumns } from "./servings";
 import type { BaseUnit, EntryUnit } from "./units";
 
 /** Calories and nutrients are per 100 g, per 100 ml, or per 1 item ("each"). */
@@ -14,7 +15,7 @@ export type Food = Nutrients & {
   unit: BaseUnit;
   /** The "Counts toward hydration" switch. Only ever true for ml foods. */
   counts_toward_hydration: boolean;
-};
+} & ServingColumns;
 
 /**
  * One food in a recipe, and how much of it goes into the WHOLE recipe,

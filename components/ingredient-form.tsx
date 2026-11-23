@@ -13,10 +13,12 @@ import { waterText } from "@/lib/hydration";
 import { nutrientsForAmount } from "@/lib/nutrition";
 import { removeIngredient, saveIngredient } from "@/lib/recipe-actions";
 import { validateIngredient } from "@/lib/recipe-validation";
+import { servingOf } from "@/lib/servings";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
+import { ServingPicks } from "./serving-picks";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function IngredientForm({
@@ -92,6 +94,7 @@ export function IngredientForm({
           cost: costOfAmount(food.price, food.package_size, typed),
         };
   const hydrates = food.unit === "ml" && food.counts_toward_hydration;
+  const serving = servingOf(food);
   const errors = state.fieldErrors ?? {};
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
@@ -132,6 +135,8 @@ export function IngredientForm({
           error={errors.amount}
           autoFocus={isNew}
         />
+        {/* "2 bagels": fills in 160 g, the amount the recipe saves. */}
+        {serving && <ServingPicks serving={serving} unit={food.unit} value={amount} onPick={setAmount} />}
         <AmountPreview values={preview} />
         {/* Water in a recipe counts toward hydration the same way as on its
             own. Water you pour away (pasta, boiled eggs) shouldn't count,

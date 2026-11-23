@@ -100,7 +100,11 @@ through their parent row.
   shown small and quiet; sodium in mg, the rest in g),
   counts_toward_hydration (only true for ml foods; on by default for a
   new food whose name contains the word "water"),
-  serving_size (optional), created_at
+  serving_name, serving_amount (optional item serving, "1 bagel =
+  80 g": both or neither, g/ml foods only, amount in the food's unit;
+  from the g/ml written in Open Food Facts' serving_size, never guessed.
+  Only a typing shortcut: amounts are still saved in g/ml. Rules and
+  wording in lib/servings.ts), created_at
   unique (user_id, barcode)
   All nutrients are optional: blank = unknown (null), never 0.
   0 kcal rule: with kcal 0, blank protein, carbs, fat, sugar, fiber and

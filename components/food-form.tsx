@@ -35,9 +35,14 @@ type Fields = Record<NutrientField, string> & {
   price: string;
   packageSize: string;
   unit: InputUnit;
+  /** The optional "1 [bagel] = [80] g" row. */
+  servingName: string;
+  servingAmount: string;
 };
 
 const EMPTY: Fields = {
+  servingName: "",
+  servingAmount: "",
   name: "",
   brand: "",
   kcal: "",
@@ -96,6 +101,9 @@ function fieldsFromDraft(draft: FoodDraft): Fields {
     price: "",
     packageSize: toField(draft.packageSize),
     unit: draft.unit,
+    // Only when Open Food Facts had one; never guessed.
+    servingName: draft.serving?.name ?? "",
+    servingAmount: draft.serving ? String(draft.serving.amount) : "",
   };
 }
 
@@ -108,6 +116,8 @@ function fieldsFrom(food: Food | null): Fields {
     price: String(food.price),
     packageSize: String(food.package_size),
     unit: food.unit,
+    servingName: food.serving_name ?? "",
+    servingAmount: toField(food.serving_amount),
   };
 }
 
@@ -201,7 +211,9 @@ export function FoodForm({
   // Switching g/ml/each resets the package unit to the matching base (kg
   // only makes sense for g foods, and so on).
   function setMeasuredBy(unit: BaseUnit) {
-    setFields((f) => ({ ...f, unit }));
+    // The serving's "80" was for the old unit: 80 g isn't 80 ml. Its
+    // amount is cleared (the name stays), so it has to be typed again.
+    setFields((f) => ({ ...f, unit, servingAmount: unit === toBaseUnit(1, f.unit).unit ? f.servingAmount : "" }));
   }
 
   // Only boxes with a number in them count; an empty box can't be wrong.
@@ -222,7 +234,9 @@ export function FoodForm({
         macros.value.sodium_mg === null ? " Sodium stays blank: salt has no calories." : ""
       }`
     : calorieHint(macros.value);
-  const preview = validateFood(fields);
+  // The "= $0.70 / 100 g" line needs only price, size and unit: a half
+  // typed serving mustn't hide it (that's checked when you save).
+  const preview = validateFood({ ...fields, servingName: "", servingAmount: "" });
   // Numbers from Open Food Facts can be wrong (say, 120 g protein per
   // 100 g), so their mistakes show straight away, not only after Save.
   const errors = {
@@ -373,6 +387,44 @@ export function FoodForm({
           {hint}
         </p>
       </fieldset>
+
+      {/* Optional: "1 bagel = 80 g", a shortcut for typing grams when you
+          log it or put it in a recipe (lib/servings.ts). Not for "each"
+          foods: they're already counted in items. */}
+      {measuredBy !== "each" && (
+        <fieldset className="space-y-3">
+          <legend className="mb-3 text-label font-medium text-muted-foreground">Serving</legend>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="One serving is a" htmlFor="servingName" error={errors.servingName}>
+              <Input
+                id="servingName"
+                name="servingName"
+                value={fields.servingName}
+                onChange={set("servingName")}
+                placeholder="bagel"
+                autoComplete="off"
+                maxLength={40}
+                className="h-11 bg-background"
+                aria-invalid={Boolean(errors.servingName)}
+                aria-describedby={errors.servingName ? errorId("servingName") : undefined}
+              />
+            </Field>
+            <NutrientInput
+              name="servingAmount"
+              label="Amount"
+              suffix={measuredBy}
+              value={fields.servingAmount}
+              onChange={(value) => setFields((f) => ({ ...f, servingAmount: value }))}
+              placeholder="80"
+              error={errors.servingAmount}
+            />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            Optional. Lets you pick “1 {fields.servingName.trim() || "bagel"}” instead of typing{" "}
+            {measuredBy === "ml" ? "millilitres" : "grams"}.
+          </p>
+        </fieldset>
+      )}
 
       <fieldset className="space-y-3">
         <legend className="mb-3 text-label font-medium text-muted-foreground">

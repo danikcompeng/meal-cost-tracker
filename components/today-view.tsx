@@ -19,6 +19,7 @@ import {
 } from "@/lib/entry-validation";
 import { holdEntry, withHeld, type Held } from "@/lib/held-entries";
 import { waterTotal } from "@/lib/hydration";
+import { servingForEntry } from "@/lib/servings";
 import { showsWater } from "@/lib/summary";
 import { MEALS, MEAL_LABELS, type Meal } from "@/lib/meals";
 import { swapCurrentFromEntry, type EatenRow, type RankedSwap } from "@/lib/swap";
@@ -657,6 +658,7 @@ export function TodayView({
         <BottomSheet key="edit" title="Edit entry" onClose={close}>
           <EditEntryForm
             entry={sheet.entry}
+            serving={servingForEntry(sheet.entry, foods)}
             onDone={close}
             onSwap={sheet.entry.unit === "serving" ? () => openSwap(sheet.entry) : undefined}
             onDelete={() => deleteFromSheet(sheet)}

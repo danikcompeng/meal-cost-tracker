@@ -1,6 +1,7 @@
 import { costOfAmount, formatMoney } from "@/lib/cost";
 import { macroText } from "@/lib/macros";
 import { nutrientsForAmount } from "@/lib/nutrition";
+import { servingOf, servingsIn, servingsText } from "@/lib/servings";
 import type { RecipeIngredient } from "@/lib/types";
 import { amountText } from "@/lib/units";
 
@@ -17,6 +18,9 @@ export function IngredientRow({
 }) {
   const { food, amount } = ingredient;
   const protein = nutrientsForAmount(food, amount).protein_g;
+  // "284 g · 2 cans": only for whole or half servings, never "1.3 cans".
+  const serving = servingOf(food);
+  const count = serving ? servingsIn(amount, serving) : null;
   const cost = costOfAmount(food.price, food.package_size, amount);
 
   return (
@@ -29,6 +33,7 @@ export function IngredientRow({
         <span className="truncate font-medium">{food.name}</span>
         <span className="text-label text-muted-foreground tabular-nums">
           {amountText(amount, food.unit)} ·{" "}
+          {serving && count !== null && `${servingsText(count, serving)} · `}
           <span className={protein === null ? undefined : "font-medium text-primary"}>
             {macroText(protein, "g", "protein")}
           </span>

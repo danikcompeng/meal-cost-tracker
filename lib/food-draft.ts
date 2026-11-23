@@ -4,6 +4,7 @@
 import type { FoodSource } from "./food-validation";
 import { NO_EXTRAS, type Nutrients } from "./macros";
 import type { OffDraft } from "./open-food-facts";
+import type { Serving } from "./servings";
 import type { BaseUnit } from "./units";
 
 export type FoodDraft = Nutrients & {
@@ -11,6 +12,8 @@ export type FoodDraft = Nutrients & {
   brand: string | null;
   unit: BaseUnit;
   packageSize: number | null;
+  /** "1 bagel = 80 g", from Open Food Facts; null if they had none. */
+  serving: Serving | null;
   barcode: string | null;
   source: FoodSource;
   /** Calories were converted from kJ, so the form can say so. */
@@ -34,6 +37,7 @@ export function emptyDraft(barcode: string | null): FoodDraft {
     brand: null,
     unit: "g",
     packageSize: null,
+    serving: null,
     kcal: null,
     protein_g: null,
     carbs_g: null,

@@ -5,6 +5,7 @@ import { unitPriceLabel } from "./cost";
 import type { FoodInput } from "./food-validation";
 import type { DisplayUnit } from "./format";
 import { macroText, type Nutrients } from "./macros";
+import { servingChangeLine, type ServingColumns } from "./servings";
 import type { BaseUnit } from "./units";
 
 /**
@@ -30,12 +31,13 @@ export function findDuplicate<T extends { name: string; brand: string | null }>(
   return foods.find((f) => normalizeName(f.name) === name && normalizeName(f.brand) === brand) ?? null;
 }
 
-type Comparable = Nutrients & {
-  price: number;
-  package_size: number;
-  unit: BaseUnit;
-  counts_toward_hydration: boolean;
-};
+type Comparable = Nutrients &
+  ServingColumns & {
+    price: number;
+    package_size: number;
+    unit: BaseUnit;
+    counts_toward_hydration: boolean;
+  };
 
 const NUTRIENT_LINES = [
   { key: "kcal", label: "Calories", unit: "kcal" },
@@ -80,5 +82,7 @@ export function duplicateChanges(existing: Comparable, input: FoodInput): string
       }`,
     );
   }
+  const serving = servingChangeLine(existing, input);
+  if (serving) lines.push(serving);
   return lines;
 }

@@ -11,21 +11,30 @@ import { updateEntry } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { scaleSnapshot } from "@/lib/nutrition";
+import type { Serving } from "@/lib/servings";
 import type { FormState, MealEntry } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
+import { ServingPicks } from "./serving-picks";
 import { SwapButton } from "./swap-button";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function EditEntryForm({
   entry,
+  serving,
   onDone,
   onSwap,
   onDelete,
 }: {
   entry: MealEntry;
+  /**
+   * The food's serving today ("1 bagel = 80 g"), for the quick picks; null
+   * if it has none. Only a typing shortcut: the entry keeps its own grams
+   * and numbers.
+   */
+  serving: Serving | null;
   onDone: () => void;
   /** Recipe entries only: "Tired of this?" opens the swap stack instead. */
   onSwap?: () => void;
@@ -104,6 +113,9 @@ export function EditEntryForm({
 
       <div className="space-y-2">
         <AmountField unit={entry.unit} value={amount} onChange={setAmount} error={errors.amount} />
+        {serving && (entry.unit === "g" || entry.unit === "ml") && (
+          <ServingPicks serving={serving} unit={entry.unit} value={amount} onPick={setAmount} />
+        )}
         <AmountPreview values={preview} />
       </div>
 

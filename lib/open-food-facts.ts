@@ -9,6 +9,7 @@
 // never 0. A 0 they DO have (diet soda: 0 g fat) stays 0.
 
 import { NUTRIENT_KEYS, type Macros, type Nutrients } from "./macros";
+import { servingFromOpenFoodFacts, type Serving } from "./servings";
 
 /** Who we are, sent with every request, as Open Food Facts asks apps to do. */
 export const OFF_USER_AGENT = "Staple/0.1 (https://stapleapp.vercel.app)";
@@ -22,6 +23,7 @@ const FIELDS = [
   "quantity",
   "product_quantity",
   "product_quantity_unit",
+  "serving_size",
   "nutriments",
 ].join(",");
 
@@ -35,6 +37,8 @@ export type OffDraft = Nutrients & {
   /** Their nutrition is per 100 g or per 100 ml; never "each". */
   unit: "g" | "ml";
   packageSize: number | null;
+  /** Their serving in the same unit ("1 bagel (80 g)"), or null: never guessed (lib/servings.ts). */
+  serving: Serving | null;
   /** True when calories were worked out from kJ (they only had kJ). */
   kcalFromKj: boolean;
   /** True when sodium was worked out from salt (they only had salt). */
@@ -89,11 +93,13 @@ export function parseOffResponse(json: unknown): OffDraft | null {
     sodiumFromSalt = true;
   }
 
+  const unit = isLiquid(product) ? "ml" : "g";
   const draft: OffDraft = {
     name,
     brand,
-    unit: isLiquid(product) ? "ml" : "g",
+    unit,
     packageSize: packageSize(product.product_quantity),
+    serving: servingFromOpenFoodFacts(product, unit),
     kcal,
     protein_g: amount(n.proteins_100g),
     carbs_g: amount(n.carbohydrates_100g),

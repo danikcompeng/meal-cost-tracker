@@ -2,6 +2,8 @@
 // The same foods, recipes, meals and targets as
 // design/ui/motion/seed-demo.sql, written as data so the server can seed
 // the demo as the demo user (Row Level Security, no service-role key).
+// One difference: the servings on Rolled oats and Canned tuna are only
+// here (that SQL file is from before servings).
 //
 // Everything here is pure (no database), so it can be unit tested.
 // lib/demo.ts does the reading and writing.
@@ -9,6 +11,7 @@
 import { addDays } from "./dates";
 import type { Meal } from "./meals";
 import { recipeSnapshotFor, snapshotFor } from "./nutrition";
+import { NO_SERVING, type ServingColumns } from "./servings";
 import type { Food, Recipe } from "./types";
 import type { BaseUnit } from "./units";
 
@@ -27,7 +30,7 @@ export type DemoFoodRow = {
   saturated_fat_g: number | null;
   sodium_mg: number | null;
   counts_toward_hydration: boolean;
-};
+} & ServingColumns;
 
 // Name, unit, price paid, package size, then per 100 g / ml (or per 1
 // for "each"): kcal, protein, carbs, fat. Sugar, fiber, saturated fat and
@@ -43,6 +46,7 @@ function food(
     name, unit, price, package_size, kcal, protein_g, carbs_g, fat_g,
     sugar_g: null, fiber_g: null, saturated_fat_g: null, sodium_mg: null,
     counts_toward_hydration: false,
+    ...NO_SERVING,
   };
 }
 
@@ -52,10 +56,12 @@ export const DEMO_FOODS: readonly DemoFoodRow[] = [
   food("Frozen broccoli", "g", 1.99, 340, [34, 2.8, 7, 0.4]),
   food("Black beans", "g", 1.19, 425, [91, 6, 16, 0.4]),
   food("Eggs", "each", 3.99, 12, [72, 6.3, 0.4, 4.8]),
-  food("Rolled oats", "g", 3.49, 1000, [389, 16.9, 66, 6.9]),
+  // Two foods with a serving, so the demo shows "1 cup · 80 g" picks.
+  // Overnight oats uses exactly 1 cup, Tuna rice exactly 2 cans.
+  { ...food("Rolled oats", "g", 3.49, 1000, [389, 16.9, 66, 6.9]), serving_name: "cup", serving_amount: 80 },
   food("Greek yogurt", "g", 4.99, 907, [59, 10, 3.6, 0.4]),
   food("Banana", "each", 0.25, 1, [105, 1.3, 27, 0.4]),
-  food("Canned tuna", "g", 1.29, 142, [116, 26, 0, 1]),
+  { ...food("Canned tuna", "g", 1.29, 142, [116, 26, 0, 1]), serving_name: "can", serving_amount: 142 },
   // Water: 0 kcal, so the 0 kcal rule fills the other nutrients with 0
   // (sodium stays unknown), and it counts toward hydration.
   {

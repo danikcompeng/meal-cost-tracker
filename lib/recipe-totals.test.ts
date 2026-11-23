@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { costPerServing } from "./cost";
 import { NO_EXTRAS, NUTRIENT_KEYS } from "./macros";
 import { nutrientsPerServing } from "./nutrition";
+import { NO_SERVING } from "./servings";
 import {
   ingredientsMissing,
   missingNotes,
@@ -28,6 +29,7 @@ const oats: Food = {
   saturated_fat_g: 1.2,
   sodium_mg: 6,
   counts_toward_hydration: false,
+  ...NO_SERVING,
 };
 
 // No extras entered, and a package size of 0, so no usable price.
@@ -48,6 +50,7 @@ const water: Food = {
   saturated_fat_g: 0,
   sodium_mg: null,
   counts_toward_hydration: true,
+  ...NO_SERVING,
 };
 
 const ingredients: RecipeIngredient[] = [

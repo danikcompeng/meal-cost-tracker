@@ -11,6 +11,7 @@ import { parseSource, validateFood, type FoodInput } from "./food-validation";
 import { getFood, getFoods } from "./foods";
 import { usedInRecipesMessage } from "./recipe-totals";
 import { recipeNamesUsingFood } from "./recipes";
+import { servingUpdate } from "./servings";
 import { guarded, logDbError, requireUser } from "./server-helpers";
 import type { Food, FormState } from "./types";
 
@@ -32,6 +33,8 @@ export async function saveFood(_prev: FormState, formData: FormData): Promise<Fo
       packageSize: formData.get("packageSize"),
       unit: formData.get("unit"),
       countsTowardHydration: formData.get("countsTowardHydration"),
+      servingName: formData.get("servingName"),
+      servingAmount: formData.get("servingAmount"),
       kcal: formData.get("kcal"),
       protein: formData.get("protein"),
       carbs: formData.get("carbs"),
@@ -129,6 +132,13 @@ async function updateExisting(supabase: Supabase, existing: Food, value: FoodInp
   delete changes.barcode;
   const barcode = value.barcode;
   if (barcode && !existing.barcode) changes.barcode = barcode;
+  // A serving you have is kept; one is only filled in where you had none,
+  // or replaced when the unit changes (lib/servings.ts, servingUpdate).
+  // The dialog listed it (duplicateChanges), so nothing changes silently.
+  const serving = servingUpdate(existing, value);
+  delete changes.serving_name;
+  delete changes.serving_amount;
+  if (serving) Object.assign(changes, serving);
   // Row Level Security makes sure this can only ever change YOUR food.
   const { data, error } = await supabase
     .from("foods")

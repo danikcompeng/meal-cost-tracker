@@ -7,7 +7,7 @@ import type { Food } from "./types";
 // shape, and a joined string is just "some string" to TypeScript.
 // Also used by lib/demo.ts to read back the demo's sample foods.
 export const FOOD_COLUMNS =
-  "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, counts_toward_hydration";
+  "id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, counts_toward_hydration, serving_name, serving_amount";
 
 // Reads only. Row Level Security in the database guarantees this returns
 // just the logged-in user's rows, even though there's no "where user_id" here.
@@ -44,6 +44,9 @@ export function toFood(row: Record<string, unknown>): Food {
     price: Number(row.price),
     package_size: Number(row.package_size),
     counts_toward_hydration: row.counts_toward_hydration === true,
+    // Both or neither (the database makes sure). Number(null) would be 0.
+    serving_name: typeof row.serving_name === "string" ? row.serving_name : null,
+    serving_amount: row.serving_amount === null || row.serving_amount === undefined ? null : Number(row.serving_amount),
     ...nutrientsFromRow(row),
   };
 }

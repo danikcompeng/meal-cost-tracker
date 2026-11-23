@@ -11,7 +11,7 @@ import type { Recipe } from "./types";
 // shape. "food:foods(...)" fetches each ingredient's food in the same
 // request (Supabase follows the food_id reference), named "food".
 const RECIPE_COLUMNS =
-  "id, name, servings, recipe_ingredients(amount, created_at, food:foods(id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, counts_toward_hydration))";
+  "id, name, servings, recipe_ingredients(amount, created_at, food:foods(id, name, brand, barcode, price, package_size, unit, kcal, protein_g, carbs_g, fat_g, sugar_g, fiber_g, saturated_fat_g, sodium_mg, counts_toward_hydration, serving_name, serving_amount))";
 
 /** All your recipes with their ingredients, A to Z. */
 export async function getRecipes(): Promise<Recipe[]> {

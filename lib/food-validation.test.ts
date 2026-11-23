@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseSource, validateFood, validateMacros } from "./food-validation";
 import { NO_EXTRAS } from "./macros";
+import { NO_SERVING } from "./servings";
 
 describe("parseSource", () => {
   it("keeps a known source and treats anything else as manual", () => {
@@ -27,6 +28,8 @@ describe("validateFood", () => {
         package_size: 500,
         unit: "g",
         counts_toward_hydration: false,
+        // No serving sent: none.
+        ...NO_SERVING,
         // No macros sent: they come back as null ("not entered"), not 0.
         kcal: null,
         protein_g: null,
@@ -35,6 +38,15 @@ describe("validateFood", () => {
         ...NO_EXTRAS,
       },
     });
+  });
+
+  it("saves a serving, refuses half of one, and drops it for an each food", () => {
+    const bagels = validateFood({ ...valid, servingName: " bagel ", servingAmount: "80" });
+    expect(bagels.ok && [bagels.value.serving_name, bagels.value.serving_amount]).toEqual(["bagel", 80]);
+    const half = validateFood({ ...valid, servingName: "bagel", servingAmount: "" });
+    expect(!half.ok && half.fieldErrors.servingAmount).toBe("Enter how much one bagel is.");
+    const eggs = validateFood({ ...valid, unit: "each", servingName: "egg", servingAmount: "50" });
+    expect(eggs.ok && eggs.value.serving_name).toBeNull();
   });
 
   it("trims the brand and saves a blank brand as null", () => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { duplicateChanges, findDuplicate, normalizeName } from "./food-duplicates";
 import type { FoodInput } from "./food-validation";
 import { NO_EXTRAS } from "./macros";
+import { NO_SERVING } from "./servings";
 
 describe("normalizeName", () => {
   it("ignores case, spaces at the ends and extra spaces inside", () => {
@@ -48,6 +49,7 @@ describe("duplicateChanges", () => {
     package_size: 500,
     unit: "g" as const,
     counts_toward_hydration: false,
+    ...NO_SERVING,
   };
   const input: FoodInput = { ...saved, name: "Rolled oats", brand: null, barcode: null };
 

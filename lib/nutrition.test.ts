@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dayTotals } from "./day-totals";
 import { NO_EXTRAS } from "./macros";
+import { NO_SERVING } from "./servings";
 import {
   nutrientsForAmount,
   nutrientsFromRow,
@@ -28,6 +29,7 @@ const oats: Food = {
   saturated_fat_g: 1.2,
   sodium_mg: 6,
   counts_toward_hydration: false,
+  ...NO_SERVING,
 };
 
 const egg: Food = {
@@ -44,6 +46,7 @@ const egg: Food = {
   fat_g: 4.8,
   ...NO_EXTRAS,
   counts_toward_hydration: false,
+  ...NO_SERVING,
 };
 
 const rice: Food = {
@@ -60,6 +63,7 @@ const rice: Food = {
   fat_g: 0.6,
   ...NO_EXTRAS,
   counts_toward_hydration: false,
+  ...NO_SERVING,
 };
 
 const water: Food = {
@@ -72,6 +76,7 @@ const water: Food = {
   carbs_g: 0,
   fat_g: 0,
   counts_toward_hydration: true,
+  ...NO_SERVING,
 };
 
 // Decimal maths in JavaScript is a hair off (0.1 + 0.2 = 0.30000000000000004),

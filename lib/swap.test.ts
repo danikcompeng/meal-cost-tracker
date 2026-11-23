@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { NO_EXTRAS } from "./macros";
+import { NO_SERVING } from "./servings";
 import {
   hadThisWeek,
   lastEatenByRecipe,
@@ -61,6 +62,7 @@ describe("swapCandidates", () => {
     fat_g: 1,
     ...NO_EXTRAS,
     counts_toward_hydration: false,
+    ...NO_SERVING,
   };
   const banana: Food = { ...food, id: "banana", name: "Banana", unit: "each", protein_g: null };
   const dal: Recipe = { id: "dal", name: "Lentil dal", servings: 2, ingredients: [{ food, amount: 200 }] };
@@ -468,6 +470,7 @@ describe("hadThisWeek", () => {
     fat_g: 1,
     ...NO_EXTRAS,
     counts_toward_hydration: false,
+    ...NO_SERVING,
   });
   const dal: Recipe = {
     id: "dal",
