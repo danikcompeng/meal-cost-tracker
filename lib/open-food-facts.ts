@@ -8,7 +8,7 @@
 // Missing stays missing: a value they don't have becomes null (a blank box),
 // never 0. A 0 they DO have (diet soda: 0 g fat) stays 0.
 
-import type { Macros, Nutrients } from "./macros";
+import { NUTRIENT_KEYS, type Macros, type Nutrients } from "./macros";
 
 /** Who we are, sent with every request, as Open Food Facts asks apps to do. */
 export const OFF_USER_AGENT = "Staple/0.1 (https://stapleapp.vercel.app)";
@@ -131,6 +131,19 @@ export function missingNote(missing: ("kcal" | "protein" | "carbs" | "fat")[]): 
   const list =
     names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} or ${names.at(-1)}`;
   return `Open Food Facts doesn't list ${list}. Fill ${missing.length === 1 ? "it" : "them"} in from the label, or leave ${missing.length === 1 ? "it" : "them"} blank.`;
+}
+
+/** Their product has a name but not one nutrient yet (some do: 0065651002612, omega-3 eggs). */
+export const NO_NUTRITION_NOTE = "Open Food Facts has no nutrition for this product yet. Copy it from the label.";
+
+/**
+ * The note above the nutrition boxes after a scan: NO_NUTRITION_NOTE when
+ * they have none of the eight nutrients, otherwise which of calories,
+ * protein, carbs and fat they're missing (missingNote), or null.
+ */
+export function nutritionNote(draft: Nutrients): string | null {
+  if (NUTRIENT_KEYS.every((key) => draft[key] === null)) return NO_NUTRITION_NOTE;
+  return missingNote(missingMacros(draft));
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
