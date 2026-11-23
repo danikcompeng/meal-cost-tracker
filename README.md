@@ -98,13 +98,12 @@ npm run test:e2e                  # 3 tests: log a meal, build a recipe, swap a 
 npm run record:demo               # re-record the demo videos into design/videos/
 ```
 
-`record:demo` makes `staple-demo-light.mp4` / `-dark.mp4` (the full tour, about 75 s) and
-`staple-loop-light.mp4` / `-dark.mp4` (a 20 s loop of logging in and swapping a meal).
+`record:demo` makes `staple-demo-light.mp4` / `-dark.mp4` (the full tour, about 58 s) and
+`staple-loop-light.mp4` / `-dark.mp4` (a 20 s loop of logging in and swapping a meal). The tour has no barcode scan: that's filmed on a
+real iPhone and spliced in by hand, and the script prints the exact time to splice it at.
 MP4 needs ffmpeg: install it (`winget install Gyan.FFmpeg`), or run
 `npm install --no-save ffmpeg-static`, or point `FFMPEG_PATH` at one. Without ffmpeg you get
-a softer `.webm`, no loop, and the scan shot types the barcode instead of scanning it
-(ffmpeg also makes the fake camera's clip of a barcode, `e2e/helpers/barcode-clip.ts`).
-The script is `e2e/record-demo.ts`. To film this branch before it's live, run the app
+a softer `.webm` and no loop. The script is `e2e/record-demo.ts`. To film this branch before it's live, run the app
 (`npx next build && npx next start`) and set `BASE_URL=http://localhost:3000`.
 
 You'll need a Supabase project. Put its URL and publishable key in `.env.local`

@@ -18,21 +18,16 @@
 //      carousel slide on Today), then Undo.
 //   5. Swipe a row to show the trash can, delete it, Undo.
 //   6. Kitchen → a recipe: cost per serving and nutrients.
-//   7. Scan: the camera sees a tray of chicken thighs slide into the scan
-//      window and the app's real scanner reads its barcode (a made-up
-//      camera picture with a real product's barcode,
-//      helpers/barcode-clip.ts) → Open Food
-//      Facts → Save and log → back on Today. Without ffmpeg there's no
-//      such picture, so it taps "Type the number" instead.
+//      (A barcode scan goes here, filmed separately on a real iPhone and
+//      spliced in by hand: the script prints the exact time, "scan".)
+//   7. Back to Today.
 
 import fs from "node:fs";
 import path from "node:path";
-import { chromium, expect, test, type Browser, type Locator, type Page } from "@playwright/test";
-import { barcodeClip } from "./helpers/barcode-clip";
+import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
 import { expectToday, literal, loginWithDemo, resetDemo, topCard } from "./helpers/demo";
-import { fakeCamera } from "./helpers/fake-camera";
 import { Film, findFfmpeg } from "./helpers/film";
-import { Finger, scrollTo, scrollToTop } from "./helpers/finger";
+import { Finger, scrollTo } from "./helpers/finger";
 import { BASE_URL, PHONE } from "./helpers/phone";
 
 const VIDEOS = path.resolve("design", "videos");
@@ -42,50 +37,18 @@ const MAX_BYTES = 10 * 1024 * 1024;
 const SIZE = { width: PHONE.viewport.width * 2, height: PHONE.viewport.height * 2 };
 /** The page background (CLAUDE.md), for the fade in and out. */
 const BACKGROUND = { light: "white", dark: "0x141414" } as const;
-/**
- * Chicken thighs, 1 kg, a real product on Open Food Facts (category
- * "chicken thighs"), with all eight nutrients per 100 g: 186 kcal, 18.5 g
- * protein, 0 g carbs, 12.5 g fat. Checked against the API on 2026-11-23;
- * the check digit is checked again when the barcode is drawn.
- */
-const BARCODE = "5054268934725";
-/** What the 1 kg tray cost (a Toronto price), typed into "What you paid". */
-const PRICE = "10.99";
-/**
- * Where the scan window sits on the camera picture, as a fraction of its
- * width and height: the middle across, a little above the middle down (the
- * hint and buttons below push it up). The barcode comes to rest there.
- */
-const SCAN_WINDOW = { x: 0.5, y: 0.45 };
 
 type Theme = keyof typeof BACKGROUND;
 
 test.describe.configure({ mode: "serial" });
 
-/**
- * The calorie target for the takes. The sample day's 2,200 would end the
- * tour over target once the chicken is logged (2,237 kcal by then), so the
- * takes use 2,300 and Today ends 63 kcal under. Set off camera; the reset
- * after recording puts the shared demo back to 2,200.
- */
-const KCAL_TARGET = "2300";
-
-/**
- * Off camera: the sample data, fresh, so every take is the same. With
- * `target`, also sets the daily calorie target in Settings.
- */
-async function freshDemo(browser: Browser, target?: string) {
+/** Off camera: the sample data, fresh, so every take is the same. */
+async function freshDemo(browser: Browser) {
   const context = await browser.newContext({ ...PHONE, baseURL: BASE_URL });
   try {
     const page = await context.newPage();
     await loginWithDemo(page);
     await resetDemo(page);
-    if (target) {
-      await page.goto("/settings");
-      await page.getByRole("textbox", { name: "Calories" }).fill(target);
-      await page.getByRole("button", { name: "Save targets" }).click();
-      await expect(page.getByText("Saved", { exact: true })).toBeVisible();
-    }
   } finally {
     await context.close();
   }
@@ -100,12 +63,8 @@ async function retype(page: Page, finger: Finger, box: Locator, text: string) {
   await page.keyboard.type(text, { delay: 170 });
 }
 
-/**
- * Everything on camera. `film` gets marks where the loop is cut.
- * `realScan`: the browser's camera shows the barcode clip, so shot 7 scans
- * it; otherwise it types the number.
- */
-async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
+/** Everything on camera. `film` gets marks where the loop is cut and where the scan goes. */
+async function act(page: Page, film: Pick<Film, "mark">) {
   const finger = await Finger.on(page);
   const pause = (ms: number) => page.waitForTimeout(ms);
   const tabs = page.getByRole("navigation", { name: "Main" });
@@ -197,45 +156,21 @@ async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
   await scrollTo(page.getByRole("region", { name: "Per serving", exact: true }), "start");
   await pause(2800);
 
-  // 7. Scan the tray (or type its number) → Save and log → Today.
-  await finger.tap(tabs.getByRole("link", { name: "Scan" }));
-  if (!realScan) {
-    const typeNumber = page.getByRole("button", { name: "Type the number" });
-    await expect(typeNumber).toBeVisible();
-    await pause(1500);
-    await finger.tap(typeNumber);
-    const barcode = page.getByRole("textbox", { name: "Barcode" });
-    await expect(barcode).toBeVisible();
-    await pause(700);
-    await finger.tap(barcode);
-    await page.keyboard.type(BARCODE, { delay: 110 });
-    await pause(600);
-    await finger.tap(page.getByRole("button", { name: "Look it up" }));
-  }
-  // Scanning: the tray slides into the window and the app reads it by
-  // itself, then looks it up. Open Food Facts can be slow.
-  await expect(page.getByRole("heading", { name: "Check the numbers" })).toBeVisible({ timeout: 30_000 });
-  await pause(2400);
-  const price = page.getByRole("textbox", { name: "Price" });
-  await scrollTo(price);
-  await pause(400);
-  await finger.tap(price);
-  await page.keyboard.type(PRICE, { delay: 170 });
-  await pause(900);
-  await finger.tap(page.getByRole("button", { name: "Save and log" }));
-  await page.waitForURL((url) => url.pathname === "/");
-  const logSheet = page.getByRole("dialog");
-  const amount = logSheet.getByRole("textbox", { name: "Amount" });
-  await expect(amount).toBeVisible();
-  await pause(1200);
-  await finger.tap(amount);
-  await page.keyboard.type("100", { delay: 170 });
-  await pause(1300);
-  await finger.tap(logSheet.getByRole("button", { name: "Log it" }));
-  await expect(logSheet).toBeHidden();
-  await pause(1500);
-  await scrollToTop(page);
+  // The scan goes here: filmed on a real iPhone and spliced in by hand at
+  // this moment (the recipe screen, still, just before Today is tapped).
+  film.mark("scan");
+
+  // 7. Back to Today.
+  await finger.tap(tabs.getByRole("link", { name: "Today" }));
+  await expectToday(page);
   await pause(2600);
+}
+
+/** A time in the video, ms → "1:02.48 (62.48 s, frame 1562 at 25 fps)". */
+function videoTime(ms: number) {
+  const s = ms / 1000;
+  const clock = `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}`;
+  return `${clock} (${s.toFixed(2)} s, frame ${Math.round(s * 25)} at 25 fps)`;
 }
 
 /** Size in MB, one decimal, for the report. */
@@ -245,36 +180,18 @@ function megabytes(file: string) {
 
 for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
   test(`${theme} take`, async ({ browser }) => {
-    await freshDemo(browser, KCAL_TARGET);
+    await freshDemo(browser);
     const ffmpeg = await findFfmpeg();
     const webm = path.join(VIDEOS, `staple-demo-${theme}.webm`);
 
-    // With ffmpeg: a browser of our own whose camera is the barcode clip
-    // (Chromium's fake camera plays the file; the app can't tell). The
-    // camera is chosen when the browser starts, hence a separate one.
-    const clip = ffmpeg
-      ? await barcodeClip(browser, ffmpeg, BARCODE, path.resolve("test-results", "recording"), SCAN_WINDOW)
-      : null;
-    const camera = clip
-      ? await chromium.launch({
-          args: [
-            "--use-fake-device-for-media-stream",
-            "--use-fake-ui-for-media-stream",
-            `--use-file-for-fake-video-capture=${clip}`,
-          ],
-        })
-      : null;
-    const context = await (camera ?? browser).newContext({
+    const context = await browser.newContext({
       ...PHONE,
       baseURL: BASE_URL,
       colorScheme: theme,
       reducedMotion: "no-preference",
-      permissions: ["camera"],
       // Without ffmpeg, Playwright's own (softer) .webm is the result.
       recordVideo: ffmpeg ? undefined : { dir: path.resolve("test-results", "recording"), size: SIZE },
     });
-    // No clip: a calm stand-in picture behind "Type the number".
-    if (!clip) await context.addInitScript(fakeCamera);
     const page = await context.newPage();
     await page.goto("/login");
     // Wait until the login page has fully settled (fonts, the email form)
@@ -285,11 +202,10 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
     const film = ffmpeg ? await Film.roll(page, path.resolve("test-results", "recording", theme)) : null;
     try {
       // No film (the .webm fallback): the cut marks aren't needed.
-      await act(page, film ?? { mark() {} }, clip !== null);
+      await act(page, film ?? { mark() {} });
     } finally {
       await film?.stop();
       await context.close();
-      await camera?.close();
     }
 
     const made: string[] = [];
@@ -308,6 +224,8 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
         { fade: BACKGROUND[theme] },
       );
       made.push(full, loop);
+      // The full video starts at "shot1", so that's its 0:00.
+      console.log(`Splice the scan into ${path.basename(full)} at ${videoTime(film.at("scan") - film.at("shot1"))}`);
     } else {
       console.log("No ffmpeg found, so the video stays .webm and there's no loop (see e2e/helpers/film.ts).");
       fs.mkdirSync(VIDEOS, { recursive: true });
