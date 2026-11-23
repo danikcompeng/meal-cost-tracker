@@ -5,7 +5,7 @@ Cheap meals that hit your macros, on repeat, with a swap when you're bored.
 **Live:** [stapleapp.vercel.app](https://stapleapp.vercel.app). Tap **Try the demo**, no email needed.
 On a phone, add it to your home screen and it opens like an app.
 
-![Swapping a meal: the card stack, then the carousel move on Today](design/ui/motion/after/swap.gif)
+![Swapping a meal: skip a card, swap to the next, then the carousel move on Today](design/videos/staple-swap.gif)
 
 Full tour, including a real barcode scan on an iPhone:
 [staple-demo-light-real-scan.mp4](design/videos/staple-demo-light-real-scan.mp4) ·
@@ -50,15 +50,10 @@ same protein at the price I actually paid. So I built one.
 
 ## Design
 
-- **One accent.** White paper (near-black in dark mode), black ink, one matcha green.
-  Every colour is an OKLCH token in `app/globals.css`, and a unit test checks each one
-  and its contrast.
-- **One font.** Figtree for everything, with tabular numbers so prices line up.
-- **A motion pass.** Buttons and rows press in, a swap slides Today's row like a carousel,
-  and you swipe a row to delete it. With Reduce Motion it fades instead.
-  Clips: [`design/ui/motion/after/`](design/ui/motion/after/).
-- **An accessibility pass.** Text passes 4.5:1 contrast, keyboard focus shows a ring,
-  tap targets are 44 px, and screen readers hear loading states and errors.
+- **Restrained palette.** White and near-black with one matcha accent, defined as OKLCH tokens in one file. A test checks every text and surface pair passes 4.5:1 contrast in light and dark mode.
+- **Type that's easy to scan.** Figtree for everything, bold for titles and the big numbers, with tabular figures so numbers line up.
+- **Motion with a purpose.** Press feedback, a carousel slide when you swap a meal, swipe-to-delete with Undo, and rings that fill on open. With Reduce Motion, things fade or change instantly instead. Before/after clips: [`design/ui/motion/`](design/ui/motion/).
+- **Accessibility pass.** Visible focus rings, 44 px tap targets, screen-reader labels and announced errors, and designed empty, loading, error and offline states.
 
 ## How I built it with AI
 
