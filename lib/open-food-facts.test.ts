@@ -19,6 +19,9 @@ const oats = {
     quantity: "1 kg",
     product_quantity: "1000",
     product_quantity_unit: "g",
+    serving_size: "1 portion (40 g)",
+    serving_quantity: 40,
+    serving_quantity_unit: "g",
     nutriments: {
       "energy-kcal_100g": 375,
       "energy-kj_100g": 1569,
@@ -44,6 +47,7 @@ describe("parseOffResponse", () => {
       brand: "Quaker",
       unit: "g",
       packageSize: 1000,
+      serving: { name: "portion", amount: 40 },
       kcal: 375,
       protein_g: 11,
       carbs_g: 60,
@@ -55,6 +59,25 @@ describe("parseOffResponse", () => {
       kcalFromKj: false,
       sodiumFromSalt: false,
     });
+  });
+
+  it("has no serving when they list none (never guessed)", () => {
+    expect(parseOffResponse({ status: 1, product: { product_name: "Oeufs Omega 3" } })?.serving).toBeNull();
+  });
+
+  it("reads a drink's serving in ml", () => {
+    const draft = parseOffResponse({
+      status: 1,
+      product: {
+        product_name: "Zephyrhills",
+        product_quantity_unit: "ml",
+        serving_size: "1 bottle (500 ml)",
+        serving_quantity: 500,
+        serving_quantity_unit: "ml",
+      },
+    });
+    expect(draft?.unit).toBe("ml");
+    expect(draft?.serving).toEqual({ name: "bottle", amount: 500 });
   });
 
   it("returns null when they don't have it", () => {
@@ -245,5 +268,6 @@ describe("offProductUrl", () => {
     const url = offProductUrl("5000112637922");
     expect(url).toMatch(/^https:\/\/world\.openfoodfacts\.org\/api\/v2\/product\/5000112637922\.json\?fields=/);
     expect(url).toContain("nutriments");
+    expect(url).toContain("serving_size");
   });
 });

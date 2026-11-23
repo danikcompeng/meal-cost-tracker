@@ -101,7 +101,13 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
 - E2E (2026-11-22, branch playwright): playwright.config.ts (testMatch *.e2e.ts, globalTeardown
   reset), e2e/{log-meal,build-recipe,swap-meal}.e2e.ts, e2e/helpers/phone (393x852 2x, BASE_URL),
   demo (loginWithDemo/resetDemo/expectToday), finger (CDP touch), film (CDP screenshots -> ffmpeg
-  concat), fake-camera; recorder e2e/record.config.ts + record-demo.ts -> design/videos/.
+  concat); recorder e2e/record.config.ts + record-demo.ts -> design/videos/ (no scan shot: an iPhone
+  scan is spliced in by hand at the printed "scan" time; fake-camera/barcode-clip were removed).
+- Item servings (012, 2026-11-23, branch servings): foods.serving_name + serving_amount (both or
+  neither, g/ml only, <= 10000). lib/servings.ts (servingOf, servingForEntry, plural, servingsText,
+  servingAmount, servingsIn, validateServing, servingFromOpenFoodFacts); components/serving-picks.tsx
+  used by log-food-form, edit-entry-form, ingredient-form; ingredient-row "284 g · 2 cans". Amounts
+  saved stay in g/ml. New food columns must also go into FOOD_COLUMNS AND recipes.ts nested select.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

@@ -435,3 +435,17 @@ metadata:
   maxWidth/new headless) returns CSS-size 393x852, not 2x. Fix kept the clip: film drops a frame if
   pageX/Y changed between before/after getLayoutMetrics, and finger.scrollTo glides in 45 ms
   instant steps instead of native smooth scroll.
+- 2026-11-23 item servings (branch servings, uncommitted; 012_food_servings.sql, lib/servings.ts,
+  serving-picks.tsx): Minor issues. Verified fine: 012 safe before deploy (nullable, checks pass on
+  all-null rows, old code never sends them, transaction); toFood null-safe Number; recipes.ts nested
+  select + toFood; each -> fieldset hidden -> NO_SERVING (DB check ok); validateFood server-side;
+  servingForEntry unit guard; demo seed. Raised: duplicateChanges not updated -> "Update existing"
+  silently overwrites a hand-made serving; validateServing "1,5" says "above 0" not AMBIGUOUS_COMMA;
+  half-typed serving hides the "= $/100 g" line (validateFood(fields) preview); g<->ml keeps "80"
+  (now ml), also via updateExisting; OFF serving_quantity may be OFF's own oz->g conversion (unsure,
+  test omits it); wrong-unit serving_quantity blocks text fallback; "1,000 g" read as 1; 40-char
+  names overflow h-11 pills; CLAUDE.md table + demo-seed "same as seed-demo.sql" stale; rollback caveat.
+  Outcome: all fixed except aria-pressed (kept). Update existing now keeps a serving you have, fills
+  one in where you had none, replaces it on a unit change, and the dialog lists it (servingUpdate /
+  servingChangeLine). OFF serving_quantity(_unit) DROPPED entirely: checked real replies, unit is
+  often wrong ("0.75 cup (170 g)" -> 170 ml); only the g/ml written in serving_size counts.

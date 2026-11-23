@@ -2,6 +2,7 @@
 // Pure function, so it can be unit tested without a database.
 
 import { normalizeBarcode } from "./barcode";
+import { validateServing, type ServingColumns } from "./servings";
 import { isInputUnit, toBaseUnit, type BaseUnit } from "./units";
 import { fillZeroKcalMacros, zeroKcalFillsBlanks, type Nutrients } from "./macros";
 // parseDecimal tells "left blank" (null) apart from "typed something that
@@ -17,7 +18,7 @@ export type FoodInput = Nutrients & {
   package_size: number;
   unit: BaseUnit;
   counts_toward_hydration: boolean;
-};
+} & ServingColumns;
 
 /** How a food was added (the `source` column). */
 export const FOOD_SOURCES = ["manual", "open_food_facts", "label_photo"] as const;
@@ -68,6 +69,9 @@ export function validateFood(
     unit: unknown;
     /** The hydration switch: "true" when on. */
     countsTowardHydration?: unknown;
+    /** The optional "1 [bagel] = [80] g" row. */
+    servingName?: unknown;
+    servingAmount?: unknown;
   } & RawMacros,
 ): ValidationResult {
   const fieldErrors: Record<string, string> = {};
@@ -115,7 +119,11 @@ export function validateFood(
   const macros = validateMacros(raw, baseUnit);
   Object.assign(fieldErrors, macros.fieldErrors);
 
-  if (price === null || size === null || !unit || Object.keys(fieldErrors).length > 0) {
+  // Optional; an "each" food never has one (it's dropped, not refused).
+  const serving = validateServing({ name: raw.servingName, amount: raw.servingAmount }, baseUnit);
+  if (!serving.ok) Object.assign(fieldErrors, serving.fieldErrors);
+
+  if (price === null || size === null || !unit || !serving.ok || Object.keys(fieldErrors).length > 0) {
     return { ok: false, fieldErrors };
   }
 
@@ -132,6 +140,7 @@ export function validateFood(
       // Only ml foods can count: their amount is the water. Switching a
       // food to g or each clears it (the database refuses it otherwise).
       counts_toward_hydration: base.unit === "ml" && raw.countsTowardHydration === "true",
+      ...serving.value,
       ...macros.value,
     },
   };

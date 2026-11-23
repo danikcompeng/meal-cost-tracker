@@ -39,6 +39,10 @@ Data
 
 UI state
 - Live hints on every keystroke flash for partial numbers (2000 passes 2, 20).
+- Live previews built on the WHOLE validateFood(fields) vanish when an unrelated new field is
+  half-filled (water goal 2026-11-11, serving 2026-11-23). Check every new form field against them.
+- New food column: check duplicateChanges (food-duplicates.ts) lists it, or "Update existing"
+  changes it silently (servings 2026-11-23).
 - Optimistic hidden-id sets must be pruned against the server list; "already gone" isn't an error.
 - Closures holding an index go stale mid-await.
 - Derived UI (open || hasError) flips back: latch it; every latch needs a reset path (Back).

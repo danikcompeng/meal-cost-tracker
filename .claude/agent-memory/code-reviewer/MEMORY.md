@@ -4,7 +4,7 @@
 - [Code map](code-map.md) — where each feature's code + migration lives (cost, log, recipes, motion...)
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
-- [Review history](review-history.md) — every past review + findings. Latest 2026-11-22 playwright branch
+- [Review history](review-history.md) — every past review + findings. Latest 2026-11-23 item servings
 - [Patterns](patterns.md) — recurring developer mistakes; check these first in every review
 - [Framer Motion](framer-motion.md) — verified reduced-motion, drag, animate().then, press facts
 - [UI and a11y](ui-a11y.md) — button states, Tailwind v4 order, focus rings, SR, contrast, sizes
@@ -17,7 +17,7 @@
 - Developer is learning and responds well to concrete worked examples (rice test, slow network
   walk-through, "you press the card 100 ms after it appears"); keep using them.
 - App renamed "Staple" 2026-11-21 (repo/Vercel keep the old name; name in lib/app-identity.ts).
-- Active work (2026-11-22): branch `demo`, "Try the demo" shared account (plans/demo.md).
-  Any new food/recipe-changing action needs sampleRefusal (see code-map Demo).
+- Active work (2026-11-23): branch `servings`, "1 bagel = 80 g" on foods (migration 012).
+  Demo merged: any new food/recipe-changing action needs sampleRefusal (see code-map Demo).
 - Playwright e2e exists since 2026-11-22 (branch `playwright`): tests hit the LIVE demo account;
   e2e expectations hard-code demo-seed numbers, so a demo-seed.ts change must update them.

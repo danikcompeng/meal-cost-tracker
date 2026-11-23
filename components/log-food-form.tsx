@@ -13,11 +13,13 @@ import { logFood } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { nutrientsForAmount } from "@/lib/nutrition";
+import { servingOf } from "@/lib/servings";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { ErrorLine } from "./collapse";
 import { AmountPreview } from "./amount-preview";
 import { SegmentedControl } from "./segmented-control";
+import { ServingPicks } from "./serving-picks";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LogFoodForm({
@@ -67,6 +69,8 @@ export function LogFoodForm({
       }
     : null;
   const errors = state.fieldErrors ?? {};
+  // "1 bagel = 80 g": quick picks that fill in the grams.
+  const serving = servingOf(food);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-5 pt-1" noValidate>
@@ -92,6 +96,7 @@ export function LogFoodForm({
           error={errors.amount}
           autoFocus
         />
+        {serving && <ServingPicks serving={serving} unit={food.unit} value={amount} onPick={setAmount} />}
         <AmountPreview values={preview} />
       </div>
 

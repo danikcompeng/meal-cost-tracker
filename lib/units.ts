@@ -41,7 +41,12 @@ const amountFormat = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 }
 
 /** "150 g", "250 ml", "1 item", "2 items", "1 serving", "1.5 servings". */
 export function amountText(amount: number, unit: EntryUnit): string {
-  return `${amountFormat.format(amount)} ${unitWord(amount, unit)}`;
+  return `${amountNumber(amount)} ${unitWord(amount, unit)}`;
+}
+
+/** An amount as typed, up to 2 decimals: "80", "1.5", "1,000". Not display-rounded (CLAUDE.md). */
+export function amountNumber(amount: number): string {
+  return amountFormat.format(amount);
 }
 
 /**
