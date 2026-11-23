@@ -272,7 +272,16 @@ lib/color.test.ts checks every one and its contrast). Every matcha
 colour reads one hue, --accent-h (130), so an accent preset changes
 only that number.
 - background      #FFFFFF / #141414   white / near-black
-- tile (card)     #F0F0F0 / #1F1F1F   light grey, one step off background
+- tile (card)     #F0F0F0 / #1F1F1F   light grey, one step off background.
+                                      Every section sits on one: the rings,
+                                      each meal on Today, a recipe's cost,
+                                      nutrients and ingredients, recipe
+                                      tiles, Settings groups, swap cards
+                                      (the Foods list stays on the page:
+                                      its red "Yes" would be 4.0:1 there)
+- inset           #E8E8E8 / #141414   one step in from a tile: chips on a
+                                      swap card, ring tracks, loading bars.
+                                      Boxes you type in stay white
 - popover         #FFFFFF / #2A2A2A   sheets, dialogs, menus, messages
                                       (bordered, so they show on white)
 - raised          (none)  / #333333   dark only: tiles, chips, greyed
@@ -298,7 +307,11 @@ raised and hover backgrounds (lowest: destructive on dark raised,
 on a dark sheet, 4.51:1; red "Yes" on a food row being edited, 4.53:1;
 white on matcha hover, 4.82:1).
 Dark mode shows depth by lightness, never shadows: page, tile, popover,
-raised, each one step lighter. Busy buttons stay full
+raised, each one step lighter. Light mode mirrors it: white page →
+grey tile → inset a step darker inside it; a sheet is white again on
+top, with grey tiles inside. Lowest on the light tile and inset: grey
+labels 5.05:1, matcha 4.93:1, red 4.88:1 (on inset); box edges 3.2:1 on
+tiles. Busy buttons stay full
 colour; unavailable ones are greyed with muted text on muted (5.4:1,
 5.0:1 inside a dark sheet), never faded with opacity.
 No box you type in and no red button on a tile inside a sheet: on dark

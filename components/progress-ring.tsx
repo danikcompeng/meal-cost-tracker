@@ -72,7 +72,8 @@ export function ProgressRing({
         r={radius}
         fill="none"
         strokeWidth={stroke}
-        className="stroke-background"
+        // The track: one step in from the tile it sits on.
+        className="stroke-inset"
       />
       <motion.circle
         cx={center}

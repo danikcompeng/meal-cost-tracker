@@ -47,7 +47,7 @@ export function SwapCard({ swap, servings }: { swap: RankedSwap; servings: numbe
             {swap.reasons.map((reason) => (
               <li
                 key={reason}
-                className="rounded-full bg-background px-2.5 py-1 text-label font-medium text-primary tabular-nums"
+                className="rounded-full bg-inset px-2.5 py-1 text-label font-medium text-primary tabular-nums"
               >
                 {reason}
               </li>

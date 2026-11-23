@@ -41,13 +41,13 @@ export function TodaySkeleton({
         {past ? (
           <TextLine line="mt-1 h-12" bar="h-10" width="w-32" shade={onTile} />
         ) : (
-          <div className="mx-auto mt-3 size-44 rounded-full border-12 border-background motion-safe:animate-pulse" />
+          <div className="mx-auto mt-3 size-44 rounded-full border-12 border-inset motion-safe:animate-pulse" />
         )}
         <div className="mt-6 grid grid-cols-4 gap-3">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex flex-col items-center">
               {!past && (
-                <div className="mb-2 size-13 rounded-full border-6 border-background motion-safe:animate-pulse" />
+                <div className="mb-2 size-13 rounded-full border-6 border-inset motion-safe:animate-pulse" />
               )}
               <TextLine line="h-6" width="w-10" shade={onTile} />
               <TextLine line="h-5" bar="h-3" width="w-12" shade={onTile} />
@@ -65,13 +65,13 @@ export function TodaySkeleton({
         <TextLine width="w-44" />
       </div>
 
-      {/* The four meals: a label, then a 44 px block where the real
-          "+ Add to breakfast" button goes. */}
-      <div className="mt-8 space-y-6">
+      {/* The four meal tiles: a label, then a 44 px block where the real
+          "+ Add to breakfast" button goes (meal-section.tsx). */}
+      <div className="mt-6 space-y-3">
         {[0, 1, 2, 3].map((i) => (
-          <div key={i}>
-            <TextLine line="mb-1 h-6 px-3" width="w-20" />
-            <div className={`h-11 rounded-lg ${onPage}`} />
+          <div key={i} className="rounded-2xl bg-card p-2">
+            <TextLine line="mt-1 mb-1 h-6 px-3" width="w-20" shade={onTile} />
+            <div className={`h-11 rounded-lg ${onTile}`} />
           </div>
         ))}
       </div>

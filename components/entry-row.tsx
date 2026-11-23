@@ -239,11 +239,11 @@ export function EntryRow({
         }}
         style={{ x }}
         // Solid and on top (z-10), so the button only shows where the row
-        // has moved away.
+        // has moved away. The same grey as the meal's tile it sits on.
         // The press shrink (0.985, the wide-row token) is the whole row's,
         // but only while its main button is pressed (the swap icon has its
         // own), never while it's being swiped, and not with Reduce Motion.
-        className="relative z-10 flex items-center rounded-lg bg-background transition-[background-color,scale] duration-(--motion-fast) ease-(--motion-ease-out) hover:bg-accent motion-safe:not-data-dragging:has-[>[data-entry-open]:active]:scale-(--motion-press-scale-wide)"
+        className="relative z-10 flex items-center rounded-lg bg-card transition-[background-color,scale] duration-(--motion-fast) ease-(--motion-ease-out) hover:bg-accent motion-safe:not-data-dragging:has-[>[data-entry-open]:active]:scale-(--motion-press-scale-wide)"
       >
         <button
           type="button"

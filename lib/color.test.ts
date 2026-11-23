@@ -36,6 +36,7 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
     foreground: "#171717",
     card: "#F0F0F0",
     "card-foreground": "#171717",
+    inset: "#E8E8E8",
     popover: "#FFFFFF",
     "popover-foreground": "#171717",
     primary: "#4F6B2E",
@@ -63,6 +64,7 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
     foreground: "#EDEDED",
     card: "#1F1F1F",
     "card-foreground": "#EDEDED",
+    inset: "#141414",
     popover: "#2A2A2A",
     "popover-foreground": "#EDEDED",
     raised: "#333333",
@@ -109,7 +111,12 @@ describe("palette: every colour shows the hex in CLAUDE.md", () => {
 // Text sits on these. Each text colour must be at least 4.5:1 on each.
 // Dark mode has one more: --raised, the step up inside a sheet (tiles,
 // chips, greyed buttons and hovers there; surface-raised in globals.css).
-const SURFACES = { light: ["background", "card", "popover", "accent", "muted"], dark: ["background", "card", "popover", "accent", "muted", "raised"] };
+// --inset is the step in from a tile (chips on a swap card); in dark mode
+// it's the page colour again.
+const SURFACES = {
+  light: ["background", "card", "popover", "accent", "muted", "inset"],
+  dark: ["background", "card", "popover", "accent", "muted", "raised", "inset"],
+};
 const TEXT = ["foreground", "muted-foreground", "primary", "destructive"];
 
 function contrastChecks(theme: Theme, hue: number) {
@@ -208,6 +215,7 @@ describe("palette: see-through borders", () => {
   it.each([
     ["light", "background", "#E2E2E2"],
     ["light", "card", "#D4D4D4"],
+    ["light", "inset", "#CDCDCD"],
     ["dark", "background", "#2E2E2E"],
     ["dark", "card", "#383838"],
     ["dark", "popover", "#414141"],

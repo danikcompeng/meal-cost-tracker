@@ -69,8 +69,10 @@ export function MealSection({
   const headingId = `meal-${meal}`;
 
   return (
-    <section aria-labelledby={headingId}>
-      <div className="mb-1 flex items-baseline justify-between px-3">
+    // A grey tile, like every section. p-2: the rows' 10 px corners sit
+    // 8 px in from the tile's 18 px ones (concentric, CLAUDE.md).
+    <section aria-labelledby={headingId} className="rounded-2xl bg-card p-2">
+      <div className="mt-1 mb-1 flex items-baseline justify-between px-3">
         <h2 id={headingId} className="font-medium">
           {label}
         </h2>

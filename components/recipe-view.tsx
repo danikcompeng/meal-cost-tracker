@@ -104,8 +104,9 @@ export function RecipeView({
         </>
       )}
 
-      <section aria-labelledby="ingredients" className="mt-8">
-        <h2 id="ingredients" className="mb-1 px-3 text-label font-medium text-muted-foreground tabular-nums">
+      {/* A grey tile; p-2 keeps the rows' corners concentric with it. */}
+      <section aria-labelledby="ingredients" className="mt-6 rounded-2xl bg-card p-2">
+        <h2 id="ingredients" className="mt-1 mb-1 px-3 text-label font-medium text-muted-foreground tabular-nums">
           Ingredients{ingredients.length > 0 && ` · ${ingredients.length}`}
         </h2>
         <ul>

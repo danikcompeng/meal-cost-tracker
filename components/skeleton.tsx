@@ -6,8 +6,8 @@
 
 /** A grey shape on the page (the tiles' grey). */
 export const onPage = "bg-card motion-safe:animate-pulse";
-/** A lighter shape inside a grey tile. */
-export const onTile = "bg-background motion-safe:animate-pulse";
+/** A shape inside a grey tile, one step in (--inset). */
+export const onTile = "bg-inset motion-safe:animate-pulse";
 
 /**
  * Wraps a skeleton. Screen readers find "Loading your day…" as real text

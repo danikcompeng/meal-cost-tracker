@@ -16,7 +16,7 @@ export function RecipeCost({ recipe }: { recipe: Recipe }) {
   const noPrice = missingSentence(ingredientsMissing(ingredients, "cost"), "no price yet");
 
   return (
-    <section aria-labelledby="cost-label">
+    <section aria-labelledby="cost-label" className="rounded-2xl bg-card p-5">
       <h2 id="cost-label" className="text-label font-medium text-muted-foreground">
         Cost per serving
       </h2>

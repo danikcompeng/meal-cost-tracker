@@ -33,12 +33,14 @@ export function RecipeSkeleton() {
         </div>
       </div>
 
-      {/* Cost per serving: label, the 48 px number, "Makes 2 servings",
-          protein per $. */}
-      <TextLine line="h-5" bar="h-3" width="w-28" />
-      <TextLine line="h-15" bar="h-12" width="w-32" />
-      <TextLine width="w-48" />
-      <TextLine line="mt-1 h-6" width="w-36" />
+      {/* Cost per serving, on its tile: label, the 48 px number, "Makes 2
+          servings", protein per $. */}
+      <div className="rounded-2xl bg-card p-5">
+        <TextLine line="h-5" bar="h-3" width="w-28" shade={onTile} />
+        <TextLine line="h-15" bar="h-12" width="w-32" shade={onTile} />
+        <TextLine width="w-48" shade={onTile} />
+        <TextLine line="mt-1 h-6" width="w-36" shade={onTile} />
+      </div>
 
       <div className={`mt-4 h-11 rounded-lg ${onPage}`} />
 
@@ -59,13 +61,13 @@ export function RecipeSkeleton() {
         <TextLine line="mt-1 h-5" bar="h-3" width="w-24" shade={onTile} />
       </div>
 
-      <div className="mt-8">
-        <TextLine line="mb-1 h-5 px-3" bar="h-3" width="w-24" />
+      <div className="mt-6 rounded-2xl bg-card p-2">
+        <TextLine line="mt-1 mb-1 h-5 px-3" bar="h-3" width="w-24" shade={onTile} />
         {[0, 1, 2].map((i) => (
           // An ingredient row: name and amount, then its macros (64 px).
-          <div key={i} className={`h-16 rounded-lg ${onPage}`} />
+          <div key={i} className={`h-16 rounded-lg ${onTile}`} />
         ))}
-        <div className={`mt-2 h-11 rounded-lg ${onPage}`} />
+        <div className={`mt-2 h-11 rounded-lg ${onTile}`} />
       </div>
     </Skeleton>
   );

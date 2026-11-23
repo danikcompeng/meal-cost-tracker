@@ -24,6 +24,7 @@
   --color-camera-foreground: var(--camera-foreground);
   --color-camera-accent: var(--camera-accent);
   --color-field-border: var(--field-border);
+  --color-inset: var(--inset);
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -72,8 +73,15 @@
   --accent-h: 130;
   --background: oklch(100% 0 0);          /* #FFFFFF white. Also in lib/app-identity.ts (status bar) */
   --foreground: oklch(20.46% 0 0);        /* #171717 near-black ink */
+  /* Depth, mirroring dark mode: page white -> every section on a grey
+     tile -> what sits inside a tile one step further (--inset). A sheet
+     is white again on top, with grey tiles inside it. */
   --card: oklch(95.51% 0 0);              /* #F0F0F0 tile: light grey, one step off white */
   --card-foreground: oklch(20.46% 0 0);   /* #171717 */
+  /* #E8E8E8 one step in from a tile: chips on a swap card, ring tracks,
+     loading bars. The same grey as a hover on a tile. Boxes you type in
+     stay white: their edge is measured on white. */
+  --inset: oklch(93.1% 0 0);
   --popover: oklch(100% 0 0);             /* #FFFFFF menus (they have a border) */
   --popover-foreground: oklch(20.46% 0 0);
   /* #4F6B2E matcha: the single accent. Also the icon's green (lib/app-identity.ts) */
@@ -127,6 +135,9 @@
     --popover: oklch(28.5% 0 0);            /* #2A2A2A sheets, dialogs, Undo and log-out messages */
     --popover-foreground: oklch(94.61% 0 0);
     --raised: oklch(32.11% 0 0);            /* #333333 tiles, chips and hovers inside those */
+    /* Inside a tile, dark mode steps back down to the page colour (the
+       ring tracks and chips were already #141414). */
+    --inset: var(--background);
     /* #93C07F lighter matcha so it shows on dark. It leans 6.4 degrees
        greener than light-mode matcha; the offset carries over to any
        other accent hue. */

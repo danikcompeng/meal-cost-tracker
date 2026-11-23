@@ -594,7 +594,8 @@ export function TodayView({
         </p>
       )}
 
-      <div className="mt-8 space-y-6">
+      {/* Each meal is its own tile, spaced like the recipe tiles. */}
+      <div className="mt-6 space-y-3">
         {MEALS.map((meal) => (
           <MealSection
             key={meal}
