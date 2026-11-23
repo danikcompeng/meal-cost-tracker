@@ -98,6 +98,10 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   isSample vs user_metadata.demo_seeded_at), lib/demo-actions.ts (signInDemo, resetDemo),
   components/demo-login.tsx, demo-reset.tsx, DemoChip in app-header.tsx. NEW actions that change
   foods/recipes/ingredients (purchases!) must call sampleRefusal too.
+- E2E (2026-11-22, branch playwright): playwright.config.ts (testMatch *.e2e.ts, globalTeardown
+  reset), e2e/{log-meal,build-recipe,swap-meal}.e2e.ts, e2e/helpers/phone (393x852 2x, BASE_URL),
+  demo (loginWithDemo/resetDemo/expectToday), finger (CDP touch), film (CDP screenshots -> ffmpeg
+  concat), fake-camera; recorder e2e/record.config.ts + record-demo.ts -> design/videos/.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

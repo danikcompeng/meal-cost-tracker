@@ -418,3 +418,20 @@ metadata:
   getUser/select errors, unlogged; email-only identity (DEMO_EMAIL = a real email would let Reset
   wipe it); "today" seeded at 23:30 = empty Today at 00:10; "Yes, reset" matcha not destructive;
   plan drift (chip place, messages); chip missing on recipe detail/scan screens.
+- 2026-11-22 playwright branch (uncommitted: playwright.config, e2e/record.config + record-demo,
+  3 *.e2e.ts, helpers phone/demo/finger/film/fake-camera, README section): Minor issues, no build
+  or data-leak risk. Verified: frameList cut maths (first frame before `from`, clamps, repeat-last
+  line), xfade offset/length, test expectations re-derived from demo-seed (Tuna rice $3.02, 776/68;
+  Bean bowl $0.84/$1.69, 553/20); tsconfig **/*.ts type-checks e2e in next build (devDep present on
+  Vercel, no browser postinstall); vitest default glob skips *.e2e.ts. Raised: scroll race in
+  film.shoot (getLayoutMetrics then capture: fixed bars may wobble during smooth scrolls, unsure;
+  try no clip); fake camera setInterval never stops; Finger.tap no stability check (suggest
+  click({trial:true})); shared live demo -> visitor actions/midnight can flake counts ("1 of 4",
+  empty dinner); recipe names unescaped in RegExp; swallowed screenshot errors -> confusing ffmpeg
+  failure; MAX_BYTES comment "stays out of git" false; README 75 s/20 s vs code ~80 s/~18 s;
+  topCard duplicated in swap-meal test.
+  Outcome: all fixed. Wobble was REAL (header shift / tab bar cut in frames). "No clip" does NOT
+  work: headless Chromium's captureScreenshot without a clip (and Page.startScreencast, even with
+  maxWidth/new headless) returns CSS-size 393x852, not 2x. Fix kept the clip: film drops a frame if
+  pageX/Y changed between before/after getLayoutMetrics, and finger.scrollTo glides in 45 ms
+  instant steps instead of native smooth scroll.

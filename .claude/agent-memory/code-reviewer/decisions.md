@@ -30,7 +30,11 @@ Per feature (all approved, don't re-raise)
   but keeps the goal; goal never blank/0; no row = defaults.
 - Recipes (2026-11-14): any ingredient missing a value -> that recipe total "—" (NOT "+ N
   unknown"); a logged recipe saves it null. Water never null. Steps column unused for now.
-  Picking a food already in the recipe opens its edit sheet. No Playwright yet.
+  Picking a food already in the recipe opens its edit sheet.
+- Playwright (2026-11-22): e2e + recorder run against the LIVE site via "Try the demo" only,
+  reset before each test/take and at the end; workers 1. Files are *.e2e.ts so Vitest skips them.
+  ffmpeg-static deliberately NOT in package.json (its install script exits 1 on failed download
+  -> would break Vercel builds); found via FFMPEG_PATH / PATH / --no-save. Don't re-raise.
 - Swap (2026-11-14, plans/swap.md "Approved with these answers" overrides section 0):
   "foods you have" = foods eaten in last 7 days (alone or in a recipe, recipe's CURRENT
   ingredients), worded "you've had this week", never "in your kitchen" until purchases.
