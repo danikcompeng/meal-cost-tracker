@@ -349,3 +349,21 @@ Lessons:
 - I set it to read_only=true and scoped it to my one project (project_ref). Login is done in the browser, so no key is saved in the repo.
 - Test: I asked it to delete a food. Postgres refused with "cannot execute DELETE in a read-only transaction", and the food count stayed at 18. The database blocks it, not Claude choosing to behave.
 - Watch out: the MCP connects as an admin, so Row Level Security doesn't limit what it reads. It sees every user's rows. Another reason to keep it read-only.
+
+## 2026-11-23: Learning: prompting and effort levels
+
+- Experiment: I asked Claude Code the same question ("explain how the swap ranking in lib/swap.ts decides which recipe comes first") at /effort low and at /effort high, with /clear in between so the second answer started fresh.
+- Both answers were correct. Both found the 7 ranking keys, the 15% / 2 g protein rule, the EPSILON rounding trick, and that unknowns sort last. For explaining code that's already written, low effort was good enough.
+- The high-effort answer went deeper and was better organised: a table of all the keys, a worked example with 4 recipes, and two subtle details the other missed. The "Uses 3 foods you've had this week" chip only shows when at least half the foods match, and the $0.25 cost allowance is per serving even when swapping 1.5 servings.
+- When I'd use each:
+  - low: quick questions and explanations
+  - medium (my default): normal building
+  - high / ultrathink: plans, migrations, tricky bugs and reviews, where missing one edge case causes a real bug
+- Bigger lesson: the prompt matters as much as the effort level. Asking for line numbers, a worked example and "don't change any files" gave me answers I could check myself.
+
+## 2026-11-23: Learning: Claude Skills
+
+- A Skill is a folder with a SKILL.md file: a reusable set of instructions Claude loads when a request matches its description, or when I type /its-name.
+- I wrote my first one, project-readme (in ~/.claude/skills/, so it works in every project). It tells Claude what to read, which sections to write in what order, and the rules: real numbers only, env var names never values, ask before overwriting.
+- Test: /project-readme on Staple read my CLAUDE.md, plans and notes, noticed the old README listed built features as "coming next", counted the real tests (822 unit + 3 Playwright) and drafted a README I could check line by line.
+- Why it matters: instead of re-typing a long prompt for every project, the knowledge lives in one file I can improve. I'll reuse it for the habit tracker and portfolio READMEs.
