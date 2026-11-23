@@ -98,6 +98,11 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   isSample vs user_metadata.demo_seeded_at), lib/demo-actions.ts (signInDemo, resetDemo),
   components/demo-login.tsx, demo-reset.tsx, DemoChip in app-header.tsx. NEW actions that change
   foods/recipes/ingredients (purchases!) must call sampleRefusal too.
+- Item servings (012, 2026-11-23, branch servings): foods.serving_name + serving_amount (both or
+  neither, g/ml only, <= 10000). lib/servings.ts (servingOf, servingForEntry, plural, servingsText,
+  servingAmount, servingsIn, validateServing, servingFromOpenFoodFacts); components/serving-picks.tsx
+  used by log-food-form, edit-entry-form, ingredient-form; ingredient-row "284 g · 2 cans". Amounts
+  saved stay in g/ml. New food columns must also go into FOOD_COLUMNS AND recipes.ts nested select.
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,
