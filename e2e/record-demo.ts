@@ -18,12 +18,16 @@
 //      carousel slide on Today), then Undo.
 //   5. Swipe a row to show the trash can, delete it, Undo.
 //   6. Kitchen → a recipe: cost per serving and nutrients.
-//   7. Scan → Type the number (camera scanning can't be filmed) → Save
-//      and log → back on Today.
+//   7. Scan: the camera sees a can of beans on a counter and the app's
+//      real scanner reads its barcode (a made-up camera picture with the
+//      real Heinz beans barcode, helpers/barcode-clip.ts) → Open Food
+//      Facts → Save and log → back on Today. Without ffmpeg there's no
+//      such picture, so it taps "Type the number" instead.
 
 import fs from "node:fs";
 import path from "node:path";
-import { expect, test, type Browser, type Locator, type Page } from "@playwright/test";
+import { chromium, expect, test, type Browser, type Locator, type Page } from "@playwright/test";
+import { barcodeClip } from "./helpers/barcode-clip";
 import { expectToday, literal, loginWithDemo, resetDemo, topCard } from "./helpers/demo";
 import { fakeCamera } from "./helpers/fake-camera";
 import { Film, findFfmpeg } from "./helpers/film";
@@ -39,6 +43,12 @@ const SIZE = { width: PHONE.viewport.width * 2, height: PHONE.viewport.height * 
 const BACKGROUND = { light: "white", dark: "0x141414" } as const;
 /** Heinz baked beans: on Open Food Facts, with calories and protein. */
 const BARCODE = "5000157024671";
+/**
+ * Where the scan window sits on the camera picture, as a fraction of its
+ * width and height: the middle across, a little above the middle down (the
+ * hint and buttons below push it up). The barcode comes to rest there.
+ */
+const SCAN_WINDOW = { x: 0.5, y: 0.45 };
 
 type Theme = keyof typeof BACKGROUND;
 
@@ -65,8 +75,12 @@ async function retype(page: Page, finger: Finger, box: Locator, text: string) {
   await page.keyboard.type(text, { delay: 170 });
 }
 
-/** Everything on camera. `film` gets marks where the loop is cut. */
-async function act(page: Page, film: Pick<Film, "mark">) {
+/**
+ * Everything on camera. `film` gets marks where the loop is cut.
+ * `realScan`: the browser's camera shows the barcode clip, so shot 7 scans
+ * it; otherwise it types the number.
+ */
+async function act(page: Page, film: Pick<Film, "mark">, realScan: boolean) {
   const finger = await Finger.on(page);
   const pause = (ms: number) => page.waitForTimeout(ms);
   const tabs = page.getByRole("navigation", { name: "Main" });
@@ -158,20 +172,23 @@ async function act(page: Page, film: Pick<Film, "mark">) {
   await scrollTo(page.getByRole("region", { name: "Per serving", exact: true }), "start");
   await pause(2800);
 
-  // 7. Scan → Type the number → Save and log → Today.
+  // 7. Scan the can (or type its number) → Save and log → Today.
   await finger.tap(tabs.getByRole("link", { name: "Scan" }));
-  const typeNumber = page.getByRole("button", { name: "Type the number" });
-  await expect(typeNumber).toBeVisible();
-  await pause(1500);
-  await finger.tap(typeNumber);
-  const barcode = page.getByRole("textbox", { name: "Barcode" });
-  await expect(barcode).toBeVisible();
-  await pause(700);
-  await finger.tap(barcode);
-  await page.keyboard.type(BARCODE, { delay: 110 });
-  await pause(600);
-  await finger.tap(page.getByRole("button", { name: "Look it up" }));
-  // Open Food Facts can be slow.
+  if (!realScan) {
+    const typeNumber = page.getByRole("button", { name: "Type the number" });
+    await expect(typeNumber).toBeVisible();
+    await pause(1500);
+    await finger.tap(typeNumber);
+    const barcode = page.getByRole("textbox", { name: "Barcode" });
+    await expect(barcode).toBeVisible();
+    await pause(700);
+    await finger.tap(barcode);
+    await page.keyboard.type(BARCODE, { delay: 110 });
+    await pause(600);
+    await finger.tap(page.getByRole("button", { name: "Look it up" }));
+  }
+  // Scanning: the can drifts into the window and the app reads it by
+  // itself, then looks it up. Open Food Facts can be slow.
   await expect(page.getByRole("heading", { name: "Check the numbers" })).toBeVisible({ timeout: 30_000 });
   await pause(2400);
   const price = page.getByRole("textbox", { name: "Price" });
@@ -207,7 +224,22 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
     const ffmpeg = await findFfmpeg();
     const webm = path.join(VIDEOS, `staple-demo-${theme}.webm`);
 
-    const context = await browser.newContext({
+    // With ffmpeg: a browser of our own whose camera is the barcode clip
+    // (Chromium's fake camera plays the file; the app can't tell). The
+    // camera is chosen when the browser starts, hence a separate one.
+    const clip = ffmpeg
+      ? await barcodeClip(browser, ffmpeg, BARCODE, path.resolve("test-results", "recording"), SCAN_WINDOW)
+      : null;
+    const camera = clip
+      ? await chromium.launch({
+          args: [
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+            `--use-file-for-fake-video-capture=${clip}`,
+          ],
+        })
+      : null;
+    const context = await (camera ?? browser).newContext({
       ...PHONE,
       baseURL: BASE_URL,
       colorScheme: theme,
@@ -216,7 +248,8 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
       // Without ffmpeg, Playwright's own (softer) .webm is the result.
       recordVideo: ffmpeg ? undefined : { dir: path.resolve("test-results", "recording"), size: SIZE },
     });
-    await context.addInitScript(fakeCamera);
+    // No clip: a calm stand-in picture behind "Type the number".
+    if (!clip) await context.addInitScript(fakeCamera);
     const page = await context.newPage();
     await page.goto("/login");
     // Wait until the login page has fully settled (fonts, the email form)
@@ -227,10 +260,11 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
     const film = ffmpeg ? await Film.roll(page, path.resolve("test-results", "recording", theme)) : null;
     try {
       // No film (the .webm fallback): the cut marks aren't needed.
-      await act(page, film ?? { mark() {} });
+      await act(page, film ?? { mark() {} }, clip !== null);
     } finally {
       await film?.stop();
       await context.close();
+      await camera?.close();
     }
 
     const made: string[] = [];

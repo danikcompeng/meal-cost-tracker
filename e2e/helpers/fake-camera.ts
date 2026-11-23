@@ -1,11 +1,13 @@
 // A stand-in camera for the demo recording.
 //
-// The recording browser has no camera, so the scan screen would say "The
-// camera is busy". Scanning a real barcode can't be filmed this way
-// anyway, so the video shows "Type the number" instead, and this gives
-// the scanner something calm to show for the second before: a blurry,
-// slowly drifting countertop, like a phone camera pointed at a kitchen
-// bench. The barcode reader finds nothing in it.
+// Only the fallback, when ffmpeg isn't installed: normally the recording's
+// camera is a clip of a real barcode (barcode-clip.ts), and the app scans
+// it. Without ffmpeg that clip can't be made, the recording browser has no
+// camera, and the scan screen would say "The camera is busy". So the video
+// shows "Type the number" instead, and this gives the scanner something
+// calm to show for the second before: a blurry, slowly drifting
+// countertop, like a phone camera pointed at a kitchen bench. The barcode
+// reader finds nothing in it.
 //
 // Runs inside the page (page.addInitScript), before the app's own code.
 

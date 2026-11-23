@@ -102,7 +102,10 @@ npm run record:demo               # re-record the demo videos into design/videos
 `staple-loop-light.mp4` / `-dark.mp4` (a 20 s loop of logging in and swapping a meal).
 MP4 needs ffmpeg: install it (`winget install Gyan.FFmpeg`), or run
 `npm install --no-save ffmpeg-static`, or point `FFMPEG_PATH` at one. Without ffmpeg you get
-a softer `.webm` and no loop. The script is `e2e/record-demo.ts`.
+a softer `.webm`, no loop, and the scan shot types the barcode instead of scanning it
+(ffmpeg also makes the fake camera's clip of a barcode, `e2e/helpers/barcode-clip.ts`).
+The script is `e2e/record-demo.ts`. To film this branch before it's live, run the app
+(`npx next build && npx next start`) and set `BASE_URL=http://localhost:3000`.
 
 You'll need a Supabase project. Put its URL and publishable key in `.env.local`
 (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) and run the SQL files
