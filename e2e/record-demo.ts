@@ -117,13 +117,16 @@ async function act(page: Page, film: Pick<Film, "mark">) {
   await expect(swapSheet.getByText("1 of 4", { exact: true })).toBeVisible();
   await pause(2600);
   // Swipe left: skip. Starts right of centre so the finger stays on screen.
+  // Unhurried, and held a moment past the line before letting go, so the
+  // grey tint and the big ✕ Skip sign (and its pop) are on camera.
   const skipped = await topCard(swapSheet);
-  await finger.swipeAcross(swapSheet.getByRole("article", { name: skipped }), -200, { start: 0.7, ms: 300 });
+  await finger.swipeAcross(swapSheet.getByRole("article", { name: skipped }), -200, { start: 0.7, ms: 550, hold: 700 });
   await expect(swapSheet.getByText("2 of 4", { exact: true })).toBeVisible();
   await pause(2600);
-  // Swipe right: swap. The sheet closes and lunch slides over.
+  // Swipe right: swap, held the same way for the matcha tint and the
+  // check + Swap sign. The sheet closes and lunch slides over.
   const picked = await topCard(swapSheet);
-  await finger.swipeAcross(swapSheet.getByRole("article", { name: picked }), 200, { start: 0.3, ms: 300 });
+  await finger.swipeAcross(swapSheet.getByRole("article", { name: picked }), 200, { start: 0.3, ms: 550, hold: 700 });
   await expect(swapSheet).toBeHidden();
   await expect(lunch.getByRole("button", { name: new RegExp(`^${literal(picked)} 1 serving`) })).toBeVisible();
   await pause(2400);

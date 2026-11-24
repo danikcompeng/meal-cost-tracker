@@ -61,8 +61,12 @@ export class Finger {
     await this.touch("touchEnd");
   }
 
-  /** Puts the finger down at `from`, slides to `to` over `ms`, lifts it. */
-  async swipe(from: Point, to: Point, ms: number) {
+  /**
+   * Puts the finger down at `from`, slides to `to` over `ms`, waits `hold`
+   * ms there (so what the app shows mid-swipe, like the swap card's Swap /
+   * Skip sign, stays on camera), lifts it.
+   */
+  async swipe(from: Point, to: Point, ms: number, hold = 0) {
     await this.touch("touchStart", from);
     const steps = Math.max(2, Math.round(ms / FRAME_MS));
     for (let i = 1; i <= steps; i++) {
@@ -70,6 +74,7 @@ export class Finger {
       await this.touch("touchMove", { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t });
       await this.page.waitForTimeout(FRAME_MS);
     }
+    if (hold > 0) await this.page.waitForTimeout(hold);
     await this.touch("touchEnd");
   }
 
@@ -77,13 +82,13 @@ export class Finger {
    * Swipes sideways across an element, starting at `start` (0 = its left
    * edge, 1 = its right edge) and moving `dx` px (negative = left).
    */
-  async swipeAcross(target: Locator, dx: number, { start = 0.5, ms = 350 } = {}) {
+  async swipeAcross(target: Locator, dx: number, { start = 0.5, ms = 350, hold = 0 } = {}) {
     await target.click({ trial: true });
     await target.scrollIntoViewIfNeeded();
     const box = await target.boundingBox();
     if (!box) throw new Error(`Finger: can't see ${target}`);
     const from = { x: box.x + box.width * start, y: box.y + box.height / 2 };
-    await this.swipe(from, { x: from.x + dx, y: from.y }, ms);
+    await this.swipe(from, { x: from.x + dx, y: from.y }, ms, hold);
   }
 }
 
