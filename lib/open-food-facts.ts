@@ -12,7 +12,7 @@ import { NUTRIENT_KEYS, type Macros, type Nutrients } from "./macros";
 import { servingFromOpenFoodFacts, type Serving } from "./servings";
 
 /** Who we are, sent with every request, as Open Food Facts asks apps to do. */
-export const OFF_USER_AGENT = "Staple/0.1 (https://stapleapp.vercel.app)";
+export const OFF_USER_AGENT = "Bitewise/0.1 (https://stapleapp.vercel.app)";
 
 // Only ask for the fields we use: the full product is often 100 KB+.
 const FIELDS = [

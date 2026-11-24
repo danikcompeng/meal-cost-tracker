@@ -1,19 +1,21 @@
 // The app's name, icons and colours for the home screen, in one place.
 // Renaming the app is this file, plus the places that can't read it: the
-// email template's "Your Staple login code" line and subject (pasted into
-// Supabase by hand), README.md and CLAUDE.md. Page titles add the name
-// themselves (the title template in app/layout.tsx). The icon has no
-// letters, so it doesn't change. Until 2026-11-21 it was "Meal Cost Tracker";
-// the repo, Vercel project and web address keep that name.
+// email template's "Your Bitewise login code" line and subject (pasted into
+// Supabase by hand), README.md and CLAUDE.md, and the Open Food Facts user
+// agent (lib/open-food-facts.ts). Page titles add the name themselves (the
+// title template in app/layout.tsx). The icon has no letters, so it
+// doesn't change. It was "Meal Cost Tracker" until 2026-11-21 (the repo
+// and Vercel project keep that name), then "Staple" until 2026-11-23 (the
+// web address, stapleapp.vercel.app, keeps that one).
 import type { MetadataRoute } from "next";
 
-export const APP_NAME = "Staple";
+export const APP_NAME = "Bitewise";
 
 /**
  * The name under the icon on the home screen. iPhone cuts names off at
- * about 12 characters, so this one has to be short. "Staple" already is.
+ * about 12 characters, so this one has to be short. "Bitewise" (8) is.
  */
-export const APP_SHORT_NAME = "Staple";
+export const APP_SHORT_NAME = "Bitewise";
 
 export const APP_DESCRIPTION = "Cheap meals on repeat, without getting bored.";
 

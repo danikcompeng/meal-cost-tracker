@@ -26,7 +26,7 @@ const tabIcon = iconByFile("icon-192.png")!;
 const iPhoneIcon = iconByFile("apple-touch-icon.png")!;
 
 export const metadata: Metadata = {
-  // A page's own title gets the app name after it ("Today · Staple"), so
+  // A page's own title gets the app name after it ("Today · Bitewise"), so
   // pages only say what they are. Without one, it's just the name.
   title: { default: APP_NAME, template: `%s · ${APP_NAME}` },
   description: APP_DESCRIPTION,

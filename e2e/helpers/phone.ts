@@ -1,5 +1,5 @@
 // The phone every e2e test and the demo recording runs on: an iPhone 15's
-// screen (393 x 852 CSS pixels, the whole screen, as when Staple is
+// screen (393 x 852 CSS pixels, the whole screen, as when Bitewise is
 // installed to the home screen), with touch, drawn at 2x.
 //
 // Playwright's own "iPhone 15" preset is 393 x 659: the space Safari leaves

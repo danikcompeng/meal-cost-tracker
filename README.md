@@ -1,4 +1,4 @@
-# Staple
+# Bitewise
 
 Cheap meals that hit your macros, on repeat, with a swap when you're bored.
 

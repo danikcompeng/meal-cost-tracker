@@ -1,4 +1,5 @@
-// Records the silent portfolio demo of Staple: `npm run record:demo`.
+// Records the silent portfolio demo of Bitewise: `npm run record:demo`.
+// (The files keep their old staple-* names, so links to them still work.)
 //
 // Two takes, light mode and dark mode, on an iPhone-sized screen, logged
 // in ONLY through "Try the demo" (no personal data). Each take resets the
