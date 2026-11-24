@@ -18,4 +18,4 @@ export const PHONE = {
 } satisfies BrowserContextOptions;
 
 /** The live app. Set BASE_URL to test another copy (say, http://localhost:3000). */
-export const BASE_URL = process.env.BASE_URL ?? "https://stapleapp.vercel.app";
+export const BASE_URL = process.env.BASE_URL ?? "https://trybitewise.vercel.app";

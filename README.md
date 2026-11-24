@@ -2,7 +2,7 @@
 
 Cheap meals that hit your macros, on repeat, with a swap when you're bored.
 
-**Live:** [stapleapp.vercel.app](https://stapleapp.vercel.app). Tap **Try the demo**, no email needed.
+**Live:** [trybitewise.vercel.app](https://trybitewise.vercel.app). Tap **Try the demo**, no email needed.
 On a phone, add it to your home screen and it opens like an app.
 
 ![Swapping a meal: skip a card, swap to the next, then the carousel move on Today](design/videos/staple-swap.gif)

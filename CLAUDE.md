@@ -1,13 +1,15 @@
 # Bitewise
 
 (Called "Meal Cost Tracker" until 2026-11-21, then "Staple" until
-2026-11-23. The repo and the Vercel project keep the first name, the web
-address the second. The app's name lives in lib/app-identity.ts. "Staple
-meals", lowercase, is still what the app calls your repeat meals.)
+2026-11-23. The repo and the Vercel project keep the first name. The
+app's name lives in lib/app-identity.ts. "Staple meals", lowercase, is
+still what the app calls your repeat meals.)
 
-Web address: https://stapleapp.vercel.app (since 2026-11-22). The old
-https://meal-cost-tracker.vercel.app redirects there. Supabase's Site
-URL and Redirect URLs must name the new address.
+Web address: https://trybitewise.vercel.app (since 2026-11-23). The old
+https://stapleapp.vercel.app and https://meal-cost-tracker.vercel.app
+redirect there. Supabase's Site URL and Redirect URLs must name the new
+address. The Supabase project (and its one login email template) is
+shared with the habit tracker, so the email names no app.
 
 ## What this app is
 "Cheap meals that hit your macros, on repeat, with a swap when you're bored."

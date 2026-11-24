@@ -1,12 +1,12 @@
 // The app's name, icons and colours for the home screen, in one place.
-// Renaming the app is this file, plus the places that can't read it: the
-// email template's "Your Bitewise login code" line and subject (pasted into
-// Supabase by hand), README.md and CLAUDE.md, and the Open Food Facts user
-// agent (lib/open-food-facts.ts). Page titles add the name themselves (the
-// title template in app/layout.tsx). The icon has no letters, so it
-// doesn't change. It was "Meal Cost Tracker" until 2026-11-21 (the repo
-// and Vercel project keep that name), then "Staple" until 2026-11-23 (the
-// web address, stapleapp.vercel.app, keeps that one).
+// Renaming the app is this file, plus the places that can't read it:
+// README.md, CLAUDE.md and the Open Food Facts user agent
+// (lib/open-food-facts.ts). The login email names no app (its Supabase
+// template is shared with the habit tracker). Page titles add the name
+// themselves (the title template in app/layout.tsx). The icon has no
+// letters, so it doesn't change. It was "Meal Cost Tracker" until
+// 2026-11-21 (the repo and Vercel project keep that name), then "Staple"
+// until 2026-11-23. Live at trybitewise.vercel.app.
 import type { MetadataRoute } from "next";
 
 export const APP_NAME = "Bitewise";
