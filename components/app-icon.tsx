@@ -1,18 +1,13 @@
-// THE APP ICON. This is the one file to change when the real icon arrives.
-//
-// For now it's a placeholder: a plain white bowl on matcha green, with no
-// letters, so a rename doesn't need a new icon.
+// THE APP ICON: the macro ring. The ring from the app, split three ways
+// for protein, carbs and fat: protein solid white, carbs and fat a softer
+// white, on matcha green. No letters, so a rename doesn't need a new icon.
+// (It was a placeholder bowl until 2026-11-23. The options it was picked
+// from are on the "Bitewise logo" design canvas.)
 //
 // It's never shown on a page. app/icons/[file]/route.tsx turns it into
 // the PNG files phones want, once, when the app is built. That's done by
 // next/og (Satori), which only understands a small part of CSS: flexbox,
 // inline styles and simple SVG. No Tailwind classes here.
-//
-// To use a real icon later, either:
-// - paste its SVG in place of <BowlDrawing /> (keep viewBox="0 0 100 100"),
-// - or draw a 1024 x 1024 PNG and return
-//   <img src={...} width={size} height={size} /> with the PNG read as a
-//   data URL.
 import { ICON_GREEN, ICON_WHITE, type IconShape } from "@/lib/app-identity";
 
 /**
@@ -39,29 +34,43 @@ export function AppIcon({ size, shape }: { size: number; shape: IconShape }) {
         borderRadius: shape === "rounded" ? size * 0.22 : 0,
       }}
     >
-      <BowlDrawing size={drawing} />
+      <RingDrawing size={drawing} />
     </div>
   );
 }
 
-/** A bowl with two lines of steam, in a 100 x 100 box. */
-function BowlDrawing({ size }: { size: number }) {
+/**
+ * Half the white over the green, as one solid colour: carbs and fat are
+ * drawn softer than protein. Solid rather than see-through so every PNG
+ * renderer draws it the same.
+ */
+const ICON_SOFT_WHITE = mix(ICON_WHITE, ICON_GREEN, 0.5);
+
+function mix(a: string, b: string, amountOfA: number) {
+  const channel = (hex: string, i: number) => parseInt(hex.slice(1 + i * 2, 3 + i * 2), 16);
+  const out = [0, 1, 2].map((i) =>
+    Math.round(channel(a, i) * amountOfA + channel(b, i) * (1 - amountOfA))
+      .toString(16)
+      .padStart(2, "0"),
+  );
+  return `#${out.join("")}`;
+}
+
+/**
+ * The macro ring: a circle of radius 28 split into three arcs, 14 degrees
+ * apart, starting at 12 o'clock and going clockwise. Protein gets the
+ * biggest arc. The viewBox is cropped to the ring (radius 28 plus half the
+ * 13-wide stroke = 34.5 from the centre), so the ring fills the drawing.
+ */
+function RingDrawing({ size }: { size: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 100 100">
-      {/* Steam */}
-      <path
-        d="M40 36 C34 30 46 24 40 16 M60 36 C54 30 66 24 60 16"
-        fill="none"
-        stroke={ICON_WHITE}
-        strokeWidth={5}
-        strokeLinecap="round"
-      />
-      {/* Rim */}
-      <rect x={12} y={44} width={76} height={7} rx={3.5} fill={ICON_WHITE} />
-      {/* Bowl: a half circle hanging under the rim */}
-      <path d="M17 53 H83 A33 33 0 0 1 17 53 Z" fill={ICON_WHITE} />
-      {/* Foot */}
-      <rect x={37} y={84} width={26} height={6} rx={3} fill={ICON_WHITE} />
+    <svg width={size} height={size} viewBox="15.5 15.5 69 69">
+      {/* Protein */}
+      <path d="M53.41 22.21 A28 28 0 0 1 66.85 72.36" fill="none" stroke={ICON_WHITE} strokeWidth={13} />
+      {/* Carbs */}
+      <path d="M60.94 75.77 A28 28 0 0 1 22.21 53.41" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
+      {/* Fat */}
+      <path d="M22.21 46.59 A28 28 0 0 1 46.59 22.21" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
     </svg>
   );
 }
