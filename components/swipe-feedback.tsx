@@ -123,11 +123,13 @@ function Sign({
   tone: keyof typeof TONE;
 }) {
   return (
-    <motion.div style={{ opacity }} className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+    <motion.div style={{ opacity }} className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
       <motion.div style={{ scale: pop }} className={`grid size-16 place-items-center rounded-full ${TONE[tone]}`}>
         {icon}
       </motion.div>
-      <span className={`rounded-full px-3 py-1 text-sm font-medium ${TONE[tone]}`}>{label}</span>
+      {/* As big and bold as the card's name (text-2xl), so it reads at a
+          glance mid-swipe (phone test, 2026-11-23: text-sm was too small). */}
+      <span className={`rounded-full px-4 py-1 text-2xl leading-tight font-bold ${TONE[tone]}`}>{label}</span>
     </motion.div>
   );
 }

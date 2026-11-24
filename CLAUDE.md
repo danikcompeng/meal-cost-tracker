@@ -246,7 +246,8 @@ Motion (Framer Motion)
   card straight off to the left, shrinking and fading a little, and the
   next card comes up. While you drag, the card tints under its text
   (soft matcha right, grey left) and a solid sign fades in at its centre
-  (check + "Swap", or ✕ + "Skip"), full strength exactly when letting go
+  (check + "Swap", or ✕ + "Skip", the word bold and as big as the card's
+  name), full strength exactly when letting go
   would count, where it pops once (POP_SCALE; none with Reduce Motion).
   Swap doesn't throw the card: the sheet closes and
   the swap is one move left on Today's row, like a carousel (the old

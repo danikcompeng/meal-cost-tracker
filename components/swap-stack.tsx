@@ -288,62 +288,70 @@ export function SwapStack({
         {behind >= 2 && <Peek className="inset-x-6 top-4 -bottom-4" />}
         {behind >= 1 && <Peek className="inset-x-3 top-2 -bottom-2" />}
 
-        {/* Two layers. The outer one plays the entrance; the inner one is
-            the card you drag. Kept apart because a touch stops every
-            animation on the element you touch: pressed while it was still
-            rising, a card that did both would freeze a few px too low.
-            A new outer element per card (key), so each one plays it.
-            The new top card settles in from scale 0.97, rising the 8 px
-            from where the first peeking card was, and fades in. With
-            Reduce Motion, MotionProvider skips the scale and y: a fade. */}
+        {/* Two layers. The outer one is the card you drag; the inner one
+            plays each card's entrance. Kept apart because a touch stops
+            the animations on the element you drag: pressed while it was
+            still rising, a card that did both would freeze a few px too
+            low.
+            The outer one stays the same element from card to card (no
+            key). It must: every card shares one x, and a skipped card
+            leaves it far off to the left. The next card's reset to the
+            middle (x.jump(0) above) only reaches an element that's already
+            listening to x. A new element per card started listening just
+            too late, was drawn where the old card had flown to, and stayed
+            there: an empty stack after a swipe-skip (phone test,
+            2026-11-23).
+            The inner one is new per card (key), so each one plays the
+            entrance: it settles in from scale 0.97, rising the 8 px from
+            where the first peeking card was, and fades in. With Reduce
+            Motion, MotionProvider skips the scale and y: a fade. */}
         <motion.div
-          key={swap.id}
-          initial={{ scale: SCALE_FROM, y: 8, opacity: 0 }}
-          animate={{ scale: 1, y: 0, opacity: 1 }}
-          transition={{ ...SPRING.sheet, opacity: { duration: DURATION.fast, ease: EASE_OUT } }}
-          className="relative z-10"
+          // Not draggable while it flies off: a touch would stop the
+          // flight halfway and leave the card stuck. Nor while a pick is
+          // saving ("Swapping…"): the buttons wait then, and a drag would
+          // grow and pop the sign for a release that can't count.
+          // Sideways it follows your finger. Up and down it stretches on
+          // a rubber band (RUBBER) and springs back, but only when the
+          // sheet has nothing to scroll (or with a mouse): dragging up
+          // and down makes the browser stop scrolling the sheet when your
+          // finger is on the card, and on a small phone the swap sheet
+          // can be taller than the screen. Then up/down keeps scrolling
+          // it (Framer sets touch-action: pan-y for a sideways-only drag).
+          drag={flying || pending ? false : canStretchY ? true : "x"}
+          // Decides which way you meant after a few pixels, and sticks
+          // to it: a sideways swipe never drifts up or down.
+          dragDirectionLock
+          dragElastic={{ left: SIDEWAYS_GIVE, right: SIDEWAYS_GIVE, top: RUBBER, bottom: RUBBER }}
+          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+          onPointerDownCapture={() => {
+            sideways.current = false;
+            dragX.current = x.get();
+            // A finger again (after a failed pick by button, say).
+            if (!leaving.current) byFinger.jump(1);
+          }}
+          // After Framer has moved the card for this frame.
+          onDrag={() => {
+            dragX.current = x.get();
+          }}
+          // A press that never became a sideways drag (a tap, a scroll the
+          // phone took over) stops any slide still running: put it back.
+          onPointerUp={() => {
+            if (!sideways.current) settle();
+          }}
+          onPointerCancel={settle}
+          onDirectionLock={(axis) => {
+            sideways.current = axis === "x";
+          }}
+          onDragEnd={handleDragEnd}
+          ref={cardRef}
+          style={{ x, y, scale, opacity }}
+          className={`relative z-10 ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
         >
           <motion.div
-            // Not draggable while it flies off: a touch would stop the
-            // flight halfway and leave the card stuck. Nor while a pick is
-            // saving ("Swapping…"): the buttons wait then, and a drag would
-            // grow and pop the sign for a release that can't count.
-            // Sideways it follows your finger. Up and down it stretches on
-            // a rubber band (RUBBER) and springs back, but only when the
-            // sheet has nothing to scroll (or with a mouse): dragging up
-            // and down makes the browser stop scrolling the sheet when your
-            // finger is on the card, and on a small phone the swap sheet
-            // can be taller than the screen. Then up/down keeps scrolling
-            // it (Framer sets touch-action: pan-y for a sideways-only drag).
-            drag={flying || pending ? false : canStretchY ? true : "x"}
-            // Decides which way you meant after a few pixels, and sticks
-            // to it: a sideways swipe never drifts up or down.
-            dragDirectionLock
-            dragElastic={{ left: SIDEWAYS_GIVE, right: SIDEWAYS_GIVE, top: RUBBER, bottom: RUBBER }}
-            dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-            onPointerDownCapture={() => {
-              sideways.current = false;
-              dragX.current = x.get();
-              // A finger again (after a failed pick by button, say).
-              if (!leaving.current) byFinger.jump(1);
-            }}
-            // After Framer has moved the card for this frame.
-            onDrag={() => {
-              dragX.current = x.get();
-            }}
-            // A press that never became a sideways drag (a tap, a scroll the
-            // phone took over) stops any slide still running: put it back.
-            onPointerUp={() => {
-              if (!sideways.current) settle();
-            }}
-            onPointerCancel={settle}
-            onDirectionLock={(axis) => {
-              sideways.current = axis === "x";
-            }}
-            onDragEnd={handleDragEnd}
-            ref={cardRef}
-            style={{ x, y, scale, opacity }}
-            className={`relative ${flying ? "pointer-events-none" : "cursor-grab active:cursor-grabbing"}`}
+            key={swap.id}
+            initial={{ scale: SCALE_FROM, y: 8, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            transition={{ ...SPRING.sheet, opacity: { duration: DURATION.fast, ease: EASE_OUT } }}
           >
             {/* The tint goes under the card's text, the sign on top of it. */}
             <SwapCard
