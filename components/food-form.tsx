@@ -20,6 +20,7 @@ import { basisChangeNote, basisLabel, calorieHint, type Nutrients } from "@/lib/
 import type { FoodDraft } from "@/lib/food-draft";
 import { soundsLikeWater } from "@/lib/hydration";
 import { nutritionNote } from "@/lib/open-food-facts";
+import { servingHint } from "@/lib/servings";
 import { inputUnitsFor, toBaseUnit, type BaseUnit, type InputUnit } from "@/lib/units";
 import type { FormState, Food } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -501,9 +502,8 @@ export function FoodForm({
               error={errors.servingAmount}
             />
           </div>
-          <p className="text-sm text-muted-foreground">
-            Optional. Lets you pick “1 {fields.servingName.trim() || "bagel"}” instead of typing{" "}
-            {measuredBy === "ml" ? "millilitres" : "grams"}.
+          <p className="text-sm text-muted-foreground tabular-nums">
+            {servingHint(fields.servingName, fields.servingAmount, measuredBy)}
           </p>
         </fieldset>
       )}

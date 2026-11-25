@@ -80,6 +80,23 @@ export function servingRule(serving: Serving, unit: BaseUnit): string {
   return `1 ${serving.name} = ${amountText(serving.amount, unit)}`;
 }
 
+/** The example in the food form's hint, until you type your own. */
+const EXAMPLE_SERVING: Serving = { name: "bagel", amount: 80 };
+
+/**
+ * The hint under the food form's Serving boxes, saying what a serving is
+ * for, with what you've typed so far: "Optional. When you log it, tap
+ * “1 slice” instead of typing 30 g." Each box that's still empty (or not a
+ * usable amount yet) shows the example instead: "bagel", "80". The amount
+ * is shown as typed (not display-rounded), in the food's unit.
+ */
+export function servingHint(name: string, amount: string, unit: BaseUnit): string {
+  const typed = parseDecimal(amount);
+  const shownName = name.trim() || EXAMPLE_SERVING.name;
+  const shownAmount = typeof typed === "number" && typed > 0 ? typed : EXAMPLE_SERVING.amount;
+  return `Optional. When you log it, tap “1 ${shownName}” instead of typing ${amountText(shownAmount, unit)}.`;
+}
+
 /** How much `count` servings is, in the food's unit, rounded like the amount box (2 decimals). */
 export function servingAmount(count: number, serving: Serving): number {
   return Math.round(count * serving.amount * 100) / 100;

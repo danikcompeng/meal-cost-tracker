@@ -7,6 +7,7 @@ import {
   servingForEntry,
   servingUpdate,
   servingFromOpenFoodFacts,
+  servingHint,
   servingOf,
   servingRule,
   servingsIn,
@@ -58,6 +59,38 @@ describe("words", () => {
   it("writes the rule", () => {
     expect(servingRule(bagel, "g")).toBe("1 bagel = 80 g");
     expect(servingRule({ name: "bottle", amount: 500 }, "ml")).toBe("1 bottle = 500 ml");
+  });
+});
+
+describe("servingHint", () => {
+  it("shows the bagel example while both boxes are empty", () => {
+    expect(servingHint("", "", "g")).toBe("Optional. When you log it, tap “1 bagel” instead of typing 80 g.");
+  });
+  it("uses what you typed", () => {
+    expect(servingHint("slice", "30", "g")).toBe("Optional. When you log it, tap “1 slice” instead of typing 30 g.");
+  });
+  it("falls back for each box on its own", () => {
+    expect(servingHint(" scoop ", "", "g")).toBe("Optional. When you log it, tap “1 scoop” instead of typing 80 g.");
+    expect(servingHint("", "45", "g")).toBe("Optional. When you log it, tap “1 bagel” instead of typing 45 g.");
+  });
+  it("keeps the food's unit", () => {
+    expect(servingHint("bottle", "500", "ml")).toBe(
+      "Optional. When you log it, tap “1 bottle” instead of typing 500 ml.",
+    );
+    expect(servingHint("", "", "ml")).toBe("Optional. When you log it, tap “1 bagel” instead of typing 80 ml.");
+    // "each" foods have no serving box, but the words would still be right.
+    expect(servingHint("pack", "1", "each")).toBe("Optional. When you log it, tap “1 pack” instead of typing 1 item.");
+  });
+  it("shows the amount as typed, with a decimal comma read as a point", () => {
+    expect(servingHint("can", "142.5", "g")).toBe("Optional. When you log it, tap “1 can” instead of typing 142.5 g.");
+    expect(servingHint("can", "142,5", "g")).toBe("Optional. When you log it, tap “1 can” instead of typing 142.5 g.");
+  });
+  it("shows the example amount until the box holds a usable one", () => {
+    for (const notYet of ["abc", "0", "-5", "1,000"]) {
+      expect(servingHint("bagel", notYet, "g")).toBe(
+        "Optional. When you log it, tap “1 bagel” instead of typing 80 g.",
+      );
+    }
   });
 });
 
