@@ -12,11 +12,14 @@ import { ICON_GREEN, ICON_WHITE, type IconShape } from "@/lib/app-identity";
 
 /**
  * How much of the square the drawing takes up. Android's maskable icons
- * can be cut down to a circle 80% as wide as the square, so there the
- * drawing stays smaller: at 0.56, even the corners of the drawing's square
- * sit 39.6% from the centre, just inside the 40% circle. Don't raise it.
+ * can be cut down to a circle 80% as wide as the square, so everything
+ * drawn must stay within 40% of the width from the centre. The drawing's
+ * square is cropped to the ring, and a ring leaves that square's corners
+ * empty, so it's the ring that must fit, not the square: at 0.66 its outer
+ * edge sits 33% from the centre, the same size as the other icons, with
+ * room to spare. The limit is 0.8 (the ring would touch the 40% circle).
  */
-const DRAWING_SCALE: Record<IconShape, number> = { rounded: 0.66, full: 0.66, maskable: 0.56 };
+const DRAWING_SCALE: Record<IconShape, number> = { rounded: 0.66, full: 0.66, maskable: 0.66 };
 
 export function AppIcon({ size, shape }: { size: number; shape: IconShape }) {
   const drawing = Math.round(size * DRAWING_SCALE[shape]);
@@ -68,9 +71,10 @@ const GAP_ANGLES = [-90, 30, 150] as const;
  * carbs from 4 to 8, fat from 8 back to 12.
  *
  * The gaps are then cut by bars in the field green laid across the ring.
- * A bar has parallel sides, so each gap is the same 5 units wide from the
+ * A bar has parallel sides, so each gap is the same 6 units wide from the
  * inside of the ring to the outside. (Leaving out a few degrees of arc
- * would instead give gaps that are narrow inside and wide outside.) Each
+ * would instead give gaps that are narrow inside and wide outside.) 6, not
+ * 5, so a gap is still about 1.7 px at the smallest home-screen size (29 px). Each
  * bar is drawn once at 3 o'clock, from 20 to 36 out from the centre, past
  * both edges of the ring (21.5 and 34.5), and turned into place.
  *
@@ -87,7 +91,7 @@ function RingDrawing({ size }: { size: number }) {
       {/* Fat: 150° to 270° */}
       <path d="M25.75 64 A28 28 0 0 1 50 22" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
       {GAP_ANGLES.map((angle) => (
-        <rect key={angle} x={70} y={47.5} width={16} height={5} fill={ICON_GREEN} transform={`rotate(${angle} 50 50)`} />
+        <rect key={angle} x={70} y={47} width={16} height={6} fill={ICON_GREEN} transform={`rotate(${angle} 50 50)`} />
       ))}
     </svg>
   );
