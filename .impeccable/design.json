@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-24T23:00:00Z",
+  "title": "Design System: Bitewise",
+  "extensions": {
+    "colorMeta": {
+      "matcha": { "role": "primary", "displayName": "Matcha", "canonical": "oklch(49.09% 0.0938 var(--accent-h))", "tonalRamp": ["oklch(20% 0.04 130)", "oklch(30% 0.06 130)", "oklch(40% 0.08 130)", "oklch(49% 0.094 130)", "oklch(60% 0.1 132)", "oklch(70% 0.1 134)", "oklch(80% 0.08 136)", "oklch(92% 0.04 136)"] },
+      "butter": { "role": "secondary", "displayName": "Butter", "canonical": "oklch(84.96% 0.1463 90.49)" },
+      "tomato": { "role": "tertiary", "displayName": "Muted Tomato", "canonical": "oklch(51.6% 0.1376 33.02)" },
+      "paper": { "role": "neutral", "displayName": "Paper" },
+      "tile": { "role": "neutral", "displayName": "Tile" },
+      "ink": { "role": "neutral", "displayName": "Ink" },
+      "label-grey": { "role": "neutral", "displayName": "Label Grey" }
+    },
+    "typographyMeta": {
+      "key-number": { "displayName": "Key number", "purpose": "The one most important number per screen." },
+      "page-title": { "displayName": "Page title", "purpose": "Today, Recipes, Foods, Settings, a recipe's name." },
+      "label": { "displayName": "Label", "purpose": "Small grey label above a number or a section." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "fast", "value": "150ms", "purpose": "Press feedback, colour changes." },
+      { "name": "base", "value": "200ms", "purpose": "Collapses, fades, a closing sheet's scrim." },
+      { "name": "slow", "value": "250ms", "purpose": "The camera picture fading in." },
+      { "name": "ease-out", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default easing." }
+    ],
+    "breakpoints": []
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Matcha action button, full width in forms.",
+      "html": "<button class=\"ds-btn-primary\">Save targets</button>",
+      "css": ".ds-btn-primary { background: var(--primary, #4F6B2E); color: var(--primary-foreground, #fff); height: 44px; padding: 0 16px; border: 0; border-radius: 10px; font: 500 16px Figtree, system-ui, sans-serif; transition: background-color 150ms, scale 150ms; } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, #4F6B2E) 90%, transparent); } .ds-btn-primary:active { scale: 0.97; } .ds-btn-primary:focus-visible { outline: 2px solid var(--ring, #4F6B2E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary choice beside a primary one (Skip, Try the demo).",
+      "html": "<button class=\"ds-btn-outline\">Skip</button>",
+      "css": ".ds-btn-outline { background: var(--background, #fff); color: var(--foreground, #171717); height: 44px; padding: 0 16px; border: 1px solid var(--border, rgba(0,0,0,.115)); border-radius: 10px; font: 500 16px Figtree, system-ui, sans-serif; } .ds-btn-outline:hover { background: var(--muted, #F0F0F0); } .ds-btn-outline:focus-visible { outline: 2px solid var(--ring, #4F6B2E); outline-offset: 2px; }"
+    },
+    {
+      "name": "Input with unit",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "A number box with its unit inside the right edge.",
+      "html": "<label class=\"ds-field\"><span>Protein</span><span class=\"ds-box\"><input value=\"150\" inputmode=\"decimal\"><em>g</em></span></label>",
+      "css": ".ds-field { display: grid; gap: 6px; font: 500 16px Figtree, system-ui, sans-serif; } .ds-box { position: relative; } .ds-box input { box-sizing: border-box; width: 100%; height: 44px; padding: 0 48px 0 12px; border: 1px solid var(--field-border, #858585); border-radius: 10px; background: var(--background, #fff); color: var(--foreground, #171717); font: 400 16px Figtree, sans-serif; font-variant-numeric: tabular-nums; } .ds-box input:focus-visible { outline: 2px solid var(--ring, #4F6B2E); outline-offset: 2px; } .ds-box em { position: absolute; right: 12px; top: 50%; translate: 0 -50%; font: 400 14px Figtree, sans-serif; font-style: normal; color: var(--muted-foreground, #616161); }"
+    },
+    {
+      "name": "Tab bar",
+      "kind": "nav",
+      "refersTo": "tab-active",
+      "description": "Bottom tabs; butter pill marks where you are, round matcha Scan in the middle.",
+      "html": "<nav class=\"ds-tabs\"><a aria-current=\"page\">Today</a><span class=\"ds-scan\" aria-label=\"Scan\"></span><a>Kitchen</a></nav>",
+      "css": ".ds-tabs { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; justify-items: center; padding: 8px 16px; border-top: 1px solid var(--border, rgba(0,0,0,.115)); background: var(--background, #fff); font: 500 16px Figtree, system-ui, sans-serif; } .ds-tabs a { height: 44px; display: flex; align-items: center; padding: 0 16px; border-radius: 9999px; color: var(--muted-foreground, #616161); } .ds-tabs a[aria-current] { background: var(--highlight, #F2C94C); color: var(--highlight-foreground, #171717); } .ds-scan { width: 56px; height: 56px; border-radius: 9999px; background: var(--primary, #4F6B2E); }"
+    },
+    {
+      "name": "Reason chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Why a swap card ranks where it does.",
+      "html": "<span class=\"ds-chip\">$0.47 cheaper</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border-radius: 9999px; background: var(--inset, #E8E8E8); color: var(--primary, #4F6B2E); font: 500 13px Figtree, system-ui, sans-serif; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Tile",
+      "kind": "card",
+      "refersTo": "tile",
+      "description": "The grey section every part of a screen sits on.",
+      "html": "<section class=\"ds-tile\"><p class=\"ds-label\">Cost per serving</p><p class=\"ds-key\">$2.01</p></section>",
+      "css": ".ds-tile { padding: 16px; border-radius: 18px; background: var(--card, #F0F0F0); color: var(--card-foreground, #171717); font-family: Figtree, system-ui, sans-serif; } .ds-label { margin: 0; font: 500 13px Figtree, sans-serif; color: var(--muted-foreground, #616161); } .ds-key { margin: 4px 0 0; font: 700 48px/1 Figtree, sans-serif; font-variant-numeric: tabular-nums; color: var(--primary, #4F6B2E); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Recipe Card",
+    "overview": "Black ink on white paper with one matcha-green accent, like a tidy recipe card pinned inside a kitchen cupboard, not a finance dashboard. Every screen is a stack of soft grey tiles on a white page, each holding one thing. Colour is rationed, dark mode is a real second design, and motion is quiet everywhere except the swap card stack.",
+    "keyCharacteristics": [
+      "One font (Figtree), tabular numbers everywhere.",
+      "One accent (matcha, hue 130 read from --accent-h), one highlight (butter), one warning (tomato).",
+      "Flat tiles on paper; depth by tone, never shadow.",
+      "Concentric corners: nested radii are the outer radius minus the gap.",
+      "Missing stays missing: \"—\" and \"+ 1 food without protein\", never a quiet 0."
+    ],
+    "rules": [
+      { "name": "The One Voice Rule", "body": "Matcha is the only accent. If something needs attention and isn't an action or the key number, it gets weight or size, not a colour.", "section": "colors" },
+      { "name": "The Butter Means Here Rule", "body": "Butter marks where you are (active tab, chosen option) and nothing else. Warnings are tomato.", "section": "colors" },
+      { "name": "The Measured Contrast Rule", "body": "Every text colour passes 4.5:1 on every surface it can land on, checked by lib/color.test.ts. Unavailable buttons are greyed with colour, never faded with opacity.", "section": "colors" },
+      { "name": "The One Big Number Rule", "body": "Bold is for page titles and the single key number. Everything else is regular or medium.", "section": "typography" },
+      { "name": "The Tabular Rule", "body": "Every number uses tabular-nums, including the big one and every price in a list.", "section": "typography" },
+      { "name": "The Tone Not Shadow Rule", "body": "A layer shows it's above another by being one lightness step away, never by a drop shadow.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the colour tokens as classes (bg-card, text-muted-foreground, border-field-border); hex only in lib/app-identity.ts.",
+      "Do keep exactly one 48 px bold number per screen, with a 13 px grey label above it.",
+      "Do put every section on a tile, and boxes you type in straight on the tile or sheet, white.",
+      "Do write a nested radius from its outer token (the Concentric Rule).",
+      "Do take motion values from lib/motion.ts (150 / 200 / 250 ms, EASE_OUT, SPRING) and give every animation a Reduce Motion version.",
+      "Do design the empty, loading, error and first-use state of every screen."
+    ],
+    "donts": [
+      "Don't add shadows, gradients, glass or purple; depth is tone.",
+      "Don't use emoji as icons; icons are Lucide, with strokes matched to the text (0.094em).",
+      "Don't use matcha-soft for text or as the only sign of something.",
+      "Don't put an input or a red button on a tile inside a dark sheet (2.9:1 and 3.99:1); put them straight on the sheet.",
+      "Don't show 0 or a lower total that quietly leaves an unknown out.",
+      "Don't tilt, lift or rotate the swap cards."
+    ]
+  }
+}
