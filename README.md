@@ -9,6 +9,7 @@ On a phone, add it to your home screen and it opens like an app.
 
 Full tour, including a real barcode scan on an iPhone:
 [bitewise-demo-light-real-scan.mp4](design/videos/bitewise-demo-light-real-scan.mp4) ·
+dark mode: [bitewise-demo-dark-real-scan.mp4](design/videos/bitewise-demo-dark-real-scan.mp4) ·
 dark mode: [bitewise-demo-dark.mp4](design/videos/bitewise-demo-dark.mp4)
 
 ## Why
