@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { keepOnFailure } from "@/lib/action-call";
 import { deleteFood } from "@/lib/food-actions";
@@ -111,14 +112,18 @@ export function FoodRow({
               ref={deleteRef}
               size="icon"
               variant="ghost"
-              className="size-11 text-muted-foreground"
+              // text-base: an icon-only button's line weight matches 16 px
+              // text (globals.css, svg.lucide).
+              className="size-11 text-base text-muted-foreground"
               onClick={(e) => {
                 notePress(e);
                 setConfirming(true);
               }}
               aria-label={`Delete ${name}`}
             >
-              ✕
+              {/* A trash can, as on Today's swiped-open row: an ✕ read as
+                  "dismiss", and as a text glyph it ignored the icon set. */}
+              <Trash2 aria-hidden="true" />
             </Button>
           </div>
         )}
@@ -185,37 +190,43 @@ const MACROS = [
 // "350 kcal · 13 g protein · 60 g carbs · 7 g fat". Each item keeps its
 // number and label together (whitespace-nowrap), so on a narrow phone the
 // line only wraps between items, never in the middle of "13 g".
+//
+// A wrapped line never starts with a "·": every item carries its dot in
+// front, in a 16 px slot, and the whole line is pulled 16 px left inside a
+// box that hides what sticks out. The dot of whichever item starts a line
+// lands in that hidden strip; the dots between items show as before.
 function MacroLine({ food }: { food: Food }) {
   return (
-    <span className="flex flex-wrap gap-x-1.5 tabular-nums">
-      {MACROS.map(({ key, unit, label, spoken }, i) => {
-        const value = food[key];
-        return (
-          <span key={key} className="whitespace-nowrap">
-            {i > 0 && (
-              <span aria-hidden="true" className="mr-1.5 text-muted-foreground">
+    <span className="flex overflow-hidden">
+      <span className="-ml-4 flex flex-wrap tabular-nums">
+        {MACROS.map(({ key, unit, label, spoken }, i) => {
+          const value = food[key];
+          return (
+            <span key={key} className="whitespace-nowrap">
+              <span aria-hidden="true" className="inline-block w-4 text-center text-muted-foreground">
                 ·
               </span>
-            )}
-            {value === null ? (
-              <>
-                <span aria-hidden="true" className="text-muted-foreground">
-                  {macroText(null, unit, label)}
+              {value === null ? (
+                <>
+                  <span aria-hidden="true" className="text-muted-foreground">
+                    {macroText(null, unit, label)}
+                  </span>
+                  <span className="sr-only">{spoken} not set</span>
+                </>
+              ) : (
+                <span className={key === "protein_g" ? "font-medium text-primary" : undefined}>
+                  {macroText(value, unit, label)}
                 </span>
-                <span className="sr-only">{spoken} not set</span>
-              </>
-            ) : (
-              <span className={key === "protein_g" ? "font-medium text-primary" : undefined}>
-                {macroText(value, unit, label)}
-              </span>
-            )}
-          </span>
-        );
-      })}
-      {/* Says what the numbers are per, right next to them, so it can't be
-          mistaken for part of the price below. */}
-      <span className="text-label leading-6 whitespace-nowrap text-muted-foreground">
-        {basisLabel(food.unit)}
+              )}
+              {/* Says what the numbers are per, right next to them (kept on
+                  the last item's line), so it can't be mistaken for part of
+                  the price below. */}
+              {i === MACROS.length - 1 && (
+                <span className="ml-1.5 text-label leading-6 text-muted-foreground">{basisLabel(food.unit)}</span>
+              )}
+            </span>
+          );
+        })}
       </span>
     </span>
   );
