@@ -1,6 +1,6 @@
-// THE APP ICON: the macro ring. The ring from the app, split three ways
-// for protein, carbs and fat: protein solid white, carbs and fat a softer
-// white, on matcha green. No letters, so a rename doesn't need a new icon.
+// THE APP ICON: the macro ring. The ring from the app, split into three
+// equal pieces for protein, carbs and fat: protein solid white, carbs and
+// fat a softer white, on matcha green. No letters, so a rename doesn't need a new icon.
 // (It was a placeholder bowl until 2026-11-23. The options it was picked
 // from are on the "Bitewise logo" design canvas.)
 //
@@ -57,20 +57,38 @@ function mix(a: string, b: string, amountOfA: number) {
 }
 
 /**
- * The macro ring: a circle of radius 28 split into three arcs, 14 degrees
- * apart, starting at 12 o'clock and going clockwise. Protein gets the
- * biggest arc. The viewBox is cropped to the ring (radius 28 plus half the
- * 13-wide stroke = 34.5 from the centre), so the ring fills the drawing.
+ * Where the three gaps are, in SVG degrees (0 = 3 o'clock, clockwise):
+ * 12, 4 and 8 o'clock, so the three pieces are equal (120 degrees each).
+ */
+const GAP_ANGLES = [-90, 30, 150] as const;
+
+/**
+ * The macro ring: one circle (centre 50,50, radius 28, stroke 13) drawn as
+ * three equal arcs that meet at the gaps: protein from 12 to 4 o'clock,
+ * carbs from 4 to 8, fat from 8 back to 12.
+ *
+ * The gaps are then cut by bars in the field green laid across the ring.
+ * A bar has parallel sides, so each gap is the same 5 units wide from the
+ * inside of the ring to the outside. (Leaving out a few degrees of arc
+ * would instead give gaps that are narrow inside and wide outside.) Each
+ * bar is drawn once at 3 o'clock, from 20 to 36 out from the centre, past
+ * both edges of the ring (21.5 and 34.5), and turned into place.
+ *
+ * The viewBox is cropped to the ring (34.5 from the centre), so the ring
+ * fills the drawing. The bars poke 1.5 past it, into the crop, unseen.
  */
 function RingDrawing({ size }: { size: number }) {
   return (
     <svg width={size} height={size} viewBox="15.5 15.5 69 69">
-      {/* Protein */}
-      <path d="M53.41 22.21 A28 28 0 0 1 66.85 72.36" fill="none" stroke={ICON_WHITE} strokeWidth={13} />
-      {/* Carbs */}
-      <path d="M60.94 75.77 A28 28 0 0 1 22.21 53.41" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
-      {/* Fat */}
-      <path d="M22.21 46.59 A28 28 0 0 1 46.59 22.21" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
+      {/* Protein: -90° to 30° */}
+      <path d="M50 22 A28 28 0 0 1 74.25 64" fill="none" stroke={ICON_WHITE} strokeWidth={13} />
+      {/* Carbs: 30° to 150° */}
+      <path d="M74.25 64 A28 28 0 0 1 25.75 64" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
+      {/* Fat: 150° to 270° */}
+      <path d="M25.75 64 A28 28 0 0 1 50 22" fill="none" stroke={ICON_SOFT_WHITE} strokeWidth={13} />
+      {GAP_ANGLES.map((angle) => (
+        <rect key={angle} x={70} y={47.5} width={16} height={5} fill={ICON_GREEN} transform={`rotate(${angle} 50 50)`} />
+      ))}
     </svg>
   );
 }

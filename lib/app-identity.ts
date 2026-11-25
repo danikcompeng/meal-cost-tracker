@@ -62,7 +62,16 @@ export const APP_ICONS: readonly AppIconFile[] = [
   { file: "apple-touch-icon.png", size: 180, shape: "full", inManifest: false },
 ];
 
-export const iconUrl = (icon: AppIconFile) => `/icons/${icon.file}`;
+/**
+ * Raise this whenever the drawing changes (components/app-icon.tsx).
+ * Phones keep an icon by its address, so a new drawing at the same address
+ * can go unseen for weeks; "?v=2" is a new address, so they fetch it again.
+ * The route ignores it. 1 = the first macro ring (2026-11-23); 2 = equal
+ * pieces with straight gaps (2026-11-25).
+ */
+export const ICON_VERSION = 2;
+
+export const iconUrl = (icon: AppIconFile) => `/icons/${icon.file}?v=${ICON_VERSION}`;
 
 export function iconByFile(file: string): AppIconFile | undefined {
   return APP_ICONS.find((icon) => icon.file === file);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { APP_ICONS, APP_SHORT_NAME, appManifest, iconByFile } from "./app-identity";
+import { APP_ICONS, APP_SHORT_NAME, ICON_VERSION, appManifest, iconByFile, iconUrl } from "./app-identity";
 
 describe("app identity", () => {
   it("has a short name that fits under an iPhone icon (12 characters)", () => {
@@ -24,9 +24,14 @@ describe("app identity", () => {
 
   it("points every manifest icon at a file the icon route serves", () => {
     for (const icon of appManifest().icons ?? []) {
-      const file = icon.src.replace(/^\/icons\//, "");
+      const file = icon.src.replace(/^\/icons\//, "").replace(/\?.*$/, "");
       expect(iconByFile(file), icon.src).toBeDefined();
     }
+  });
+
+  it("puts the icon version in every icon address, so phones fetch a new drawing", () => {
+    for (const icon of APP_ICONS) expect(iconUrl(icon)).toBe(`/icons/${icon.file}?v=${ICON_VERSION}`);
+    for (const icon of appManifest().icons ?? []) expect(icon.src).toMatch(new RegExp(`\\?v=${ICON_VERSION}$`));
   });
 
   it("has a 180 x 180 iPhone icon, kept out of the manifest", () => {
