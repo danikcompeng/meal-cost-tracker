@@ -4,7 +4,7 @@
 - [Code map](code-map.md) — where each feature's code + migration lives (cost, log, recipes, motion...)
 - [Decisions](decisions.md) — approved choices and won't-fix items per feature; don't re-raise
 - [Deferred](deferred.md) — accepted issues with a "remind when..." trigger (purchases, price)
-- [Review history](review-history.md) — every past review + findings. Latest 2026-11-23 swipe feedback
+- [Review history](review-history.md) — every past review + findings. Latest 2026-11-24 impeccable (Foods)
 - [Patterns](patterns.md) — recurring developer mistakes; check these first in every review
 - [Framer Motion](framer-motion.md) — verified reduced-motion, drag, animate().then, press facts
 - [UI and a11y](ui-a11y.md) — button states, Tailwind v4 order, focus rings, SR, contrast, sizes

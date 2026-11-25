@@ -21,6 +21,9 @@ Next.js 16
   (layout + passive, refs detached), show = effects re-created, state/refs kept. So Undo toast,
   form answers, open sheets survive leaving a page. A transformed ancestor (DaySlide/KitchenSlide
   mid-slide) becomes the containing block for `position: fixed` children (UndoToast in TodayView).
+- Activity keeps up to 3 routes (docs 02-guides/preserving-ui-state.md; useRouter().bfcacheId key
+  resets on push). Believed (unverified) that /foods and /foods?new are separate entries -> both
+  mounted -> duplicate DOM ids (label for=, aria-labelledby resolve to the first in the document).
 - Dev StrictMode (on by default in App Router) double-invokes effects of fresh mounts: one-shot
   reads in layout effects (kitchenNote, lastDay) are used up by the first run (unsure if it hides
   the slides under next dev; plan recordings use next start).

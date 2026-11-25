@@ -112,6 +112,9 @@ Verify paths before citing: this is a snapshot (last updated 2026-11-15).
   (SwipeTint under the card text via SwapCard `backdrop`, SwipeSign + pop), lib/swipe.ts
   swipeFeedback/FEEDBACK_START, POP_SCALE in motion.ts, --swipe-pick/--swipe-skip in globals.css.
   LOCK_AT / COMMIT_DISTANCE / SIDEWAYS_GIVE live in swap-stack.tsx (not lib) at review time.
+- Impeccable pass (2026-11-24, plans/impeccable.md): collapse.tsx LiveLine (always-mounted live
+  region, GAP table shared with ErrorLine); food-manager.tsx = list first + New food, FoodForm in
+  CollapseIn, `adding`/`editing` state, startOpen from /foods?new (app/foods/page.tsx PageProps).
 - Auth: lib/auth-actions.ts (sendMagicLink, verifyLoginCode, signOut), lib/login-code.ts
   cleanLoginCode (6-10 digits; dashboard OTP length is 8), components/login-form.tsx +
   login-code-form.tsx, app/auth/confirm/route.ts (token_hash link), proxy.ts PUBLIC_PATHS,

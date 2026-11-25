@@ -461,3 +461,14 @@ metadata:
   shows nothing; design call); preset test skips foreground/muted on swipe-pick (filter); CLAUDE.md
   swipe hex unchecked by the hex test; nits: font-semibold pill vs font rule, swipe.ts header,
   "plan: the branch" pointer, misplaced jump(0) comment in swap-stack 100-114.
+- 2026-11-24 impeccable branch (committed: LiveLine, MacroLine dot slots, swapColumn, small; uncommitted:
+  Foods list-first + New food, form in CollapseIn, ?new, Paid fieldset moved, add-food.e2e): Minor
+  issues. Verified fine: LiveLine margins (fieldsets are BFCs, targets form has p-4) both last/not-last;
+  empty detection for all callers; MacroLine -ml-4 no right clip, row focus ring outside the clip;
+  scan-flow unchanged; CollapseIn clip ok (-mx-3 in p-4, shake 6 < 16, dialog top layer); focus effect
+  refs survive Activity re-show; PageProps global. Raised: focus-to-New-food never fires for keyboard
+  (exiting form keeps focus) but fires after iPhone taps (ring); old form's onDone closes a form opened
+  since (8th "outlives"); Cancel live while Saving; /foods?new revisit keeps adding=false (Activity,
+  unverified); editing a deleted food stays open; setFields(EMPTY) blanks the collapsing form; list hop
+  (button swap + gap 24->40); duplicate ids across Activity-kept Foods pages (unverified); stale ✕
+  comments food-row:29,48; LiveLine doc caveats (no-padding parent, []).

@@ -22,6 +22,12 @@ Repeat offenders (explain in a new way each time; concrete walk-throughs work be
   effects on re-show with unchanged state (2026-11-20: use-focus-first-invalid refocus + reshake).
   Guard with a ref holding the last handled value. Module-level "last seen" vars also persist
   while you're on another page (DaySlide lastDay).
+  8th (2026-11-24): FoodForm action's onDone -> FoodManager close() closes a form opened since
+  (tap another food while Saving…). Suggest a session counter captured by onDone.
+- "Focus fell to body?" checks right after closing something inside AnimatePresence: the exiting
+  subtree still holds focus for 200 ms, so keyboard never matches; iPhone taps (body) always do
+  and draw a ring. Record "focus was inside" at the press instead (food-row notePress pattern).
+- Props that only seed useState (startOpen from ?new) go stale under Activity re-show.
   "Change one, change the other" notes: check the OTHER file has the matching note.
 
 - One rule computed in two places from different inputs (swipe sign from card x, commit from
