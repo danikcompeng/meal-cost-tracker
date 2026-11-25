@@ -367,3 +367,10 @@ Lessons:
 - I wrote my first one, project-readme (in ~/.claude/skills/, so it works in every project). It tells Claude what to read, which sections to write in what order, and the rules: real numbers only, env var names never values, ask before overwriting.
 - Test: /project-readme on Staple read my CLAUDE.md, plans and notes, noticed the old README listed built features as "coming next", counted the real tests (822 unit + 3 Playwright) and drafted a README I could check line by line.
 - Why it matters: instead of re-typing a long prompt for every project, the knowledge lives in one file I can improve. I'll reuse it for the habit tracker and portfolio READMEs.
+
+## Learning: Tempo (Nov 24)
+
+- Tempo is a desktop design canvas that works on real code (React here). I picked Claude Code (Opus 5.5) as its agent and asked for my CRM's Today screen: people to follow up with, counts, a person sheet with notes and a timeline.
+- First run: the code was fine but the canvas showed "Canvas failed to load". Tempo's own "Fix with AI" found the cause: the installed Tempo app and the project's tempo-sdk version didn't line up, so the canvas needed its file path passed in. A tool bug, not my code.
+- Steering: I asked for overdue cards to stand out without red or a coloured side border (a solid cobalt "Overdue · 9d late" pill, most overdue first) and a check animation on Log that collapses the card and moves the person to Coming up in 7 days, with reduced motion respected. It measured the collapse in headless Chrome to prove it worked.
+- What Tempo does well: you see every screen side by side on a canvas and can edit styles there, while the agent edits real files. Screenshots: network-crm/design/tempo/.
