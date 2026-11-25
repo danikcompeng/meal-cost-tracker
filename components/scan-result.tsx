@@ -8,6 +8,7 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { SPRING } from "@/lib/motion";
+import { onTile } from "./skeleton";
 
 export type LookupState = "looking" | "not_found" | "offline" | "unavailable" | "error";
 export type Lookup = { barcode: string; state: LookupState };
@@ -35,10 +36,13 @@ export function LookupStatus({
       <div role="status" aria-live="polite" className="space-y-3">
         <h2 className="text-lg font-medium">Looking up…</h2>
         {number}
-        {/* Grey placeholder lines where the name and brand will go. */}
+        {/* Grey placeholder lines where the name and brand will go. One
+            step in from what they sit on (--inset), like every loading
+            bar: bg-muted was the tile's own grey, so on the typed
+            screen's tile they didn't show at all. */}
         <div aria-hidden="true" className="space-y-2 pt-1">
-          <div className="h-4 w-3/4 animate-pulse rounded bg-muted motion-reduce:animate-none" />
-          <div className="h-4 w-1/2 animate-pulse rounded bg-muted motion-reduce:animate-none" />
+          <div className={`h-4 w-3/4 rounded ${onTile}`} />
+          <div className={`h-4 w-1/2 rounded ${onTile}`} />
         </div>
       </div>
     );
