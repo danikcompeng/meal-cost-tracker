@@ -267,6 +267,14 @@ export function ErrorLine({
  * often not read). It's 0 px tall when empty and carries the stack gap
  * the same way ErrorLine does: margins cancelled outside, the same space
  * as padding inside the opening box, so the gap opens with the line.
+ *
+ * Two things to know when using it:
+ * - As the last item of a box with no padding or border of its own, an
+ *   empty LiveLine's pulled-up top margin also eats into the space below
+ *   that box. Every place it's used now has padding (a tile) or is a
+ *   fieldset, which keeps its margins to itself.
+ * - Pass nothing (null, false, "") to hide it. An empty list [] counts as
+ *   something: write `list.length > 0 && list.map(...)`.
  */
 export function LiveLine({
   gap,

@@ -26,7 +26,7 @@ export function FoodRow({
   const { name, price, package_size, unit } = food;
   const hasPrice = pricePerUnit(price, package_size) !== null;
 
-  // A failed delete swaps Yes back for ✕: focus goes there instead of
+  // A failed delete swaps Yes back for the trash button: focus goes there instead of
   // falling out to the page.
   const deleteRef = useRef<HTMLButtonElement>(null);
   // Waits for `deleting` to end too: the error is drawn a moment before
@@ -45,9 +45,9 @@ export function FoodRow({
     if (error && !deleting && pressedWithFocus.current) deleteRef.current?.focus();
   }, [error, deleting]);
 
-  // ✕ and the Yes / Cancel line swap places, so the button that had focus
-  // disappears: send focus to the one that appeared (Yes when the
-  // question opens, ✕ after Cancel).
+  // The trash button and the Yes / Cancel line swap places, so the button
+  // that had focus disappears: send focus to the one that appeared (Yes
+  // when the question opens, the trash button after Cancel).
   const wasConfirming = useRef(confirming);
   const yesRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {

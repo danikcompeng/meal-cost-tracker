@@ -104,7 +104,7 @@ thumb reach.
 
 | Finding | Severity | Why it waits |
 |---|---|---|
-| Foods opens on the full Add food form, so the list of your foods starts about 1,100 px down; Recipes has a "New recipe" button instead. "What you paid" comes last, after Brand, More nutrients and Serving | P1 | A change to how the screen works (and the scan flow lands on this form), so it needs its own plan first (CLAUDE.md working rules) |
+| Foods opens on the full Add food form, so the list of your foods starts about 1,100 px down; Recipes has a "New recipe" button instead. "What you paid" comes last, after Brand, More nutrients and Serving | P1 | **Built afterwards, see "Foods: list first" below** (you asked for it to be planned and built without waiting, 2026-11-24) |
 | No planned / eaten mark on Today's rows, and no "log again" | P2 | Features, not polish |
 | "Type the number" and "Enter manually" on the camera screen are hard to tell apart | P2 | Copy change: you asked to keep the copy |
 | Straight apostrophes in the app's words ("We'll", "you've"), curly in three places ("doesn’t") | P3 | Touches most of the copy and the tests that read it; one sweep later if you want it |
@@ -116,3 +116,73 @@ thumb reach.
 - Detector on the changed files: nothing found.
 - Checked by script: "Saved", the price preview and the calorie hint
   still appear, and sit in the space that opens for them.
+
+## Foods: list first (approved 2026-11-24, built the same night)
+
+You asked for the P1 to be planned and built without waiting:
+"a 'New food' button like Recipes has (list first, form opens on tap),
+and 'What you paid' moved up in the form".
+
+### Plan
+
+- Foods opens on your list, with a full-width matcha **New food** button
+  over it (same as New recipe). Tapping it opens the same form in place,
+  on its tile: the button folds away as the form slides open, so the
+  list doesn't hop. Tapping a food to edit opens it there too, as before.
+- **Cancel** closes it; **saving** a new food closes it and the food shows
+  in the list. Keyboard or screen-reader focus goes back to New food; a
+  tap on an iPhone moves no focus, so no ring appears.
+- **No foods yet:** the form starts open, with no Cancel (there's nothing
+  behind it).
+- "Add it on Foods" (a search with no match in Add to lunch) goes to
+  `/foods?new`, which opens on the form.
+- **What you paid** moves up to straight after Measured by, before the
+  nutrition. The scanner uses the same form, so it gets the same order;
+  after a scan the cursor still lands on Price, now higher up.
+- The loading skeleton becomes the button and the list.
+- Not changed: the form itself (fields, wording, checks), the edit flow,
+  the scan flow's steps.
+
+### Code review (code-reviewer agent) and what was done
+
+| # | Finding | Done |
+|---|---|---|
+| 1a | Focus after closing did the opposite: a keyboard user lost focus to the top of the page (the closing form still held it for its 200 ms), while an iPhone tap got a focus ring on New food | Whether focus was inside the form is noted at the moment it closes; only then does focus go to New food. The closing form is `inert`, so nobody can press Save in it as it folds away |
+| 1b | A slow save could close a form you'd opened since (save Rolled oats, tap Banana while it saves: Banana's form vanished) | Each opening of the form is a numbered session; a save only closes the form if it's still its session. Cancel is greyed while saving |
+| 1c | `/foods?new` could open with the form shut the second time, because Next keeps a visited page with its state (Cache Components) | When that page is hidden, it's put back to "form open", following Next's own guide (preserving-ui-state.md). Checked: Cancel, go to Today, come back: open |
+| 1d | Deleting the food you're editing left "Edit Banana" open, and Save then failed | The form closes when its food leaves the list |
+| 1e | Saving emptied the boxes just before the form folded away | Removed: both users of the form leave it after a save |
+| 1f | Possible one-frame flash of the old list after adding the first food | Closing after a save is a transition, so it lands with the refreshed list |
+| 3b | The list hopped when the form opened (the button vanished and the gap changed at once) | The button folds away while the form opens; the extra 16 px below the form is inside its opening box |
+| 3c | The hidden "Add a food" heading was there with the form shut | Only while the form is open |
+| 3d | Comments in food-row.tsx still said ✕ | Now "the trash button" |
+| 3e | LiveLine's two limits weren't written down | Added to its comment |
+| 3f | No test for `/foods?new` or edit then Cancel | Added to e2e/add-food.e2e.ts |
+| 3a | Two kept Foods pages (or Foods and Scan) could put two boxes with the same id on the page, so a label might point at the hidden one | **Not done, for later:** the ids (name, price, ...) are written by hand in the form, Field and NutrientInput, and /scan already had the same risk before this change. The fix is `useId()` through all of them, its own small change. Less likely now: plain Foods starts with the form shut |
+
+No security findings. The review also confirmed the earlier commits
+(LiveLine, the dots, the kcal column, the small fixes) as correct.
+
+### Tests
+
+- Unit: 917 passed. TypeScript and ESLint: clean.
+- End-to-end against the branch on localhost: 7 passed, including the
+  new e2e/add-food.e2e.ts (New food, Cancel, Save closes and lists it,
+  price before nutrition, edit then Cancel, `/foods?new`).
+- By script: keyboard Cancel puts focus on New food; `/foods?new` is open
+  again after leaving and coming back; one `#price` on the page.
+- Detector: nothing in the changed files.
+
+### Phone check (you, tomorrow morning, on the preview)
+
+1. Kitchen → Foods: your list shows first, under New food.
+2. New food: the form slides open, What you paid right under the unit.
+   Add a food: the form closes and the food is in the list.
+3. New food → Cancel: closes, nothing saved.
+4. Tap a food: its form opens at the top; Cancel closes it.
+5. Scan a barcode that's in Open Food Facts: the form shows with the
+   cursor in Price (now near the top), Save and log works as before.
+6. Add to lunch → search for something you don't have → "Add it on
+   Foods": opens straight on the form.
+7. Settings: no empty band around Save targets; Save shows "Saved".
+8. Dark mode: the same screens.
