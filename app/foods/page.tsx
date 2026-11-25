@@ -11,7 +11,7 @@ import { getFoods } from "@/lib/foods";
 
 export const metadata: Metadata = { title: "Foods" };
 
-export default function FoodsPage() {
+export default function FoodsPage({ searchParams }: PageProps<"/foods">) {
   return (
     <>
       {/* Bottom padding leaves room for the tab bar fixed at the bottom
@@ -27,7 +27,7 @@ export default function FoodsPage() {
             the switch (whatever shows first, skeleton or list). */}
         <KitchenSlide page="foods">
           <Suspense fallback={<FoodsSkeleton />}>
-            <Foods />
+            <Foods searchParams={searchParams} />
           </Suspense>
         </KitchenSlide>
       </main>
@@ -37,10 +37,13 @@ export default function FoodsPage() {
   );
 }
 
-async function Foods() {
+async function Foods({ searchParams }: Pick<PageProps<"/foods">, "searchParams">) {
   // Your list is live data. This tells Next.js not to build it ahead of
   // time (even with your login cookie available), only on a real visit.
   await connection();
   const foods = await getFoods();
-  return <FoodManager foods={foods} />;
+  // "/foods?new" (from "Add it on Foods" in a search) opens with the
+  // Add food form already open; otherwise the list comes first.
+  const startOpen = (await searchParams).new !== undefined;
+  return <FoodManager foods={foods} startOpen={startOpen} />;
 }

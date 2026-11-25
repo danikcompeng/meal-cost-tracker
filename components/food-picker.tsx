@@ -77,7 +77,8 @@ export function FoodPicker({
         <div className="py-6 text-center">
           <p className="text-muted-foreground">Nothing called “{query.trim()}”.</p>
           <Link
-            href="/foods"
+            // ?new: Foods opens with its Add food form open.
+            href="/foods?new"
             className="focus-ring mt-1 inline-flex h-11 items-center rounded-md px-2 font-medium text-primary"
           >
             Add it on Foods

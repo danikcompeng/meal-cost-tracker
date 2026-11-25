@@ -126,6 +126,7 @@ export function FoodForm({
   draft,
   submitLabel,
   onDone,
+  onCancel,
 }: {
   editing: Food | null;
   /** A scanned food to start from (only when adding, not editing). */
@@ -134,6 +135,12 @@ export function FoodForm({
   submitLabel?: string;
   /** Called after saving, with the saved food's id. */
   onDone: (id?: string) => void;
+  /**
+   * Shows Cancel beside Save when adding too (Foods, where the form opens
+   * from "New food"). Editing always has Cancel; without this it calls
+   * onDone with no id, as before.
+   */
+  onCancel?: () => void;
 }) {
   // "Controlled" inputs: React holds the values, so we can show live
   // previews and keep what you typed if saving fails.
@@ -178,12 +185,10 @@ export function FoodForm({
         saveFood,
         tapAgain(editing ? "save" : "add it", saveLabel),
       )(prev, formData);
-      if (result.ok) {
-        setFields(EMPTY);
-        setMacroUnits({});
-        setHydration(null);
-        onDone(result.id);
-      }
+      // Saved: whoever opened the form moves on (Foods folds it away, the
+      // scanner goes to Log it). The boxes aren't emptied first: you'd see
+      // them blank inside the closing form.
+      if (result.ok) onDone(result.id);
       return result;
     },
     { ok: false },
@@ -324,6 +329,84 @@ export function FoodForm({
         </div>
       )}
 
+      {/* What you paid comes straight after the unit, before the
+          nutrition: it's the number this app is about, the one you have in
+          your hand while unpacking (the receipt), and the package size is
+          in the unit just picked. Nutrition and serving are optional and
+          come after. */}
+      <fieldset className="space-y-3">
+        <legend className="mb-3 text-label font-medium text-muted-foreground">
+          What you paid
+        </legend>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Price" htmlFor="price" error={errors.price}>
+            <div className="relative">
+              {/* Decoration, like the units: the label already says Price. */}
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
+              >
+                $
+              </span>
+              <Input
+                id="price"
+                name="price"
+                value={fields.price}
+                onChange={set("price")}
+                inputMode="decimal"
+                placeholder="3.49"
+                className="h-11 bg-background pl-7 tabular-nums"
+                aria-invalid={Boolean(errors.price)}
+                aria-describedby={errors.price ? errorId("price") : undefined}
+                // After a scan the rest is filled in; the price is what's left.
+                autoFocus={fromOpenFoodFacts}
+              />
+            </div>
+          </Field>
+
+          <Field
+            label="Package size"
+            htmlFor="packageSize"
+            error={errors.packageSize ?? errors.unit}
+          >
+            <div className="flex">
+              <Input
+                id="packageSize"
+                name="packageSize"
+                value={fields.packageSize}
+                onChange={set("packageSize")}
+                inputMode="decimal"
+                placeholder="500"
+                className={cn(
+                  "h-11 min-w-0 flex-1 bg-background tabular-nums",
+                  measuredBy !== "each" && "rounded-r-none",
+                )}
+                aria-invalid={Boolean(errors.packageSize)}
+                aria-describedby={errors.packageSize || errors.unit ? errorId("packageSize") : undefined}
+              />
+              {measuredBy === "each" ? null : (
+                <select
+                  aria-label="Package unit"
+                  value={fields.unit}
+                  onChange={set("unit")}
+                  className="focus-ring h-11 min-w-11 rounded-r-lg border border-l-0 border-field-border bg-background px-2 text-base focus-visible:border-ring"
+                >
+                  {inputUnitsFor(measuredBy).map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          </Field>
+        </div>
+        <LiveLine gap="3" className="tabular-nums">
+          {preview.ok &&
+            `= ${unitPriceLabel(preview.value.price, preview.value.package_size, preview.value.unit)}`}
+        </LiveLine>
+      </fieldset>
+
       <fieldset className="space-y-3">
         <legend className="mb-3 text-label font-medium text-muted-foreground">
           Nutrition {basisLabel(measuredBy)}
@@ -425,79 +508,6 @@ export function FoodForm({
         </fieldset>
       )}
 
-      <fieldset className="space-y-3">
-        <legend className="mb-3 text-label font-medium text-muted-foreground">
-          What you paid
-        </legend>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Price" htmlFor="price" error={errors.price}>
-            <div className="relative">
-              {/* Decoration, like the units: the label already says Price. */}
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-muted-foreground"
-              >
-                $
-              </span>
-              <Input
-                id="price"
-                name="price"
-                value={fields.price}
-                onChange={set("price")}
-                inputMode="decimal"
-                placeholder="3.49"
-                className="h-11 bg-background pl-7 tabular-nums"
-                aria-invalid={Boolean(errors.price)}
-                aria-describedby={errors.price ? errorId("price") : undefined}
-                // After a scan the rest is filled in; the price is what's left.
-                autoFocus={fromOpenFoodFacts}
-              />
-            </div>
-          </Field>
-
-          <Field
-            label="Package size"
-            htmlFor="packageSize"
-            error={errors.packageSize ?? errors.unit}
-          >
-            <div className="flex">
-              <Input
-                id="packageSize"
-                name="packageSize"
-                value={fields.packageSize}
-                onChange={set("packageSize")}
-                inputMode="decimal"
-                placeholder="500"
-                className={cn(
-                  "h-11 min-w-0 flex-1 bg-background tabular-nums",
-                  measuredBy !== "each" && "rounded-r-none",
-                )}
-                aria-invalid={Boolean(errors.packageSize)}
-                aria-describedby={errors.packageSize || errors.unit ? errorId("packageSize") : undefined}
-              />
-              {measuredBy === "each" ? null : (
-                <select
-                  aria-label="Package unit"
-                  value={fields.unit}
-                  onChange={set("unit")}
-                  className="focus-ring h-11 min-w-11 rounded-r-lg border border-l-0 border-field-border bg-background px-2 text-base focus-visible:border-ring"
-                >
-                  {inputUnitsFor(measuredBy).map((u) => (
-                    <option key={u} value={u}>
-                      {u}
-                    </option>
-                  ))}
-                </select>
-              )}
-            </div>
-          </Field>
-        </div>
-        <LiveLine gap="3" className="tabular-nums">
-          {preview.ok &&
-            `= ${unitPriceLabel(preview.value.price, preview.value.package_size, preview.value.unit)}`}
-        </LiveLine>
-      </fieldset>
-
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. Opens its space
           smoothly (collapse.tsx). */}
@@ -530,13 +540,25 @@ export function FoodForm({
           disabled={pending}
           // Keeps keyboard focus while it works.
           focusableWhenDisabled
-          // Nearly full width (Cancel sits beside it only when editing).
+          // Nearly full width (Cancel sits beside it when there is one).
           className="press-wide h-11 flex-1 text-base"
         >
           {pending ? "Saving…" : saveLabel}
         </Button>
-        {editing && (
-          <Button type="button" variant="ghost" onClick={() => onDone()} className="h-11 text-base">
+        {(editing || onCancel) && (
+          <Button
+            type="button"
+            variant="ghost"
+            // Greyed while saving: the save is already on its way, and
+            // closing the form under it would hide its answer.
+            data-unavailable={pending || undefined}
+            onClick={() => {
+              if (pending) return;
+              if (onCancel) onCancel();
+              else onDone();
+            }}
+            className="h-11 text-base"
+          >
             Cancel
           </Button>
         )}
