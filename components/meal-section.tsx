@@ -6,6 +6,7 @@ import { dayTotals, totalNumber } from "@/lib/day-totals";
 import { MEAL_LABELS, type Meal } from "@/lib/meals";
 import { DURATION, EASE_OUT } from "@/lib/motion";
 import type { MealEntry } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { untilSheetClosed } from "./bottom-sheet";
 import { EntryRow } from "./entry-row";
 
@@ -67,6 +68,10 @@ export function MealSection({
   const label = MEAL_LABELS[meal];
   const kcal = dayTotals(entries).kcal;
   const headingId = `meal-${meal}`;
+  // Any recipe here has the swap icon at its right end. Then every row,
+  // and the meal's total, keeps that 48 px (44 px icon + 4 px) clear, so
+  // the kcal figures make one column. Meals of foods only use the width.
+  const swapColumn = entries.some((entry) => entry.unit === "serving");
 
   return (
     // A grey tile, like every section. p-2: the rows' 10 px corners sit
@@ -77,7 +82,7 @@ export function MealSection({
           {label}
         </h2>
         {entries.length > 0 && (
-          <span className="text-sm text-muted-foreground tabular-nums">
+          <span className={cn("text-sm text-muted-foreground tabular-nums", swapColumn && "mr-12")}>
             {totalNumber(kcal, "kcal")} kcal
             {kcal.missing > 0 && kcal.sum !== null && ` · ${kcal.missing} unknown`}
           </span>
@@ -111,6 +116,7 @@ export function MealSection({
                 // Swaps are recipe to recipe; a recipe entry is in
                 // servings (even if the recipe was deleted since).
                 onSwap={entry.unit === "serving" ? () => onSwap(entry) : undefined}
+                swapColumn={swapColumn}
                 onDelete={() => onDelete(entry)}
               />
             </motion.li>

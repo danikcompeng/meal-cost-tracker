@@ -41,6 +41,7 @@ export function EntryRow({
   onOpenChange,
   onOpen,
   onSwap,
+  swapColumn = false,
   onDelete,
 }: {
   entry: MealEntry;
@@ -51,6 +52,11 @@ export function EntryRow({
   onOpen: () => void;
   /** Only for recipe entries: opens the swap stack. */
   onSwap?: () => void;
+  /**
+   * Another row in this meal has the swap icon: keep its space empty here
+   * too, so every kcal in the meal lines up in one column.
+   */
+  swapColumn?: boolean;
   /** Delete tapped. The page hides the row at once and deletes it. */
   onDelete: () => void;
 }) {
@@ -269,6 +275,7 @@ export function EntryRow({
             <Shuffle aria-hidden="true" className="size-4" />
           </button>
         )}
+        {!onSwap && swapColumn && <span aria-hidden="true" className="mr-1 size-11 shrink-0" />}
       </motion.div>
       {/* The red that fills in behind the row as it moves: its left edge
           is glued to the row's right edge (same x), and it's a whole row

@@ -46,7 +46,7 @@ export function RecipeSkeleton() {
 
       {/* Per serving: label, the four main numbers in two rows, the four
           small ones. */}
-      <div className="mt-6 rounded-2xl bg-card p-4">
+      <div className="mt-6 rounded-2xl bg-card p-5">
         <TextLine line="h-5" bar="h-3" width="w-20" shade={onTile} />
         <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3">
           {[0, 1, 2, 3].map((i) => (

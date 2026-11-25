@@ -26,7 +26,7 @@ export function RecipeNutrients({ recipe }: { recipe: Recipe }) {
   const notes = missingNotes(recipe.ingredients, [...MAIN, ...EXTRAS]);
 
   return (
-    <section aria-labelledby="per-serving" className="mt-6 rounded-2xl bg-card p-4">
+    <section aria-labelledby="per-serving" className="mt-6 rounded-2xl bg-card p-5">
       <h2 id="per-serving" className="text-label font-medium text-muted-foreground">
         Per serving
       </h2>
