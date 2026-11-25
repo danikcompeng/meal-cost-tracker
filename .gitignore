@@ -46,3 +46,7 @@ next-env.d.ts
 
 # claude code (personal permissions, not shared)
 .claude/settings.local.json
+
+# personal agent skills and Codex files, kept local
+.claude/skills/
+.codex/
