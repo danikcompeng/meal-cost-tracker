@@ -352,6 +352,18 @@
     @apply font-sans;
   }
 
+  /* The parts the browser draws itself, in our colours too: selected
+     text gets a soft matcha wash (a quarter of --primary, so the ink on
+     it stays readable in both modes), and the blinking cursor in a box
+     is matcha instead of the browser's black or blue. */
+  ::selection {
+    background-color: color-mix(in oklch, var(--primary) 25%, transparent);
+  }
+  input,
+  textarea {
+    caret-color: var(--primary);
+  }
+
   /* Icon lines as thick as the letters next to them. Lucide draws its
      lines 2 units wide on a 24-unit grid, so how thick they look depended
      on the icon's size (1.33 px at 16 px, 2 px at 24 px), not on the text

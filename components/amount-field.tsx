@@ -44,7 +44,8 @@ export function AmountField({
         />
         <span
           aria-hidden="true"
-          className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground"
+          // text-sm, like every other unit inside a box (Settings, the food form).
+          className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-sm text-muted-foreground"
         >
           {/* An empty box shows the grey placeholder, so "1  serving". */}
           {unitWordForTyped(value, unit, placeholder)}

@@ -182,11 +182,16 @@ function signed(value: number, format: (v: number) => string): string {
   // A change too small to show is "0", not "+<0.1".
   if (roundForDisplay(Math.abs(value), "g") === 0) return "0";
   const shown = format(Math.abs(value));
-  return `${value < 0 ? "-" : "+"}${shown}`;
+  return `${value < 0 ? MINUS : "+"}${shown}`;
 }
 
 function signedMoney(value: number): string {
   const cents = Math.round(value * 100);
   if (cents === 0) return "same";
-  return `${cents < 0 ? "-" : "+"}${formatMoney(Math.abs(cents) / 100)}`;
+  return `${cents < 0 ? MINUS : "+"}${formatMoney(Math.abs(cents) / 100)}`;
 }
+
+// The real minus sign (U+2212), not a hyphen: as wide as "+" and sitting
+// at the same height, so "−$0.47" and "+$0.20" line up in tabular figures,
+// and screen readers say "minus".
+const MINUS = "−";

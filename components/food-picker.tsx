@@ -117,7 +117,11 @@ export function FoodPicker({
                         <span className="font-medium">{food.name}</span>
                         <span className="text-label text-muted-foreground tabular-nums">
                           {macroText(food.kcal, "kcal")} ·{" "}
-                          {macroText(food.protein_g, "g", "protein")} {basisLabel(food.unit)}
+                          {/* Protein in matcha, as on recipes and every other screen. */}
+                          <span className={food.protein_g === null ? undefined : "font-medium text-primary"}>
+                            {macroText(food.protein_g, "g", "protein")}
+                          </span>{" "}
+                          {basisLabel(food.unit)}
                         </span>
                         {note && (
                           <span className="text-label font-medium text-primary tabular-nums">
