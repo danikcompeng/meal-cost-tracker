@@ -1,14 +1,16 @@
 // Records the silent portfolio demo of Bitewise: `npm run record:demo`.
-// (The files keep their old staple-* names, so links to them still work.)
+// (The files were called staple-* until 2026-11-25.)
 //
 // Two takes, light mode and dark mode, on an iPhone-sized screen, logged
 // in ONLY through "Try the demo" (no personal data). Each take resets the
 // demo first, off camera, so it always starts from the same sample day.
 //
 // Makes, in design/videos/:
-//   staple-demo-light.mp4, staple-demo-dark.mp4  the whole tour (~75 s)
-//   staple-loop-light.mp4, staple-loop-dark.mp4  shots 1 + 4 (~20 s), a
-//                                                loop for the top of a page
+//   bitewise-demo-light.mp4, bitewise-demo-dark.mp4  the whole tour (~75 s)
+//   bitewise-loop-light.mp4, bitewise-loop-dark.mp4  shots 1 + 4 (~20 s), a
+//                                                    loop for the top of a page
+// Made by hand from these: bitewise-demo-light-real-scan.mp4 (the iPhone
+// scan spliced in at "scan") and bitewise-swap.gif (the README's swap).
 // (.webm instead, and no loop, when ffmpeg isn't installed: see film.ts.)
 //
 // The shot list:
@@ -186,7 +188,7 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
   test(`${theme} take`, async ({ browser }) => {
     await freshDemo(browser);
     const ffmpeg = await findFfmpeg();
-    const webm = path.join(VIDEOS, `staple-demo-${theme}.webm`);
+    const webm = path.join(VIDEOS, `bitewise-demo-${theme}.webm`);
 
     const context = await browser.newContext({
       ...PHONE,
@@ -214,9 +216,9 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
 
     const made: string[] = [];
     if (film && ffmpeg) {
-      const full = path.join(VIDEOS, `staple-demo-${theme}.mp4`);
+      const full = path.join(VIDEOS, `bitewise-demo-${theme}.mp4`);
       film.encode(ffmpeg, full, [{ from: film.at("shot1"), to: film.at("end") }], { fade: BACKGROUND[theme] });
-      const loop = path.join(VIDEOS, `staple-loop-${theme}.mp4`);
+      const loop = path.join(VIDEOS, `bitewise-loop-${theme}.mp4`);
       film.encode(
         ffmpeg,
         loop,

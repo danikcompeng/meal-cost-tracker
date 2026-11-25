@@ -5,11 +5,11 @@ Cheap meals that hit your macros, on repeat, with a swap when you're bored.
 **Live:** [trybitewise.vercel.app](https://trybitewise.vercel.app). Tap **Try the demo**, no email needed.
 On a phone, add it to your home screen and it opens like an app.
 
-![Swapping a meal: skip a card, swap to the next, then the carousel move on Today](design/videos/staple-swap.gif)
+![Swapping a meal: skip a card, swap to the next, then the carousel move on Today](design/videos/bitewise-swap.gif)
 
 Full tour, including a real barcode scan on an iPhone:
-[staple-demo-light-real-scan.mp4](design/videos/staple-demo-light-real-scan.mp4) ·
-dark mode: [staple-demo-dark.mp4](design/videos/staple-demo-dark.mp4)
+[bitewise-demo-light-real-scan.mp4](design/videos/bitewise-demo-light-real-scan.mp4) ·
+dark mode: [bitewise-demo-dark.mp4](design/videos/bitewise-demo-dark.mp4)
 
 ## Why
 
