@@ -7,10 +7,9 @@ On a phone, add it to your home screen and it opens like an app.
 
 ![Swapping a meal: skip a card, swap to the next, then the carousel move on Today](design/videos/bitewise-swap.gif)
 
-Full tour, including a real barcode scan on an iPhone:
-[bitewise-demo-light-real-scan.mp4](design/videos/bitewise-demo-light-real-scan.mp4) ·
-dark mode: [bitewise-demo-dark-real-scan.mp4](design/videos/bitewise-demo-dark-real-scan.mp4) ·
-dark mode: [bitewise-demo-dark.mp4](design/videos/bitewise-demo-dark.mp4)
+Full tour with a real iPhone scan:
+[light](design/videos/bitewise-demo-light-real-scan.mp4) ·
+[dark](design/videos/bitewise-demo-dark-real-scan.mp4)
 
 ## Why
 
