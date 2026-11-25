@@ -22,7 +22,10 @@ import { ICON_GREEN, ICON_WHITE, type IconShape } from "@/lib/app-identity";
 const DRAWING_SCALE: Record<IconShape, number> = { rounded: 0.66, full: 0.66, maskable: 0.66 };
 
 export function AppIcon({ size, shape }: { size: number; shape: IconShape }) {
-  const drawing = Math.round(size * DRAWING_SCALE[shape]);
+  // Rounded to an even number of pixels, so the margins on both sides are
+  // whole and the ring sits exactly in the middle (0.66 x 192 = 126.7
+  // would round to 127, leaving it half a pixel off-centre).
+  const drawing = Math.round((size * DRAWING_SCALE[shape]) / 2) * 2;
   return (
     <div
       style={{

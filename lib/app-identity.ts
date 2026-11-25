@@ -65,12 +65,13 @@ export const APP_ICONS: readonly AppIconFile[] = [
 /**
  * Raise this whenever the drawing changes (components/app-icon.tsx).
  * Phones keep an icon by its address, so a new drawing at the same address
- * can go unseen for weeks; "?v=3" is a new address, so they fetch it again.
+ * can go unseen for weeks; "?v=4" is a new address, so they fetch it again.
  * The route ignores it. 1 = the first macro ring (2026-11-23); 2 = equal
  * pieces with straight gaps (2026-11-25); 3 = wider gaps (6 units) and a
- * maskable ring as big as the others (2026-11-25).
+ * maskable ring as big as the others (2026-11-25); 4 = the ring exactly
+ * centred on the 180 and 192 px icons (2026-11-25).
  */
-export const ICON_VERSION = 3;
+export const ICON_VERSION = 4;
 
 export const iconUrl = (icon: AppIconFile) => `/icons/${icon.file}?v=${ICON_VERSION}`;
 
