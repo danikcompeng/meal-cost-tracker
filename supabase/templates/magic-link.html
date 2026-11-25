@@ -3,12 +3,15 @@
   Paste this into: Supabase dashboard -> Authentication -> Emails
   -> Templates -> Magic link or OTP -> Body -> Source. Save changes.
   Subject: {{ .Token }} is your login code
+  Sender name (SMTP settings): "Login code".
   (No app name: this Supabase project, and so this one template, is shared
   with the habit tracker. Keep the wording neutral.)
 
   Why it looks "old-fashioned": email apps (Gmail, Outlook, Apple Mail)
   ignore most modern CSS. Tables + inline style="" are what reliably work.
-  The accent #4F6B2E is the app's matcha --primary, as a hex colour.
+  The button is near-black #1A1A1A, not any one app's colour: this
+  template is shared by Bitewise, Ascend and the CRM. The same body is
+  pasted into the "Confirm signup" template too (new users get it).
 
   Two ways to log in, from the same email. The code comes first:
   1. The code, {{ .Token }}, typed into the app (components/login-code-form.tsx,
@@ -85,13 +88,13 @@
                   Your login code
                 </p>
 
-                <!-- The button, second. Big tap target (48px tall) for kitchen fingers. -->
+                <!-- The button, second. Big tap target (48px tall). -->
                 <p style="margin:0 0 12px; font-size:16px; line-height:1.6; color:#4a4a4a;">
                   Or tap the button to log in:
                 </p>
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 32px;">
                   <tr>
-                    <td align="center" bgcolor="#4F6B2E" style="border-radius:8px;">
+                    <td align="center" bgcolor="#1A1A1A" style="border-radius:8px;">
                       <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email"
                          style="display:inline-block; padding:14px 32px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:16px; font-weight:600; line-height:20px; color:#ffffff; text-decoration:none; border-radius:8px;">
                         Log in
@@ -107,7 +110,7 @@
                 <!-- Fallback for email apps that block buttons. -->
                 <p style="margin:24px 0 0; padding-top:24px; border-top:1px solid #eeeeee; font-size:13px; line-height:1.6; color:#6b6b6b;">
                   Button not working? Copy this link into your browser:<br />
-                  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email" style="color:#4F6B2E; word-break:break-all;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email</a>
+                  <a href="{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email" style="color:#1A1A1A; word-break:break-all;">{{ .RedirectTo }}?token_hash={{ .TokenHash }}&type=email</a>
                 </p>
 
               </td>
