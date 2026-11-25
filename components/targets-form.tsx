@@ -17,7 +17,7 @@ import {
   validateTargets,
   type Targets,
 } from "@/lib/targets";
-import { ErrorLine } from "./collapse";
+import { ErrorLine, LiveLine } from "./collapse";
 import { Field, errorId } from "./form-field";
 import { SwitchRow } from "./switch-row";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
@@ -203,12 +203,11 @@ export function TargetsForm({ targets }: { targets: Targets }) {
         </div>
       </fieldset>
 
-      {/* Soft advice only: it never stops you saving. */}
-      <div className="min-h-5 space-y-2 text-sm text-muted-foreground" aria-live="polite">
-        {hints.map((hint) => (
-          <p key={hint}>{hint}</p>
-        ))}
-      </div>
+      {/* Soft advice only: it never stops you saving. No room taken while
+          there's none (collapse.tsx). */}
+      <LiveLine gap="5" className="space-y-2">
+        {hints.length > 0 && hints.map((hint) => <p key={hint}>{hint}</p>)}
+      </LiveLine>
 
       {/* Read out as soon as it appears; hidden while trying again so a
           second failure with the same words still shows. */}
@@ -220,9 +219,9 @@ export function TargetsForm({ targets }: { targets: Targets }) {
       <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
         {pending ? "Saving…" : "Save targets"}
       </Button>
-      <p role="status" className="min-h-5 text-center text-sm text-muted-foreground">
-        {justSaved && !pending ? "Saved" : ""}
-      </p>
+      <LiveLine gap="5" role="status" className="text-center">
+        {justSaved && !pending ? "Saved" : null}
+      </LiveLine>
     </form>
   );
 }

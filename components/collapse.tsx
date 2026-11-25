@@ -255,6 +255,51 @@ export function ErrorLine({
   );
 }
 
+/**
+ * A quiet grey line that's only there when it has something to say (a
+ * soft hint, "Saved", "= $0.70 / 100 g"), and opens its space smoothly
+ * when it does. Empty, it takes no room: it used to keep a blank 20 px
+ * line (min-h-5) so nothing moved when words came, and with the stack's
+ * gaps on both sides that left 40 to 60 px of empty band in a form.
+ *
+ * The outer box is always on the page, so it can be the live region that
+ * reads the words out (a region that appears together with its words is
+ * often not read). It's 0 px tall when empty and carries the stack gap
+ * the same way ErrorLine does: margins cancelled outside, the same space
+ * as padding inside the opening box, so the gap opens with the line.
+ */
+export function LiveLine({
+  gap,
+  role,
+  className,
+  children,
+}: {
+  /** Its stack's gap, as in space-y-5 → "5". */
+  gap: keyof typeof GAP;
+  /** "status" for a result ("Saved"); otherwise a polite live region. */
+  role?: "status";
+  className?: string;
+  /** Nothing (null, "", false) when there's nothing to say. */
+  children: React.ReactNode;
+}) {
+  const show = children !== null && children !== undefined && children !== false && children !== "";
+  return (
+    <div
+      role={role}
+      aria-live={role ? undefined : "polite"}
+      className={cn("group/error", GAP[gap][0])}
+    >
+      <AnimatePresence initial={false}>
+        {show && (
+          <CollapseIn>
+            <div className={cn(GAP[gap][1], "text-sm text-muted-foreground", className)}>{children}</div>
+          </CollapseIn>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function Line({
   id,
   role,

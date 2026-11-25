@@ -4,7 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ErrorLine } from "./collapse";
+import { ErrorLine, LiveLine } from "./collapse";
 import { Field, errorId } from "./form-field";
 import { DuplicateDialog } from "./duplicate-dialog";
 import { HydrationSwitch } from "./hydration-switch";
@@ -382,10 +382,9 @@ export function FoodForm({
             sodiumFromSalt !== null && fields.sodium === sodiumFromSalt ? "Worked out from salt" : null
           }
         />
-        {/* A soft hint only: it never stops you saving. */}
-        <p className="min-h-5 text-sm text-muted-foreground" aria-live="polite">
-          {hint}
-        </p>
+        {/* A soft hint only: it never stops you saving. No room taken while
+            there's none (collapse.tsx). */}
+        <LiveLine gap="3">{hint}</LiveLine>
       </fieldset>
 
       {/* Optional: "1 bagel = 80 g", a shortcut for typing grams when you
@@ -493,10 +492,10 @@ export function FoodForm({
             </div>
           </Field>
         </div>
-        <p className="min-h-5 text-sm text-muted-foreground tabular-nums" aria-live="polite">
+        <LiveLine gap="3" className="tabular-nums">
           {preview.ok &&
             `= ${unitPriceLabel(preview.value.price, preview.value.package_size, preview.value.unit)}`}
-        </p>
+        </LiveLine>
       </fieldset>
 
       {/* Read out as soon as it appears; hidden while trying again so a
