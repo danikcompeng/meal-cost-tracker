@@ -158,6 +158,8 @@ async function act(page: Page, film: Pick<Film, "mark">) {
   await pause(1700);
   await finger.tap(page.getByRole("link", { name: /^Chicken rice bowl/ }));
   await expect(page.getByRole("heading", { name: "Chicken rice bowl", level: 1 })).toBeVisible();
+  // Only printed (the moment the recipe screen is up), for splicing.
+  film.mark("recipe");
   await pause(2600);
   await scrollTo(page.getByRole("region", { name: "Per serving", exact: true }), "start");
   await pause(2800);
@@ -231,7 +233,11 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
       );
       made.push(full, loop);
       // The full video starts at "shot1", so that's its 0:00.
-      console.log(`Splice the scan into ${path.basename(full)} at ${videoTime(film.at("scan") - film.at("shot1"))}`);
+      const at = (mark: string) => videoTime(film.at(mark) - film.at("shot1"));
+      console.log(`${path.basename(full)}: the recipe screen is up at ${at("recipe")}`);
+      console.log(`Splice the scan into ${path.basename(full)} at ${at("scan")}`);
+      // The swap (shot 4), for bitewise-swap.gif.
+      console.log(`${path.basename(full)}: the swap runs from ${at("shot4")} to ${at("shot4-end")}`);
     } else {
       console.log("No ffmpeg found, so the video stays .webm and there's no loop (see e2e/helpers/film.ts).");
       fs.mkdirSync(VIDEOS, { recursive: true });
