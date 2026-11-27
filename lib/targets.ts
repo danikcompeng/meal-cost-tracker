@@ -48,6 +48,21 @@ export type RawTargets = {
   showWater?: unknown;
 };
 
+/**
+ * What the Settings form sends, read the same way in the phone (to show
+ * "Saved" straight away) and on the server (to save it).
+ */
+export function rawTargetsFrom(formData: FormData): RawTargets {
+  return {
+    kcal: formData.get("kcal"),
+    protein: formData.get("protein"),
+    carbs: formData.get("carbs"),
+    fat: formData.get("fat"),
+    water: formData.get("water"),
+    showWater: formData.get("showWater"),
+  };
+}
+
 export type TargetsResult =
   | { ok: true; value: Targets }
   | { ok: false; fieldErrors: Record<string, string> };

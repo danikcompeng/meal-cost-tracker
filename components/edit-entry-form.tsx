@@ -3,14 +3,18 @@
 // Change the amount or meal of something you logged, or delete it.
 // The preview scales the entry's own snapshot, exactly like the server
 // will, so it matches what you'll see after saving.
+//
+// Save and Delete both hand over to Today, which closes the sheet and
+// shows the change at once while the server saves it (today-view.tsx).
+// A save that fails opens this sheet again with your changes (`draft`)
+// and the reason; a delete that fails brings the row back with a message.
 
-import { useActionState, useEffect, useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { keepOnFailure, tapAgain } from "@/lib/action-call";
-import { updateEntry } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { scaleSnapshot } from "@/lib/nutrition";
+import type { Draft, Typed } from "@/lib/optimistic-entries";
 import type { Serving } from "@/lib/servings";
 import type { FormState, MealEntry } from "@/lib/types";
 import { AmountField } from "./amount-field";
@@ -24,7 +28,8 @@ import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 export function EditEntryForm({
   entry,
   serving,
-  onDone,
+  draft,
+  onSave,
   onSwap,
   onDelete,
 }: {
@@ -35,57 +40,29 @@ export function EditEntryForm({
    * and numbers.
    */
   serving: Serving | null;
-  onDone: () => void;
+  /** A save that failed: your changes, and why they didn't save. */
+  draft?: Draft;
+  /** It passed the checks: Today saves it. */
+  onSave: (typed: Typed) => void;
   /** Recipe entries only: "Tired of this?" opens the swap stack instead. */
   onSwap?: () => void;
-  /**
-   * Deletes it; Today closes the sheet and shows "… deleted · Undo".
-   * Gives back why it didn't work (shown here), or null.
-   */
-  onDelete: () => Promise<string | null>;
+  /** Today closes the sheet, the row slides away, "… deleted · Undo". */
+  onDelete: () => void;
 }) {
-  const [amount, setAmount] = useState(String(entry.amount));
-  const [meal, setMeal] = useState<Meal>(entry.meal);
+  const [amount, setAmount] = useState(draft?.amount ?? String(entry.amount));
+  const [meal, setMeal] = useState<Meal>(draft?.meal ?? entry.meal);
   const [confirming, setConfirming] = useState(false);
-  const [deleteError, setDeleteError] = useState<string>();
-  const [deleting, startDelete] = useTransition();
+  const [state, setState] = useState<FormState>(draft?.state ?? { ok: false });
 
-  const [state, formAction, pending] = useActionState(
-    async (prev: FormState, formData: FormData) => {
-      // Offline: a message here, and your changes stay. (Delete goes
-      // through Today, which already catches this itself.)
-      const result = await keepOnFailure(updateEntry, tapAgain("save", "Save changes"))(prev, formData);
-      if (result.ok) onDone();
-      return result;
-    },
-    { ok: false },
-  );
-
-  // One message line for two buttons, and only the newest problem shows.
-  // The Save answer that was up when you tapped Delete is set aside here,
-  // so an old Save error never hides a newer Delete error; and saving
-  // again clears the old Delete error.
-  const [hiddenSaveAnswer, setHiddenSaveAnswer] = useState<FormState | null>(null);
-
-  function handleDelete() {
-    setDeleteError(undefined);
-    setHiddenSaveAnswer(state);
-    startDelete(async () => {
-      const problem = await onDelete();
-      if (problem) {
-        setDeleteError(problem);
-        setConfirming(false);
-      }
-    });
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const checked = validateEntryChange({ meal, amount, unit: entry.unit });
+    if (!checked.ok) {
+      setState({ ok: false, fieldErrors: checked.fieldErrors });
+      return;
+    }
+    onSave({ text: amount, ...checked.value });
   }
-
-  // A failed delete swaps "Yes, delete" back for "Delete". The button
-  // that had keyboard focus is gone then, so focus goes to Delete instead
-  // of falling out to the page.
-  const deleteRef = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (deleteError && document.activeElement === document.body) deleteRef.current?.focus();
-  }, [deleteError]);
 
   // The entry's unit picks the rules: servings (at most 20) for a recipe.
   const parsed = validateEntryChange({ meal, amount, unit: entry.unit });
@@ -93,21 +70,10 @@ export function EditEntryForm({
   const errors = state.fieldErrors ?? {};
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
-  const saveMessage = state === hiddenSaveAnswer ? undefined : (state.message ?? errors.meal);
-  // Hidden while trying again: a second failure with the same words then
-  // shows up (and is read out) again instead of looking like nothing
-  // happened.
-  const message = pending || deleting ? undefined : (deleteError ?? saveMessage);
+  const message = state.message ?? errors.meal;
 
   return (
-    <form
-      ref={formRef}
-      action={formAction}
-      onSubmit={() => setDeleteError(undefined)}
-      className="space-y-5 pt-2"
-      noValidate
-    >
-      <input type="hidden" name="id" value={entry.id} />
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 pt-2" noValidate>
       {/* h3: under the sheet's own h2 title ("Edit entry"). */}
       <h3 className="text-lg font-medium">{entry.name}</h3>
 
@@ -135,34 +101,15 @@ export function EditEntryForm({
         {message}
       </ErrorLine>
 
-      {/* focusableWhenDisabled: while it works the button waits but keeps
-          keyboard focus (plain disabled would drop it to the page). */}
-      <Button
-        type="submit"
-        disabled={pending || deleting}
-        focusableWhenDisabled
-        // Greyed while a delete runs (it can't be used then); full
-        // colour while it's saving itself.
-        data-unavailable={deleting || undefined}
-        className="press-wide h-11 w-full text-base"
-      >
-        {pending ? "Saving…" : "Save changes"}
+      <Button type="submit" className="press-wide h-11 w-full text-base">
+        Save changes
       </Button>
 
       {confirming ? (
         <div className="flex items-center justify-center gap-2">
           <span className="text-sm">Delete this entry?</span>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            // Not while a save runs (the same race as Delete below).
-            disabled={pending || deleting}
-            focusableWhenDisabled
-            data-unavailable={pending || undefined}
-            className="h-11 px-4 text-base"
-          >
-            {deleting ? "Deleting…" : "Yes, delete"}
+          <Button type="button" variant="destructive" onClick={onDelete} className="h-11 px-4 text-base">
+            Yes, delete
           </Button>
           <Button
             type="button"
@@ -175,16 +122,9 @@ export function EditEntryForm({
         </div>
       ) : (
         <Button
-          ref={deleteRef}
           type="button"
           variant="ghost"
           onClick={() => setConfirming(true)}
-          // Not while a save is still running: the two answers would race
-          // for the one message line, and a save landing after a delete
-          // would find the sheet gone (like Remove in ingredient-form).
-          disabled={pending}
-          focusableWhenDisabled
-          data-unavailable={pending || undefined}
           className="press-wide h-11 w-full text-base text-destructive"
         >
           Delete

@@ -5,20 +5,23 @@
 // water on Today" switch and the daily goal (2,000 ml to start).
 // Both hints under the boxes are advice only and never stop you saving.
 
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useOptimistic, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { keepOnFailure, tapAgain } from "@/lib/action-call";
+import { PULSE_SCALE_WIDE } from "@/lib/motion";
 import { saveTargets, type TargetsFormState } from "@/lib/settings-actions";
 import {
   DEFAULT_WATER_ML,
   lowCalorieNote,
+  rawTargetsFrom,
   targetsHint,
   validateTargets,
   type Targets,
 } from "@/lib/targets";
 import { ErrorLine, LiveLine } from "./collapse";
 import { Field, errorId } from "./form-field";
+import { Pulse } from "./pulse";
 import { SwitchRow } from "./switch-row";
 import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
@@ -63,8 +66,16 @@ export function TargetsForm({ targets }: { targets: Targets }) {
   // for a normal target.
   const [kcalFocused, setKcalFocused] = useState(false);
 
+  // "Saved" shows the moment you tap Save when the numbers pass the same
+  // checks the server runs, instead of after the server's answer (about
+  // 200 ms on wifi, often a second on a phone). If the server then says
+  // no, "Saved" goes and its message shows instead. useOptimistic: React
+  // shows this value only while the save is running, then the real one.
+  const [shownSaved, showSavedNow] = useOptimistic(justSaved);
+
   const [state, formAction, pending] = useActionState(
     async (prev: TargetsFormState, formData: FormData) => {
+      if (validateTargets(rawTargetsFrom(formData)).ok) showSavedNow(true);
       // Offline: a message here, and what you typed stays.
       const result = await keepOnFailure(saveTargets, tapAgain("save", "Save targets"))(prev, formData);
       // A failed save mustn't leave an earlier "Saved" showing next to it.
@@ -215,12 +226,15 @@ export function TargetsForm({ targets }: { targets: Targets }) {
         {state.message}
       </ErrorLine>
 
-      {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
-        {pending ? "Saving…" : "Save targets"}
-      </Button>
+      {/* Keeps keyboard focus while it works. Pulses once as "Saved"
+          appears (null while editing: typing again never pulses). */}
+      <Pulse when={shownSaved ? "saved" : null} scale={PULSE_SCALE_WIDE}>
+        <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
+          {pending && !shownSaved ? "Saving…" : "Save targets"}
+        </Button>
+      </Pulse>
       <LiveLine gap="5" role="status" className="text-center">
-        {justSaved && !pending ? "Saved" : null}
+        {shownSaved ? "Saved" : null}
       </LiveLine>
     </form>
   );

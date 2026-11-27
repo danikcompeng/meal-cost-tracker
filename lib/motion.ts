@@ -82,6 +82,25 @@ export const PRESS_SCALE_WIDE = 0.985;
  */
 export const POP_SCALE = 1.08;
 
+/**
+ * "Done": the pulse a ring (with its number) or a Save button gives when
+ * what it shows just changed because you logged, saved or swapped. It
+ * grows to this and settles back once, over DURATION.slow, and never on
+ * the first fill. Smaller than POP_SCALE: a ring is much bigger than the
+ * swipe sign, so the same visible nudge needs less. With Reduce Motion:
+ * no pulse (the number still changes).
+ */
+export const PULSE_SCALE = 1.04;
+/**
+ * The same pulse on a full-width button: about twice as wide as the big
+ * ring, so half the scale gives the same visible nudge at its edges (the
+ * reasoning behind PRESS_SCALE_WIDE).
+ */
+export const PULSE_SCALE_WIDE = 1.02;
+
+/** How far (px) a sheet rises as it comes up, from below its place. */
+export const SHEET_RISE = 48;
+
 /** Springs, all visually done in 200–250 ms. */
 export const SPRING = {
   /** A row snapping open or shut: quick, no bounce past the button. */

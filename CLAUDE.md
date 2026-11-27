@@ -259,7 +259,14 @@ Motion (Framer Motion)
   in from the right). With Reduce Motion: a crossfade. This should feel
   delightful.
 - Everything else is subtle: progress rings and the budget bar fill
-  smoothly, lists fade in.
+  smoothly, lists fade in. A ring whose number changes pulses once
+  (PULSE_SCALE), never on its first fill. Tapping a meal on Today grows
+  its edit sheet out of that row and closing shrinks it back (the swap
+  stack still slides up).
+- Saves answer within 400 ms (the Doherty threshold): Today shows a log,
+  edit, delete, swap or Undo the moment you tap (useOptimistic, built by
+  lib/optimistic-entries.ts, the same functions the server uses), and
+  undoes it with a message if the server says no.
 - Respect prefers-reduced-motion.
 
 Rules
@@ -348,7 +355,7 @@ Tokens: use these, never a raw hex, rgb() or a made-up size
 | Type    | text-label 13 (labels, chips; our own, lib/utils.ts tells cn) · text-sm 14 (secondary lines, buttons) · text-base 16 (body, inputs) · text-lg 18 (sheet titles) · text-xl 20 · text-2xl 24 (swap card name) · text-3xl 30 (page titles, with leading-tight) · text-4xl 36 (big ring number at 6+ digits) · text-5xl 48 (the key number) |
 | Spacing | Tailwind's 4 px steps (--spacing): 1 2 3 4 5 6 8, half steps for tight chips and rows. Page gutter px-4, tile padding p-4 or p-5, tap targets h-11 (44 px) or h-12 |
 | Radius  | from --radius (10 px): rounded-md 8 (text links), rounded-lg 10 (buttons, boxes, rows), rounded-2xl 18 (tiles, sheets, cards), rounded-full (chips, pills, rings); plain rounded 4 only on skeleton text bars. Nested corners: concentric rule above |
-| Motion  | lib/motion.ts: DURATION fast 150 / base 200 / slow 250 ms, EASE_OUT / EASE_IN, SPRING snap / settle / sheet, SCALE_FROM 0.97 and PRESS_SCALE_WIDE 0.985 (press, press-wide), PUSH_SCALE / PUSH_FADE (swap carousel), POP_SCALE (swipe sign locking in), SLIDE 24 px, RUBBER, SHAKE_X, THROW_SPEED; named exceptions FILL_DURATION / FILL_EASE (rings) and SETTLE_DURATION (Undo message). CSS copies are --motion-* in globals.css; lib/motion.test.ts checks they match and that answers to a tap stay 150–250 ms |
+| Motion  | lib/motion.ts: DURATION fast 150 / base 200 / slow 250 ms, EASE_OUT / EASE_IN, SPRING snap / settle / sheet, SCALE_FROM 0.97 and PRESS_SCALE_WIDE 0.985 (press, press-wide), PUSH_SCALE / PUSH_FADE (swap carousel), POP_SCALE (swipe sign locking in), PULSE_SCALE (a ring or Save button confirming a change), SLIDE 24 px, RUBBER, SHAKE_X, THROW_SPEED; named exceptions FILL_DURATION / FILL_EASE (rings) and SETTLE_DURATION (Undo message). CSS copies are --motion-* in globals.css; lib/motion.test.ts checks they match and that answers to a tap stay 150–250 ms |
 Arbitrary values left on purpose: safe-area insets (env(), the phone
 decides), max-h-[85dvh] on sheets, concentric corners written from their
 outer token, and two width formulas (the dialog's 1 rem gutter, the scan

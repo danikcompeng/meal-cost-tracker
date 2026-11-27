@@ -2,17 +2,20 @@
 
 // Step 2 of logging: how much, and which meal. The preview is only a guide;
 // the server works out the real snapshot from the saved food.
+//
+// "Log it" checks what you typed here, with the same rules as the server,
+// then hands it to Today, which closes the sheet and shows the entry at
+// once while it saves (today-view.tsx). If the save fails, Today opens
+// this sheet again with what you typed (`draft`) and the reason.
 
-import { useActionState, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
 import { costOfAmount } from "@/lib/cost";
-import { logFood } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { nutrientsForAmount } from "@/lib/nutrition";
+import type { Draft, Typed } from "@/lib/optimistic-entries";
 import { servingOf } from "@/lib/servings";
 import type { Food, FormState } from "@/lib/types";
 import { AmountField } from "./amount-field";
@@ -24,39 +27,35 @@ import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LogFoodForm({
   food,
-  day,
   initialMeal,
   backLabel = "All foods",
+  draft,
   onBack,
-  onDone,
+  onLog,
 }: {
   food: Food;
-  day: string;
   initialMeal: Meal;
   /** What the back button returns to: "Recipes and foods" when you have recipes. */
   backLabel?: string;
+  /** A save that failed: what you typed, and why it didn't save. */
+  draft?: Draft;
   onBack: () => void;
-  onDone: () => void;
+  /** It passed the checks: Today logs it. */
+  onLog: (typed: Typed) => void;
 }) {
-  const router = useRouter();
-  const [amount, setAmount] = useState("");
-  const [meal, setMeal] = useState<Meal>(initialMeal);
+  const [amount, setAmount] = useState(draft?.amount ?? "");
+  const [meal, setMeal] = useState<Meal>(draft?.meal ?? initialMeal);
+  const [state, setState] = useState<FormState>(draft?.state ?? { ok: false });
 
-  const [state, formAction, pending] = useActionState(
-    async (prev: FormState, formData: FormData) => {
-      // Offline: a message here, and the amount you typed stays. If the
-      // connection dropped on the way it may have been logged anyway, so
-      // Today reloads behind the sheet and the message says to check it.
-      const result = await keepOnFailure(
-        logFood,
-        tapAgain("log it", "Log it", "Check Today"),
-        () => void refreshIfReachable(() => router.refresh()),
-      )(prev, formData);
-      if (result.ok) onDone();
-      return result;
-    },
-    { ok: false },
-  );
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const checked = validateEntryChange({ meal, amount });
+    if (!checked.ok) {
+      setState({ ok: false, fieldErrors: checked.fieldErrors });
+      return;
+    }
+    onLog({ text: amount, ...checked.value });
+  }
 
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
@@ -73,9 +72,7 @@ export function LogFoodForm({
   const serving = servingOf(food);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5 pt-1" noValidate>
-      <input type="hidden" name="foodId" value={food.id} />
-      <input type="hidden" name="day" value={day} />
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 pt-1" noValidate>
 
       <button
         type="button"
@@ -108,15 +105,13 @@ export function LogFoodForm({
         onChange={setMeal}
       />
 
-      {/* Read out as soon as it appears; hidden while trying again so a
-          second failure with the same words still shows. */}
-      <ErrorLine show={Boolean(!pending && (state.message ?? errors.day ?? errors.foodId ?? errors.meal))} gap="5">
+      {/* Read out as soon as it appears. */}
+      <ErrorLine show={Boolean(state.message ?? errors.day ?? errors.foodId ?? errors.meal)} gap="5">
         {state.message ?? errors.day ?? errors.foodId ?? errors.meal}
       </ErrorLine>
 
-      {/* Keeps keyboard focus while it works. */}
-      <Button type="submit" disabled={pending} focusableWhenDisabled className="press-wide h-11 w-full text-base">
-        {pending ? "Logging…" : "Log it"}
+      <Button type="submit" className="press-wide h-11 w-full text-base">
+        Log it
       </Button>
     </form>
   );

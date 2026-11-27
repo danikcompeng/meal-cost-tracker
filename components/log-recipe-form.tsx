@@ -3,16 +3,18 @@
 // Step 2 of logging a recipe: how many servings (1 to start, so your usual
 // single serving is one tap), and which meal. The preview is only a guide;
 // the server works out the real snapshot from the saved recipe and foods.
+//
+// Like LogFoodForm, "Log it" checks here and hands it to Today, which
+// shows it at once while it saves, and opens this again with your
+// servings (`draft`) if the save fails.
 
-import { useActionState, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { keepOnFailure, refreshIfReachable, tapAgain } from "@/lib/action-call";
-import { logRecipe } from "@/lib/entry-actions";
 import { validateEntryChange } from "@/lib/entry-validation";
 import { MEAL_OPTIONS, type Meal } from "@/lib/meals";
 import { recipeSnapshotFor } from "@/lib/nutrition";
+import type { Draft, Typed } from "@/lib/optimistic-entries";
 import type { FormState, Recipe } from "@/lib/types";
 import { AmountField } from "./amount-field";
 import { ErrorLine } from "./collapse";
@@ -22,36 +24,32 @@ import { useFocusFirstInvalid } from "./use-focus-first-invalid";
 
 export function LogRecipeForm({
   recipe,
-  day,
   initialMeal,
+  draft,
   onBack,
-  onDone,
+  onLog,
 }: {
   recipe: Recipe;
-  day: string;
   initialMeal: Meal;
+  /** A save that failed: what you typed, and why it didn't save. */
+  draft?: Draft;
   onBack: () => void;
-  onDone: () => void;
+  /** It passed the checks: Today logs it. */
+  onLog: (typed: Typed) => void;
 }) {
-  const router = useRouter();
-  const [amount, setAmount] = useState("1");
-  const [meal, setMeal] = useState<Meal>(initialMeal);
+  const [amount, setAmount] = useState(draft?.amount ?? "1");
+  const [meal, setMeal] = useState<Meal>(draft?.meal ?? initialMeal);
+  const [state, setState] = useState<FormState>(draft?.state ?? { ok: false });
 
-  const [state, formAction, pending] = useActionState(
-    async (prev: FormState, formData: FormData) => {
-      // Offline: a message here, and the servings you typed stay. If the
-      // connection dropped on the way it may have been logged anyway, so
-      // Today reloads behind the sheet and the message says to check it.
-      const result = await keepOnFailure(
-        logRecipe,
-        tapAgain("log it", "Log it", "Check Today"),
-        () => void refreshIfReachable(() => router.refresh()),
-      )(prev, formData);
-      if (result.ok) onDone();
-      return result;
-    },
-    { ok: false },
-  );
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const checked = validateEntryChange({ meal, amount, unit: "serving" });
+    if (!checked.ok) {
+      setState({ ok: false, fieldErrors: checked.fieldErrors });
+      return;
+    }
+    onLog({ text: amount, ...checked.value });
+  }
 
   const formRef = useRef<HTMLFormElement>(null);
   useFocusFirstInvalid(formRef, state);
@@ -63,9 +61,7 @@ export function LogRecipeForm({
   const message = state.message ?? errors.day ?? errors.recipeId ?? errors.meal;
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-5 pt-1" noValidate>
-      <input type="hidden" name="recipeId" value={recipe.id} />
-      <input type="hidden" name="day" value={day} />
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-5 pt-1" noValidate>
 
       <button
         type="button"
@@ -91,9 +87,8 @@ export function LogRecipeForm({
         onChange={setMeal}
       />
 
-      {/* Read out as soon as it appears; hidden while trying again so a
-          second failure with the same words still shows. */}
-      <ErrorLine show={Boolean(!pending && message)} gap="5">
+      {/* Read out as soon as it appears. */}
+      <ErrorLine show={Boolean(message)} gap="5">
         {message}
       </ErrorLine>
 
@@ -101,15 +96,8 @@ export function LogRecipeForm({
           focusing a box would pop up the phone keyboard and get in the way
           of the one-tap "Log it". Without any autofocus, keyboard and
           screen-reader users would land on the page itself, lost. */}
-      {/* focusableWhenDisabled: keeps keyboard focus while it works. */}
-      <Button
-        type="submit"
-        disabled={pending}
-        focusableWhenDisabled
-        autoFocus
-        className="press-wide h-11 w-full text-base"
-      >
-        {pending ? "Logging…" : "Log it"}
+      <Button type="submit" autoFocus className="press-wide h-11 w-full text-base">
+        Log it
       </Button>
     </form>
   );

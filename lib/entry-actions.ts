@@ -25,12 +25,18 @@ import {
 } from "./entry-validation";
 import { getFood } from "./foods";
 import { isUuid } from "./ids";
-import { nutrientsFromRow, recipeSnapshotFor, scaleSnapshot, snapshotFor } from "./nutrition";
+import { recipeSnapshotFor, snapshotFor } from "./nutrition";
+import { editedFields, swappedFields, unswappedFields } from "./optimistic-entries";
 import { getRecipe } from "./recipes";
 import { guarded, logDbError, requireUser, userToday } from "./server-helpers";
 import type { FormState } from "./types";
 
-/** After a swap: the entry as it was, so Undo can put it back. */
+/**
+ * After a swap: the entry as it was, so Undo can put it back. (Today
+ * offers Undo before this answer arrives, so it uses its own copy,
+ * swappedFrom(entry), the same thing; this stays for any caller that
+ * waits.)
+ */
 export type SwapResult = { ok: true; previous: SwappedFrom } | { ok: false; message: string };
 
 /**
@@ -41,6 +47,29 @@ export type SwapResult = { ok: true; previous: SwappedFrom } | { ok: false; mess
 export type DeleteResult =
   | { ok: true; deleted: DeletedEntry }
   | { ok: false; message: string; gone?: boolean };
+
+/**
+ * The new entry's id, when the phone made one (Today shows the entry
+ * before the server answers, under this id, so the server's copy is the
+ * same row and nothing on screen jumps). A uuid, or none (then the
+ * database makes one); false if it sent something else. Row Level
+ * Security still only lets you add your own rows.
+ */
+function newEntryId(formData: FormData): string | null | false {
+  const id = formData.get("id");
+  if (id === null || id === "") return null;
+  return isUuid(id) ? id : false;
+}
+
+/**
+ * Logging failed because an entry with this id is already there (23505).
+ * If it's yours, it's this very log, saved on an earlier try whose answer
+ * never reached your phone: done, not logged twice. getEntry only finds
+ * your own rows (Row Level Security), so someone else's id stays an error.
+ */
+async function alreadyLogged(error: { code?: string }, id: string | null): Promise<boolean> {
+  return error.code === "23505" && id !== null && (await getEntry(id)) !== null;
+}
 
 export async function logFood(_prev: FormState, formData: FormData): Promise<FormState> {
   return guarded("logFood", "Couldn't log it. Please try again.", async () => {
@@ -58,19 +87,23 @@ export async function logFood(_prev: FormState, formData: FormData): Promise<For
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
     const { food_id, day, meal, amount } = result.value;
 
+    const id = newEntryId(formData);
+    if (id === false) return { ok: false, message: "Couldn't log it. Please try again." };
+
     // The snapshot is worked out here from the saved food, never from
     // numbers the browser sends, so nobody can log made-up macros or prices.
     const food = await getFood(food_id);
     if (!food) return { ok: false, message: "That food doesn't exist anymore." };
 
     const { error } = await supabase.from("meal_entries").insert({
+      ...(id && { id }),
       food_id,
       day,
       meal,
       status: "eaten",
       ...snapshotFor(food, amount),
     });
-    if (error) {
+    if (error && !(await alreadyLogged(error, id))) {
       logDbError("logFood", error);
       return { ok: false, message: "Couldn't log it. Please try again." };
     }
@@ -101,6 +134,8 @@ export async function logRecipe(_prev: FormState, formData: FormData): Promise<F
     );
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
     const { recipe_id, day, meal, amount } = result.value;
+    const id = newEntryId(formData);
+    if (id === false) return { ok: false, message: "Couldn't log it. Please try again." };
 
     const recipe = await getRecipe(recipe_id);
     if (!recipe) return { ok: false, message: "That recipe doesn't exist anymore." };
@@ -110,13 +145,14 @@ export async function logRecipe(_prev: FormState, formData: FormData): Promise<F
     }
 
     const { error } = await supabase.from("meal_entries").insert({
+      ...(id && { id }),
       recipe_id,
       day,
       meal,
       status: "eaten",
       ...recipeSnapshotFor(recipe, amount),
     });
-    if (error) {
+    if (error && !(await alreadyLogged(error, id))) {
       logDbError("logRecipe", error);
       return { ok: false, message: "Couldn't log it. Please try again." };
     }
@@ -150,7 +186,7 @@ export async function updateEntry(_prev: FormState, formData: FormData): Promise
     const { meal, amount } = result.value;
     const { error } = await supabase
       .from("meal_entries")
-      .update({ meal, amount, ...scaleSnapshot(entry, entry.amount, amount) })
+      .update(editedFields(entry, meal, amount))
       .eq("id", id);
     if (error) {
       logDbError("updateEntry", error);
@@ -201,7 +237,7 @@ export async function swapEntry(entryId: string, recipeId: string): Promise<Swap
     // read and this write would otherwise be overwritten without a word.
     const unchanged = supabase
       .from("meal_entries")
-      .update({ recipe_id: recipe.id, food_id: null, ...recipeSnapshotFor(recipe, entry.amount) })
+      .update(swappedFields(entry, recipe))
       .eq("id", entry.id)
       .eq("amount", entry.amount);
     const { data, error } = await (entry.recipe_id === null
@@ -256,15 +292,7 @@ export async function undoSwap(
 
     const { data, error } = await supabase
       .from("meal_entries")
-      .update({
-        recipe_id: old.recipe_id,
-        food_id: null,
-        name: old.name,
-        unit: "serving",
-        ...nutrientsFromRow(old),
-        cost: old.cost,
-        water_ml: old.water_ml,
-      })
+      .update(unswappedFields(old))
       .eq("id", entryId)
       // Everything checked above, checked again at the moment of writing
       // (same recipe, servings and meal), so two quick taps or another

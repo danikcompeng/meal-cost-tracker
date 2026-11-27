@@ -1,10 +1,8 @@
-// Keeping a deleted entry on Today a little longer, in its place.
+// Where a deleted entry was, so Undo puts it back in the same place.
 //
-// Deleting from the edit sheet: the sheet covers Today while it waits for
-// the server, and the row should slide away only once the sheet has
-// closed, where you can see it. But the server's fresh list (sent with
-// its answer) may already have dropped the row by then. So Today "holds"
-// it: it stays on screen, where it was, until Today lets go.
+// Today notes the spot when you delete (holdEntry: the entry above it in
+// its meal), and Undo shows the entry there straight away, before the
+// server has it back (withHeld, through lib/optimistic-entries.ts).
 // Pure, so it can be unit tested.
 
 import type { MealEntry } from "./types";

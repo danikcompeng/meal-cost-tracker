@@ -3,7 +3,7 @@
 
 import { revalidatePath } from "next/cache";
 import { guarded, logDbError, requireUserId } from "./server-helpers";
-import { validateTargets, type Targets } from "./targets";
+import { rawTargetsFrom, validateTargets, type Targets } from "./targets";
 import type { FormState } from "./types";
 
 /** Also sends back what was saved (decimals rounded), so the form can show it. */
@@ -16,14 +16,7 @@ export async function saveTargets(
   return guarded("saveTargets", "Couldn't save. Please try again.", async () => {
     const { supabase, userId } = await requireUserId();
 
-    const result = validateTargets({
-      kcal: formData.get("kcal"),
-      protein: formData.get("protein"),
-      carbs: formData.get("carbs"),
-      fat: formData.get("fat"),
-      water: formData.get("water"),
-      showWater: formData.get("showWater"),
-    });
+    const result = validateTargets(rawTargetsFrom(formData));
     if (!result.ok) return { ok: false, fieldErrors: result.fieldErrors };
 
     // "Upsert": add your row the first time, change it after that. The

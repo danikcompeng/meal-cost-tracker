@@ -8,6 +8,7 @@ import { totalNumber, type Total } from "@/lib/day-totals";
 import type { Slot } from "@/lib/summary";
 import { kcalHeadline, type Progress } from "@/lib/targets";
 import { ProgressRing } from "./progress-ring";
+import { Pulse } from "./pulse";
 
 const BIG = 176;
 // 52 px, so four fit side by side even on a 320 px phone.
@@ -46,12 +47,17 @@ export function SummaryRings({
         {slots.map((slot, i) => (
           <li key={slot.key} className="flex flex-col items-center">
             {slot.fraction !== null ? (
-              <ProgressRing
-                fraction={slot.fraction}
-                size={SMALL}
-                stroke={6}
-                delay={0.15 + i * STAGGER}
-              />
+              // The ring pulses when its number changes (you logged,
+              // edited or swapped a meal). Only the ring: scaled text
+              // shimmers (plans/motion.md).
+              <Pulse when={slot.known ? slot.short : "unknown"} className="flex">
+                <ProgressRing
+                  fraction={slot.fraction}
+                  size={SMALL}
+                  stroke={6}
+                  delay={0.15 + i * STAGGER}
+                />
+              </Pulse>
             ) : (
               anyRing && <div aria-hidden="true" style={{ height: SMALL }} />
             )}
@@ -90,7 +96,11 @@ function BigRing({ p }: { p: Progress }) {
   const size = number.length >= 6 ? "text-4xl" : "text-5xl";
   return (
     <div className="relative mx-auto mt-3" style={{ width: BIG, height: BIG }}>
-      <ProgressRing fraction={p.fraction} size={BIG} stroke={12} />
+      {/* The ring pulses when what you ate changes its number; the number
+          itself stays still (scaled text shimmers). */}
+      <Pulse when={`${prefix} ${number} ${suffix}`} className="flex">
+        <ProgressRing fraction={p.fraction} size={BIG} stroke={12} />
+      </Pulse>
       <p
         className={`absolute inset-0 flex flex-col items-center justify-center transition-colors duration-(--motion-fast) ${
           p.over ? "text-foreground" : "text-primary"

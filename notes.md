@@ -374,3 +374,53 @@ Lessons:
 - First run: the code was fine but the canvas showed "Canvas failed to load". Tempo's own "Fix with AI" found the cause: the installed Tempo app and the project's tempo-sdk version didn't line up, so the canvas needed its file path passed in. A tool bug, not my code.
 - Steering: I asked for overdue cards to stand out without red or a coloured side border (a solid cobalt "Overdue · 9d late" pill, most overdue first) and a check animation on Log that collapses the card and moves the person to Coming up in 7 days, with reduced motion respected. It measured the collapse in headless Chrome to prove it worked.
 - What Tempo does well: you see every screen side by side on a canvas and can edit styles there, while the agent edits real files. Screenshots: network-crm/design/tempo/.
+
+## 2026-11-27: Motion polish: pulse, expand, blur crossfade (branch `motion-polish`)
+
+From the "10 UI/UX tips" list in the inbox.
+
+1. Pulse to confirm: a ring whose number changes gives one small pulse
+   (PULSE_SCALE 1.04, the ring only: scaled text shimmers), never on its
+   first fill and never when a failed save goes back (PulseHush). The
+   Settings Save button pulses as "Saved" appears (PULSE_SCALE_WIDE 1.02,
+   a wide button needs less). Sheets that close on Log it / Swap have no
+   button left to pulse, so there the rings are the "done".
+2. Expand: tapping a meal on Today grows its edit sheet out of that row
+   (it starts as the row: its grey, its 10 px corners, no outline) and
+   closing shrinks it back, easing out and fading into the row. The
+   contents only show in the last 6% of the height, so text never looks
+   squashed. The swap stack still slides up (the swap's own moment is the
+   carousel on the row), and the edit sheet slides away when it opens the
+   swap stack. The dim behind every sheet now fades in.
+3. Blur crossfade on icons: skipped, it already exists. components/icon-swap.tsx
+   (blur + shrink + fade, off with Reduce Motion) does the torch, the only
+   icon in the app that swaps for another. There's no theme toggle (the
+   app follows the phone) and no check or add/remove icon that changes.
+4. Doherty threshold (results under 400 ms): measured first, on wifi
+   from a laptop, every save waited for the server: Log it 313-352 ms,
+   edit Save 397-617 ms, sheet Delete 231-288 ms, swap 317-399 ms, Undo
+   ~330-392 ms, Settings ~200 ms. A phone is slower. Now Today shows a
+   log, edit, delete, swap and both Undos the moment you tap
+   (useOptimistic), with the same pure builders the server uses
+   (lib/optimistic-entries.ts), and the phone picks the new entry's id so
+   the server's copy is the same row. If the server says no, the change
+   goes back and the sheet reopens with what you typed and why. Settings
+   shows "Saved" at once. e2e/instant-saves.e2e.ts slows the server to
+   1.5 s and checks each result shows in under 400 ms.
+   Not changed: Kitchen's saves (new or edited food, recipe, ingredient,
+   deleting a food or recipe). Their buttons answer at once ("Saving…"),
+   but the result itself is the server's to decide: a duplicate food
+   asks "Update existing, or keep both?", a new recipe needs its id to
+   open its page, and a recipe's totals come from the saved foods.
+   Showing a guess there would be a result that can change. A feature of
+   its own if wanted.
+
+Lessons:
+- Inside a React transition, plain state changes wait until the whole
+  save is done; only changes after its first await apply at once. So the
+  sheet closes BEFORE the save starts, never inside it.
+- A form reused by AnimatePresence keeps its old state: give each retry
+  a new key, or its error message never shows.
+- Headless Chrome screenshots can lag a frame behind on a brand-new,
+  fast-scaling layer; read the page's own numbers (getBoundingClientRect
+  each frame) before believing a frame.

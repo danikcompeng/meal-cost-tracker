@@ -9,6 +9,8 @@ import {
   POP_SCALE,
   PRESS_SCALE_WIDE,
   PUSH_FADE,
+  PULSE_SCALE,
+  PULSE_SCALE_WIDE,
   PUSH_SCALE,
   RUBBER,
   SCALE_FROM,
@@ -48,6 +50,10 @@ describe("motion tokens: CSS matches lib/motion.ts", () => {
 
   it("ease-out curve", () => {
     expect(cssVar("motion-ease-out")).toBe(`cubic-bezier(${EASE_OUT.join(", ")})`);
+  });
+
+  it("ease-in curve", () => {
+    expect(cssVar("motion-ease-in")).toBe(`cubic-bezier(${EASE_IN.join(", ")})`);
   });
 
   it("the press rules read the variables, not typed-in numbers", () => {
@@ -112,6 +118,14 @@ describe("motion tokens: sane values", () => {
   it("the swipe sign's pop is tiny: a click, not a bounce", () => {
     expect(POP_SCALE).toBeGreaterThan(1);
     expect(POP_SCALE).toBeLessThanOrEqual(1.1);
+  });
+
+  it("the done-pulse is a nudge, smaller than the swipe sign's pop", () => {
+    expect(PULSE_SCALE).toBeGreaterThan(1);
+    expect(PULSE_SCALE).toBeLessThan(POP_SCALE);
+    // A wide button gives less, for the same visible nudge.
+    expect(PULSE_SCALE_WIDE).toBeGreaterThan(1);
+    expect(PULSE_SCALE_WIDE).toBeLessThan(PULSE_SCALE);
   });
 
   it("the rubber band resists: less than half the finger's movement", () => {

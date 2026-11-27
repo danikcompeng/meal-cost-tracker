@@ -182,8 +182,9 @@
 
 /* Motion tokens CSS needs (the rest live only in lib/motion.ts).
    lib/motion.test.ts checks these match SCALE_FROM, PRESS_SCALE_WIDE,
-   DURATION.fast, DURATION.base (a closing sheet's dim layer),
-   DURATION.slow (the camera picture fading in) and EASE_OUT there. scale-from is both where entering
+   DURATION.fast, DURATION.base (a sheet's dim layer, in and out),
+   DURATION.slow (the camera picture fading in), EASE_OUT and EASE_IN
+   (a sliding sheet's dim layer leaving with it) there. scale-from is both where entering
    things start (the duplicate dialog) and how far a button shrinks while
    pressed. */
 :root {
@@ -193,6 +194,7 @@
   --motion-base: 200ms;
   --motion-slow: 250ms;
   --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --motion-ease-in: cubic-bezier(0.4, 0, 1, 1);
 }
 
 /* Layers: what sits on top of what, lowest first. Use the z-* classes
@@ -362,6 +364,20 @@
   input,
   textarea {
     caret-color: var(--primary);
+  }
+
+  /* The dim behind a sheet or dialog fades in as it opens (it already
+     fades out as it closes, bottom-sheet.tsx), so a sheet growing out of
+     a Today row starts as that row, not over a page that went dark at
+     once. A fade, so it stays with Reduce Motion. Where a browser can't
+     animate ::backdrop it just appears, as before. */
+  dialog::backdrop {
+    transition: opacity var(--motion-base) var(--motion-ease-out);
+  }
+  @starting-style {
+    dialog[open]::backdrop {
+      opacity: 0;
+    }
   }
 
   /* Icon lines as thick as the letters next to them. Lucide draws its
